@@ -179,7 +179,6 @@ CREATE TABLE questions (
     content TEXT NOT NULL,
     view_count INT NOT NULL DEFAULT 0,
     is_solved TINYINT(1) NOT NULL DEFAULT 0,
-    accepted_answer_id BIGINT NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -209,6 +208,7 @@ CREATE TABLE answers (
     question_id BIGINT NOT NULL,
     author_id BIGINT NOT NULL,
     content TEXT NOT NULL,
+    is_accepted TINYINT(1) NOT NULL DEFAULT 0,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -231,14 +231,6 @@ CREATE TABLE answers (
         question_id, deleted_at, created_at
     )
 ) ENGINE=InnoDB;
-
--- 답변 테이블 생성 후, 질문의 채택 답변 외래키 추가
-ALTER TABLE questions  
-    ADD CONSTRAINT fk_questions_accepted
-    FOREIGN KEY (accepted_answer_id) REFERENCES answers (id)
-    ON DELETE RESTRICT
-    ON UPDATE RESTRICT;
-
 
 -- 7. 신고
 -- 참고: target_id 에는 외래키를 걸지 않음 -> 대상 종류에 따라 참조할 테이블이 달라지므로, 대상이 실제로 존재하는지와 본인 글인지 여부는 서버에서 검사!!!
