@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
+const memberRoutes = require("./routes/memberRoutes");
 
 //2.웹 앱 초기화
 const app = express();
@@ -19,6 +20,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.send("Express 서버 실행 중");
 });
+
+app.use("/api/members", memberRoutes);
 
 app.use(notFound); // 404 Not Found 처리 미들웨어
 app.use(errorHandler); // 모든 에러 처리 미들웨어
