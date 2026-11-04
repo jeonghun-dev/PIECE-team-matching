@@ -11,9 +11,9 @@ const toPositiveInt = (value, defaultValue, name) => {
 
   const num = Number(value);
   if (!Number.isInteger(num) || num < 1) {
-    const err = new Error(`${name}는 1 이상의 정수여야 합니다.`);
-    err.status = 400;
-    throw err;
+    const error = new Error(`${name}는 1 이상의 정수여야 합니다.`);
+    error.status = 400;
+    throw error;
   }
   return num;
 };
