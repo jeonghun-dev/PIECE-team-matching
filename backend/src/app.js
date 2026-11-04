@@ -1,13 +1,13 @@
 const express = require("express");
 const cors = require("cors");
-const { createQuestionRouter } = require("./routes/questionRouter");
+const questionRouter = require("./routes/questionRouter");
 
 // 공통 담당자가 전체 서버에 통합할 최소 구성입니다.
 function createApp() {
   const app = express();
   app.use(cors({ origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173" }));
   app.use(express.json());
-  app.use("/api/questions", createQuestionRouter());
+  app.use("/api/questions", questionRouter);
   app.use((req, res) => {
     res.status(404).json({ success: false, data: null, message: "요청한 API가 없습니다." });
   });

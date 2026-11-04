@@ -1,10 +1,9 @@
-const express = require("express");
-const controller = require("../controllers/questionController");
+﻿const express = require("express");
+const questionController = require("../controllers/questionController");
 
-// 목록은 비로그인 공개 API입니다. 상세·작성은 이번 범위에 없습니다.
-function register(router, questionController = controller) {
-  router.get("/", questionController.list);
-  return router;
-}
+const router = express.Router();
 
-module.exports = { register, createQuestionRouter: () => register(express.Router()) };
+// 일반 질문 목록은 로그인 없이 조회할 수 있는 공개 API이다.
+router.get("/", questionController.list);
+
+module.exports = router;
