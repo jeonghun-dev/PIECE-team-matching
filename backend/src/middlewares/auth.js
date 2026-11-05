@@ -64,9 +64,6 @@ class AuthMiddleware {
 
       return next();
     } catch (error) {
-      if (!error.status) {
-        error.status = 401;
-      }
       return next(error);
     }
   }

@@ -189,6 +189,8 @@ class AccountService {  // 이 서비스 객체가 생성될 때, DB 와 연동�
 
     return {
       ...user.toMeJSON(),
+      level: breakdown.level,
+      totalScore: breakdown.totalScore, 
       profile: profile.toJSON(),
       learning: breakdown,
     };

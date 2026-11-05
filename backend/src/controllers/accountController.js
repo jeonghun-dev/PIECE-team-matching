@@ -32,7 +32,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }
@@ -46,8 +45,7 @@ class AccountController {
         data: result,
         message: null,
       });
-    } catch (error) {
-      if (!error.status) error.status = 500;    
+    } catch (error) {  
       return next(error);
     }
   }
@@ -62,7 +60,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }
@@ -77,7 +74,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }
@@ -92,7 +88,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }
@@ -107,7 +102,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }
@@ -122,7 +116,6 @@ class AccountController {
         message: null,
       });
     } catch (error) {
-      if (!error.status) error.status = 500;
       return next(error);
     }
   }

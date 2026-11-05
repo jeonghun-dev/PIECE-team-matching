@@ -23,8 +23,8 @@ app.get("/", (req, res) => {
     res.send("Express 서버 실행 중");
 });
 
-app.use("/api",accountRouter);
 app.use("/api/members", discoveryRouter);
+app.use("/api",accountRouter);
 app.use("/api/questions", questionRouter);
 
 app.use(notFound); // 404 Not Found 처리 미들웨어
