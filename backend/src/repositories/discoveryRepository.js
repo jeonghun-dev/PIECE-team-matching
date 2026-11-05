@@ -22,14 +22,14 @@ function getStringFilter(query, name) {
   return value;
 }
 
-async function findMembers(query, { limit, offset }) {
+async function findMembers(filters, { limit, offset }) {
   const conditions = ["u.status = 'ACTIVE'", "u.role = 'USER'"];
   const values = [];
-  const search = getStringFilter(query, "search")?.trim();
-  const level = getStringFilter(query, "level");
-  const collaborationMode = getStringFilter(query, "collaborationMode");
-  const activeTime = getStringFilter(query, "activeTime");
-  const lookingForTeam = getStringFilter(query, "lookingForTeam");
+  const search = getStringFilter(filters, "search")?.trim();
+  const level = getStringFilter(filters, "level");
+  const collaborationMode = getStringFilter(filters, "collaborationMode");
+  const activeTime = getStringFilter(filters, "activeTime");
+  const lookingForTeam = getStringFilter(filters, "lookingForTeam");
 
   if (search) {
     conditions.push("(u.nickname LIKE ? OR u.intro LIKE ?)");
