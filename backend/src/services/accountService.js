@@ -24,19 +24,19 @@ function createServiceError(status, message) {
   return error;
 }
 
-class AccountService {
+class AccountService {  // 이 서비스 객체가 생성될 때, DB 와 연동된 repository 가 만들어진다 => repository라는 계층이 하는 일 : DB와 데이터 통신
   constructor(repository = new AccountRepository, levelPolicy = new LevelPolicy()) {
     this.repository = repository;
     this.levelPolicy = levelPolicy;
   }
 
   // 회원가입 처리
-  async signup(input) { // input : 
+  async signup(input) { // input : req.body
     const email = input.email.trim().toLowerCase(); // 대소문자 구분 안하기 때문
     const nickname = input.nickname.trim(); 
 
-    // 1. DB 진입 전 이메일·닉네임 중복 검사 (NFR-012, NFR-013 -> 409 응답)
-    const existingEmail = await this.repository.findByEmail(email); // 
+    // 1. DB 진입 전 이메일·닉네임 중복 검사
+    const existingEmail = await this.repository.findByEmail(email); // 이메일 값을 DB에서 추출
     if (existingEmail) {    // 이미 존재하는 경우
       throw createServiceError(409, '이미 사용 중인 이메일입니다.');
     }
@@ -46,10 +46,10 @@ class AccountService {
       throw createServiceError(409, '이미 사용 중인 닉네임입니다.');
     }
 
-    // 2. 필수: bcrypt 비밀번호 해시
-    const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);    // 비밀번호 암호화 후 저장 예정
+    // 2. 필수: bcrypt 비밀번호 해시 (비밀번호 암호화 후 저장 예정)
+    const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);    // 2^salt 회 수행
 
-    // 3. 추가 기능: 학습 이력 기반 점수/레벨 계산
+    // 3. 학습 이력 기반 점수/레벨 계산 
     const levelResult = this.levelPolicy.calculate({
       certificates: input.certificates || [],
       awardCount: input.awardCount ?? 0,

@@ -42,16 +42,16 @@ class LevelPolicy {
     this.scoreRules = scoreRules;
   }
 
-  // 학습 이력을 입력받아 항목별 점수, 총점(totalScore), 레벨(level)을 계산
+  // history : 소유 자격증, 수상횟수, 프로젝트 수에 대한 => 학습 레벨 도출
   calculate(history = {}) {
-    const rawCerts = Array.isArray(history.certificates)
-      ? history.certificates
-      : typeof history.certificates === 'string' && history.certificates.trim() !== ''
+    const rawCerts = Array.isArray(history.certificates)    // array 인지 확인 -> JS 객체로 사용
+      ? history.certificates    // FE 에서 JSON으로 보내면 .json으로 받으므로 array 형태
+      : typeof history.certificates === 'string' && history.certificates.trim() !== ''  // DB 에선 string으로 오기 때문
       ? history.certificates.split(',').map((c) => c.trim())
       : [];
 
     // 중복 자격증 제거 후 정해진 6종 배점 합산
-    const uniqueCerts = [...new Set(rawCerts.filter(Boolean))];
+    const uniqueCerts = [...new Set(rawCerts.filter(Boolean))]; // 
     const certificateScore = uniqueCerts.reduce((sum, certCode) => {
       const point = this.scoreRules.CERTIFICATES[certCode] ?? 0;
       return sum + point;
