@@ -1,11 +1,15 @@
 ﻿const questionService = require("../services/questionService");
 
-const { sendSuccess } = require("../utils/response");
+
 
 async function list(req, res, next) {
   try {
     const data = await questionService.list(req.query);
-    sendSuccess(res, data);
+    res.status(200).json({
+      success: true,
+      data,
+      message: null
+    });
   } catch (error) {
     next(error);
   }
