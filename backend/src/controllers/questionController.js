@@ -2,14 +2,15 @@
 
 
 
+const { sendSuccess } = require("../utils/response");
+
 async function list(req, res, next) {
   try {
     const data = await questionService.list(req.query);
-    res.status(200).json({
-      success: true,
-      data,
-      message: null
-    });
+    sendSuccess(
+      res,
+      data
+    );
   } catch (error) {
     next(error);
   }
@@ -25,11 +26,12 @@ async function create(req, res, next) {
         req.body
     );
 
-    res.status(201).json({
-      success: true,
+    sendSuccess(
+      res,
       data,
-      message: null
-    });
+      null,
+      201
+    );
   } catch (error) {
     next(error);
   }
@@ -47,11 +49,10 @@ async function detail(req, res, next) {
         id
     );
 
-    res.status(200).json({
-      success: true,
-      data,
-      message: null
-    });
+    sendSuccess(
+      res,
+      data
+    );
   } catch (error) {
     next(error);
   }
@@ -66,11 +67,10 @@ async function edit(req, res, next) {
         req.body
     );
 
-    res.status(200).json({
-      success: true,
-      data,
-      message: null
-    });
+    sendSuccess(
+      res,
+      data
+    );
   } catch (error) {
     next(error);
   }
@@ -85,11 +85,10 @@ async function remove(req, res, next) {
       req.params.id
     );
 
-    res.status(200).json({
-      success: true,
-      data,
-      message: null
-    });
+    sendSuccess(
+      res,
+      data
+    );
   } catch (error) {
     next(error);
   }
