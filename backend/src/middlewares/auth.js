@@ -11,6 +11,7 @@ requireAdmin(req, res, next)
  * - 오류 생성 시 상태 코드 속성은 error.status로 통일한다.
  */
 const jwt = require('jsonwebtoken');
+const AccountService = require('../services/accountService');
 
 function createAuthError(status, message) {
   const error = new Error(message);
@@ -19,7 +20,7 @@ function createAuthError(status, message) {
 }
 
 class AuthMiddleware {
-  constructor(accountService) {
+  constructor(accountService = new AccountService()) {
     this.accountService = accountService;
     this.requireAuth = this.requireAuth.bind(this);
     this.requireAdmin = this.requireAdmin.bind(this);
@@ -89,5 +90,9 @@ class AuthMiddleware {
     }
   }
 }
+// 이 부분 필요한 지 검토
+const defaultAuth = new AuthMiddleware();
+AuthMiddleware.requireAuth = defaultAuth.requireAuth;
+AuthMiddleware.requireAdmin = defaultAuth.requireAdmin;
 
 module.exports = AuthMiddleware;

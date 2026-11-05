@@ -25,7 +25,7 @@ function createServiceError(status, message) {
 }
 
 class AccountService {  // 이 서비스 객체가 생성될 때, DB 와 연동된 repository 가 만들어진다 => repository라는 계층이 하는 일 : DB와 데이터 통신
-  constructor(repository = new AccountRepository, levelPolicy = new LevelPolicy()) {
+  constructor(repository = new AccountRepository(), levelPolicy = new LevelPolicy()) {
     this.repository = repository;
     this.levelPolicy = levelPolicy;
   }
@@ -150,7 +150,7 @@ class AccountService {  // 이 서비스 객체가 생성될 때, DB 와 연동�
     };
   }
 
-  // 인증 미들웨어용 회원 활성 상태 확인 (NFR-008)
+  // 인증 미들웨어용 회원 활성 상태 확인
   async assertActive(userId) {
     if (!userId) {
       throw createServiceError(401, '유효하지 않은 인증 정보입니다.');
@@ -162,7 +162,7 @@ class AccountService {  // 이 서비스 객체가 생성될 때, DB 와 연동�
     }
 
     if (row.status === 'SUSPENDED') {
-      throw createServiceError(403, '운영 정책 위반으로 활동이 정지된 계정입니다.');
+      throw createServiceError(403, '활동이 정지된 계정입니다.');
     }
 
     return {

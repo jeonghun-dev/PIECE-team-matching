@@ -8,8 +8,10 @@
  * - 모든 성공 응답은 { success: true, data, message: null } 형식을 따른다 
  * - 오류는 error.status 속성을 유지하여 next(error)로 공통 에러 미들웨어에 위임한다
  */
+const AccountService = require('../services/accountService');
+
 class AccountController {
-  constructor(service) {
+  constructor(service = new AccountService()) {
     this.service = service;
     this.signup = this.signup.bind(this);
     this.login = this.login.bind(this);

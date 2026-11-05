@@ -1,8 +1,10 @@
 const express = require("express") // Router 사용 위해서.
-const UserValidator = require('../middlewares/userValidator.js');   // 유저 정보 변경 시 검증
+const AccountController = require('../controllers/accountController');
+const AuthMiddleware = require('../middlewares/auth');
+const UserValidator = require('../middlewares/userValidator'); // 유저 정보 변경 시 검증
 
-class AccountRouter {
-  constructor(controller, authMiddleware, userValidator = new UserValidator()) {
+class AccountRouter { // 이 부분 필요한 지 검토
+  constructor(controller = new AccountController(), authMiddleware = new AuthMiddleware(), userValidator = new UserValidator()) {
     this.controller = controller;
     this.authMiddleware = authMiddleware;
     this.userValidator = userValidator;
@@ -57,4 +59,4 @@ class AccountRouter {
   }
 }
 
-module.exports = AccountRouter;
+module.exports = new AccountRouter().register();
