@@ -39,4 +39,134 @@ async function count(keyword) {
   return Number(rows[0].total);
 }
 
-module.exports = { findPage, count };
+// 일반 질문을 저장하고 생성된 질문 번호를 반환하는 함수이다.
+async function save(question) {
+  const [result] = await pool.execute(
+      `
+      INSERT INTO questions (
+        author_id,
+        project_id,
+        title,
+        content
+      )
+      VALUES (?, NULL, ?, ?)
+    `,
+      [
+        question.authorId,
+        question.title,
+        question.content
+      ]
+  );
+
+  return result.insertId;
+}
+
+// 삭제되지 않은 일반 질문 한 건을 조회하는 함수이다.
+async function findById(id) {
+  const [rows] = await pool.execute(
+      `
+      SELECT
+        q.id,
+        q.author_id AS authorId,
+        u.nickname AS authorNickname,
+        q.title,
+        q.content,
+        q.view_count AS viewCount,
+        q.is_solved AS isSolved,
+        q.created_at AS createdAt,
+        q.updated_at AS updatedAt
+      FROM questions q
+      JOIN users u ON u.id = q.author_id
+      WHERE q.id = ?
+        AND q.project_id IS NULL
+        AND q.deleted_at IS NULL
+    `,
+      [
+        id
+      ]
+  );
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return {
+    ...rows[0],
+    isSolved: Boolean(rows[0].isSolved)
+  };
+}
+
+// 삭제되지 않은 일반 질문의 조회수를 1 증가시키는 함수이다.
+async function increaseViewCount(id) {
+  const [result] = await pool.execute(
+      `
+      UPDATE questions
+      SET view_count = view_count + 1
+      WHERE id = ?
+        AND project_id IS NULL
+        AND deleted_at IS NULL
+    `,
+      [
+        id
+      ]
+  );
+
+  return result.affectedRows;
+}
+
+// 작성자가 본인의 일반 질문 제목과 내용을 수정하는 함수이다.
+async function update(id, input) {
+  const [result] = await pool.execute(
+      `
+      UPDATE questions
+      SET
+        title = ?,
+        content = ?
+      WHERE id = ?
+        AND author_id = ?
+        AND project_id IS NULL
+        AND deleted_at IS NULL
+    `,
+      [
+        input.title,
+        input.content,
+        id,
+        input.authorId
+      ]
+  );
+
+  return result.affectedRows;
+}
+
+
+
+
+// 작성자 본인의 일반 질문에 삭제 시각을 기록하는 함수이다.
+async function softDelete(id, authorId) {
+  const [result] = await pool.execute(
+    `
+      UPDATE questions
+      SET deleted_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+        AND author_id = ?
+        AND project_id IS NULL
+        AND deleted_at IS NULL
+    `,
+    [
+      id,
+      authorId
+    ]
+  );
+
+  return result.affectedRows;
+}
+
+module.exports = {
+  findPage,
+  count,
+  save,
+  findById,
+  increaseViewCount,
+  update,
+  softDelete
+};
