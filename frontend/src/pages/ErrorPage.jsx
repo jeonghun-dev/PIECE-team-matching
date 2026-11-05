@@ -1,4 +1,14 @@
 // SCR-24 페이지를 찾을 수 없습니다
-export default function ErrorPage() {
-  return <h1>SCR-24 페이지를 찾을 수 없습니다</h1>;
+import { Link } from 'react-router-dom';
+
+function ErrorPage() {
+  return (
+    <div>
+      <h1>페이지를 찾을 수 없습니다</h1>
+      <p>주소가 잘못되었거나 삭제된 페이지입니다.</p>
+      <Link to="/">메인으로 가기</Link>
+    </div>
+  );
 }
+
+export default ErrorPage;

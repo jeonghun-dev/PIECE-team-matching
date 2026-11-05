@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -21,48 +22,49 @@ import ErrorPage from "./pages/ErrorPage";
 function App() {
   return (
     <Routes>
-      {/* SCR-03 메인 */}
+      {/* 메인 */}
       <Route path="/" element={<HomePage />} />
 
-      {/* SCR-04~06 회원 */}
+      {/* 회원 */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/signup/complete" element={<SignupCompletePage />} />
 
-      {/* SCR-07~10 모집 글 */}
+      {/* 모집 글 */}
       <Route path="/projects" element={<ProjectListPage />} />
-      <Route path="/projects/new" element={<ProjectFormPage />} />
-      <Route path="/projects/:id" element={<ProjectDetailPage />} />
-      <Route path="/projects/:id/edit" element={<ProjectFormPage />} />
-      <Route path="/projects/:id/manage" element={<ProjectManagePage />} />
+      <Route path="/projects/new" element={<ProtectedRoute><ProjectFormPage /></ProtectedRoute>} /> 
+      <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} /> 
+      <Route path="/projects/:id/edit" element={<ProtectedRoute><ProjectFormPage /></ProtectedRoute>} />
+      <Route path="/projects/:id/manage" element={<ProtectedRoute><ProjectManagePage /></ProtectedRoute>} /> 
 
-      {/* SCR-11~13 질문 */}
+
+      {/* 질문 */}
       <Route path="/questions" element={<QuestionListPage />} />
-      <Route path="/questions/new" element={<QuestionFormPage />} />
-      <Route path="/questions/:id" element={<QuestionDetailPage />} />
-      <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
+      <Route path="/questions/new" element={<ProtectedRoute><QuestionFormPage /></ProtectedRoute>} />
+      <Route path="/questions/:id" element={<ProtectedRoute><QuestionDetailPage /></ProtectedRoute>} />
+      <Route path="/questions/:id/edit" element={<ProtectedRoute><QuestionFormPage /></ProtectedRoute>} />
 
-      {/* SCR-14~15 팀원 찾기 */}
-      <Route path="/members" element={<MemberListPage />} />
-      <Route path="/members/:id" element={<MemberDetailPage />} />
+      {/* 팀원 찾기 */}
+      <Route path="/members" element={<ProtectedRoute><MemberListPage /></ProtectedRoute>} />
+      <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
 
-      {/* SCR-16 요청함 (?tab=received / sent) */}
-      <Route path="/requests" element={<InboxPage />} />
+      {/* 요청함 (?tab=received / sent) */}
+      <Route path="/requests" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
 
-      {/* SCR-17~19 마이페이지 */}
+      {/* 마이페이지 */}
       <Route path="/mypage" element={<Navigate to="/mypage/profile" replace />} />
-      <Route path="/mypage/profile" element={<MyPage />} />
-      <Route path="/mypage/teams" element={<MyPage />} />
-      <Route path="/mypage/projects" element={<MyPage />} />
+      <Route path="/mypage/profile" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+      <Route path="/mypage/teams" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+      <Route path="/mypage/projects" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
 
-      {/* SCR-20~23 관리자 */}
-      <Route path="/admin" element={<AdminPage />} />
-      <Route path="/admin/users" element={<AdminPage />} />
-      <Route path="/admin/projects" element={<AdminPage />} />
-      <Route path="/admin/qna" element={<AdminPage />} />
-      <Route path="/admin/reports" element={<AdminPage />} />
+      {/* 관리자 */}
+      <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      <Route path="/admin/projects" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      <Route path="/admin/qna" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      <Route path="/admin/reports" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
 
-      {/* SCR-24 없는 주소 */}
+      {/* 없는 주소 */}
       <Route path="*" element={<ErrorPage />} />
     </Routes>
   );
