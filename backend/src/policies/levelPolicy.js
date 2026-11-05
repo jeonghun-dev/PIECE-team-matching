@@ -51,7 +51,7 @@ class LevelPolicy {
       : [];
 
     // 중복 자격증 제거 후 정해진 6종 배점 합산
-    const uniqueCerts = [...new Set(rawCerts.filter(Boolean))]; // 
+    const uniqueCerts = [...new Set(rawCerts.filter(Boolean))]; // Set : 중복 제거하는, '...' : 스프레드 문법 -> array로 변환
     const certificateScore = uniqueCerts.reduce((sum, certCode) => {
       const point = this.scoreRules.CERTIFICATES[certCode] ?? 0;
       return sum + point;
