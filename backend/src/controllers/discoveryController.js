@@ -1,10 +1,10 @@
 const { getPagination, toPageResponse } = require("../utils/pagination");
-const memberRepository = require("../repositories/memberRepository");
+const discoveryRepository = require("../repositories/discoveryRepository");
 
-async function list(req, res, next) {
+async function membersFor(req, res, next) {
   try {
     const pagination = getPagination(req.query);
-    const { items, totalCount } = await memberRepository.findMembers(
+    const { items, totalCount } = await discoveryRepository.findMembers(
       req.query,
       pagination,
     );
@@ -19,4 +19,4 @@ async function list(req, res, next) {
   }
 }
 
-module.exports = { list };
+module.exports = { membersFor };
