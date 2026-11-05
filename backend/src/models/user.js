@@ -1,66 +1,66 @@
-/*
-필수, 추가 기능: DB snake_case ↔ JS camelCase 변환(fromRow), 
-SET 문자열('ENGINEER,SQLD') ↔ 배열 변환, 
-공개 프로필에서 email·passwordHash 제외
-*/
+/**
+ * User 도메인 모델 (DB: users 테이블 기본 회원 정보)
+ * 담당: 박도영
+ * 구분: 필수, 추가 기능 (회원가입·로그인·인증: 필수 / 회원 상태 및 프로필 연동: 추가 기능)
+ */
+class User {
+  // 필수, 추가 기능: 회원 기본 속성 초기화
+  constructor({
+    id = null,
+    email,
+    nickname,
+    passwordHash,
+    role = 'USER',
+    status = 'ACTIVE',
+    createdAt = null,
+    updatedAt = null,
+  }) {
+    this.id = id;
+    this.email = email;
+    this.nickname = nickname;
+    this.passwordHash = passwordHash;
+    this.role = role; // 'USER' | 'ADMIN'
+    this.status = status; // 'ACTIVE' | 'SUSPENDED'
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
 
-// 아래 방식을 sequelize 방식에서 mysql2/primise방식으로 변경해야함. 
+  // 필수, 추가 기능: DB row(snake_case)를 User 모델(camelCase)로 변환
+  static fromRow(row) {
+    if (!row) return null;
+    return new User({
+      id: row.id,
+      email: row.email,
+      nickname: row.nickname,
+      passwordHash: row.password_hash ?? row.passwordHash,
+      role: row.role || 'USER',
+      status: row.status || 'ACTIVE',
+      createdAt: row.created_at ?? row.createdAt ?? null,
+      updatedAt: row.updated_at ?? row.updatedAt ?? null,
+    });
+  }
 
-// // 모델 호출
-// const {DataTypes} = require("sequelize");   // 기본적으로 connection pool로 관리. createPool도 내부적으로 하고있다.
-// const sequelize = require("../config/database");
+  // 필수: 본인 정보 응답 직렬화 (passwordHash 제외)
+  toMeJSON() {
+    return {
+      id: this.id,
+      email: this.email,
+      nickname: this.nickname,
+      role: this.role,
+      status: this.status,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
 
-// const User = sequelize.define(  //DB의 'users' 테이블 구조를 JS 객체 형태로 
-//     "users",    // Sequelize 모델 이름. 다른 Sequelize 와 (1:N)관계를 맺을 때 사용. 구분하기 편하게 DB와 이름을 맞췄다.
-//     {
-//         id: {
-//             type: DataTypes.BIGINT,
-//             primaryKey: true,
-//             autoIncrement: true,
-//             allowNull: false,   // PK 에는 필요하지 않지만, 가독성을 위해 추가함
-//         },
-//         email: {
-//             type: DataTypes.STRING(100),
-//             unique: true,
-//             allowNull: false,
-//         },
-//         nickname: {
-//             type: DataTypes.STRING(30),
-//             unique: true,
-//             allowNull: false,
-//         },
-//         password_hash: {
-//             type: DataTypes.STRING(255),
-//             allowNull: false,
-//         },
-//         role: {
-//             type: DataTypes.ENUM('USER','ADMIN'),
-//             allowNull: false,
-//             defaultValue: 'USER',
-//         },
-//         status: {
-//             type: DataTypes.ENUM('ACTIVE', 'SUSPENDED'),
-//             defaultValue: 'ACTIVE',
-//             allowNull: false,
-//         },
-//         createdAt: {
-//             type: DataTypes.DATE,
-//             allowNull: false,
-//             field: "created_at" // 생성일("created_at")을 적는 기능. 필드가 없어도 괜찮다고하나 가독성 위해 남김
-//         },
-//         updatedAt: {
-//             type: DataTypes.DATE,
-//             allowNull: false,
-//             field: "updated_at", // 수정일("updated_at")을 적는 기능. 필드가 없어도 괜찮다고하나 가독성 위해 남김
-//         },
-//         updatedAt: {
-//         },
-//     },
-//     {
-//         tableName: "users",
-//         timestamps: true,   // createAt과 updatedAt에 필요하지않을까?
-//         underscored: true,  // (js의) camelCase 표기법을 자동으로 snake_case표기법으로 바꿔준다.
-//     }
-// );
+  // 추가 기능: 타 사용자 공개 프로필 응답 직렬화 (NFR-050: email, passwordHash 제외)
+  toPublicJSON() {
+    return {
+      id: this.id,
+      nickname: this.nickname,
+      createdAt: this.createdAt,
+    };
+  }
+}
 
-// module.exports = User;
+module.exports = User;

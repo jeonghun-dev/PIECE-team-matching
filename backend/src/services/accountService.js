@@ -46,10 +46,10 @@ class AccountService {
       throw createServiceError(409, '이미 사용 중인 닉네임입니다.');
     }
 
-    // 2. 필수: bcrypt 비밀번호 해시 (NFR-001)
+    // 2. 필수: bcrypt 비밀번호 해시
     const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);    // 비밀번호 암호화 후 저장 예정
 
-    // 3. 추가 기능: 학습 이력 기반 점수·레벨 계산
+    // 3. 추가 기능: 학습 이력 기반 점수/레벨 계산
     const levelResult = this.levelPolicy.calculate({
       certificates: input.certificates || [],
       awardCount: input.awardCount ?? 0,
