@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
 const discoveryRouter = require("./routes/discoveryRouter");
+const accountRouter = require("./routes/accountRouter");
 const projectRouter = require("./routes/projectRouter");
 const questionRouter = require("./routes/questionRouter");
 
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/members", discoveryRouter);
+app.use("/api",accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/questions", questionRouter);
 
