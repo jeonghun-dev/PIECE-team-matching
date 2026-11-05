@@ -12,6 +12,7 @@ async function findByQuestionId(questionId) {
             a.updated_at,
             u.nickname AS author_nickname,
             u.level AS author_level,
+            u.total_score AS author_score,
             a.is_accepted
         FROM answers a
         JOIN users u ON u.id = a.author_id
