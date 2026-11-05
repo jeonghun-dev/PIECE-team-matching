@@ -5,6 +5,8 @@ const express = require("express");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
 const discoveryRouter = require("./routes/discoveryRouter");
+const accountRouter = require("./routes/accountRouter");
+const projectRouter = require("./routes/projectRouter");
 const questionRouter = require("./routes/questionRouter");
 
 //2.웹 앱 초기화
@@ -23,6 +25,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/members", discoveryRouter);
+app.use("/api",accountRouter);
+app.use("/api/projects", projectRouter);
 app.use("/api/questions", questionRouter);
 
 app.use(notFound); // 404 Not Found 처리 미들웨어
