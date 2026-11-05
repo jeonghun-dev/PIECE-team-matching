@@ -13,6 +13,7 @@ async function list(req, resp, next) {
       updatedAt: answer.updated_at,
       authorNickname: answer.author_nickname,
       authorLevel: answer.author_level,
+      authorScore: Number(answer.author_score),
       isAccepted: Number(answer.is_accepted) === 1,
     }));
 
