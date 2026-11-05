@@ -4,20 +4,7 @@ SET 문자열('ENGINEER,SQLD') ↔ 배열 변환,
 공개 프로필에서 email·passwordHash 제외
 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// 아래 방식을 sequelize 방식에서 mysql2/primise방식으로 변경해야함. 
 
 // // 모델 호출
 // const {DataTypes} = require("sequelize");   // 기본적으로 connection pool로 관리. createPool도 내부적으로 하고있다.
