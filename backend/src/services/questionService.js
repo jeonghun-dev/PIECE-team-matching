@@ -67,6 +67,46 @@ async function create(actor, input) {
   };
 }
 
+// 모집 글에 질문을 등록한다.
+async function createForProject(actor, projectId, input) {
+  if (!actor || !actor.id) {
+    const error = new Error("로그인이 필요합니다.");
+    error.status = 401;
+    throw error;
+  }
+
+  if (
+      typeof projectId !== "string" ||
+      !/^[1-9]\d*$/.test(projectId) ||
+      !Number.isSafeInteger(Number(projectId))
+  ) {
+    badRequest("모집 글 번호는 유효한 양의 정수여야 합니다.");
+  }
+
+  const numericProjectId = Number(projectId);
+  const questionInput = validateQuestionInput(input);
+
+  const projectExists = await questionRepository.existsProject(
+      numericProjectId
+  );
+
+  if (!projectExists) {
+    const error = new Error("모집 글을 찾을 수 없습니다.");
+    error.status = 404;
+    throw error;
+  }
+
+  const questionId = await questionRepository.saveForProject({
+    authorId: actor.id,
+    projectId: numericProjectId,
+    title: questionInput.title,
+    content: questionInput.content
+  });
+
+  return {
+    id: questionId
+  };
+}
 
 
 async function list(query) {
@@ -238,6 +278,7 @@ async function remove(actor, id) {
 }
 
 module.exports = {
+  createForProject,
   list,
   create,
   detail,
