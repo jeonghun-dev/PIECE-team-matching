@@ -1,7 +1,7 @@
 
 // 모집 글 저장 + 작성자를 팀원(LEADER)으로 등록
 // tx: Service에서 연 트랜잭션 연결
-const { REQUEST_STATUS } = require("../constants");
+const { REQUEST_STATUS, PROJECT_STATUS } = require("../constants");
 
 const save = async (tx, project) => {
   const [result] = await tx.query(
@@ -108,6 +108,17 @@ const cancelPendingRequests = async (tx, projectId) => {
   return result.affectedRows;
 };
 
+// 정원 충족 시 모집 완료로 변경
+const close = async (tx, id) => {
+  const [result] = await tx.query(
+    `UPDATE projects
+        SET status = ?
+      WHERE id = ? AND deleted_at IS NULL`,
+    [PROJECT_STATUS.CLOSED, id]
+  );
+
+  return result.affectedRows;
+};
 module.exports = {
   save,
   findByIdForUpdate,
@@ -115,4 +126,5 @@ module.exports = {
   update,
   softDelete,
   cancelPendingRequests,
+  close
 };

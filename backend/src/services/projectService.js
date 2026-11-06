@@ -171,6 +171,13 @@ const edit = async (actor, id, input) => {
         }
 
         await projectRepository.update(tx, projectId, project);
+
+        // 정원이 다 찼으면 모집 완료 하고 대기 요청 취소
+        if (project.capacity === memberCount) {
+            await projectRepository.close(tx, projectId);
+            await projectRepository.cancelPendingRequests(tx, projectId);
+        }
+
         await tx.commit();
         return { id: projectId };
     } catch (error) {
