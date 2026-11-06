@@ -8,6 +8,8 @@ const discoveryRouter = require("./routes/discoveryRouter");
 const accountRouter = require("./routes/accountRouter");
 const projectRouter = require("./routes/projectRouter");
 const questionRouter = require("./routes/questionRouter");
+const createAnswerRouter = require("./routes/answerRouter");
+const { requireAuth } = require("./middlewares/auth");
 
 //2.웹 앱 초기화
 const app = express();
@@ -21,18 +23,19 @@ app.use(express.json());
 
 //4. 기본 테스트 URL 라우팅
 app.get("/", (req, res) => {
-    res.send("Express 서버 실행 중");
+  res.send("Express 서버 실행 중");
 });
 
 app.use("/api/members", discoveryRouter);
-app.use("/api",accountRouter);
+app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/questions", questionRouter);
+app.use("/api", createAnswerRouter(requireAuth));
 
 app.use(notFound); // 404 Not Found 처리 미들웨어
 app.use(errorHandler); // 모든 에러 처리 미들웨어
 
 // 5. 서버 실행
 app.listen(PORT, () => {
-    console.log(`http://${HOST}:${PORT} 서버가 실행 중입니다.`);
+  console.log(`http://${HOST}:${PORT} 서버가 실행 중입니다.`);
 });
