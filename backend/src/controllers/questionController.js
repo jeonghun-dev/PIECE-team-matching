@@ -94,7 +94,22 @@ async function remove(req, res, next) {
   }
 }
 
+async function createForProject(req, res, next) {
+  try {
+    const data = await questionService.createForProject(
+        req.user,
+        req.params.projectId,
+        req.body
+    );
+    sendSuccess(res,data,null,201);
+  } catch(error) {
+    next(error);
+  }
+}
+
+
 module.exports = {
+  createForProject,
   list,
   create,
   detail,
