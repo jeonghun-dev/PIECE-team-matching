@@ -504,7 +504,7 @@ function ProfileTab() {
         {/* 포트폴리오 URL (단일 입력) */}
         <div className="profile-form__field">
           <label htmlFor="profile-portfolio-url" className="profile-form__label">
-            포트폴리오 URL
+            GitHUB URL
           </label>
           <input
             id="profile-portfolio-url"

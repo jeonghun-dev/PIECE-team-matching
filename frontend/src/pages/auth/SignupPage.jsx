@@ -1,7 +1,7 @@
 // SCR-05 회원가입 (박도영)
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import client from '../../api/client';
+import { signupApi } from '../../api/auth';
 
 const CERTIFICATE_OPTIONS = [
   { code: 'ENGINEER', label: '정보처리기사', pointText: '+2점' },
@@ -136,9 +136,13 @@ function SignupPage() {
       return;
     }
 
-    if (trimmedPortfolioUrl && !URL_REGEX.test(trimmedPortfolioUrl)) {
+    // 변경 후 (500자 길이 제한 추가)
+    if (
+      trimmedPortfolioUrl &&
+      (trimmedPortfolioUrl.length > 500 || !URL_REGEX.test(trimmedPortfolioUrl))
+    ) {
       setErrorMessage(
-        '포트폴리오 URL은 http:// 또는 https://로 시작하는 주소여야 합니다.'
+        '포트폴리오 URL은 http:// 또는 https://로 시작하는 500자 이하 주소여야 합니다.'
       );
       return;
     }
@@ -152,7 +156,7 @@ function SignupPage() {
 
     setSubmitting(true);
     try {
-      const resp = await client.post('/auth/signup', {
+      const resp = await signupApi({
         nickname: trimmedNickname,
         email: trimmedEmail,
         password,
