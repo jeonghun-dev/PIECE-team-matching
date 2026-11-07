@@ -12,8 +12,8 @@ import ProjectManagePage from "./pages/project/ProjectManagePage";
 import QuestionListPage from "./pages/question/QuestionListPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
-import MemberListPage from "./pages/member/MemberListPage";
-import MemberDetailPage from "./pages/member/MemberDetailPage";
+import MemberList from "./pages/member/MemberListPage";
+import MemberDetail from "./pages/member/MemberDetailPage";
 import InboxPage from "./pages/inbox/InboxPage";
 import MyPage from "./pages/mypage/MyPage";
 import AdminPage from "./pages/admin/AdminPage";
@@ -45,8 +45,8 @@ function App() {
       <Route path="/questions/:id/edit" element={<ProtectedRoute><QuestionFormPage /></ProtectedRoute>} />
 
       {/* 팀원 찾기 */}
-      <Route path="/members" element={<ProtectedRoute><MemberListPage /></ProtectedRoute>} />
-      <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
+      <Route path="/members" element={<ProtectedRoute><MemberList /></ProtectedRoute>} />
+      <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
 
       {/* 요청함 (?tab=received / sent) */}
       <Route path="/requests" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />

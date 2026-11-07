@@ -1,8 +1,8 @@
 const express = require("express");
 const discoveryController = require("../controllers/discoveryController");
 
-const router = express.Router();
+function register(router) {
+  router.get("/", discoveryController.membersFor);
+}
 
-router.get("/", discoveryController.membersFor);
-
-module.exports = router;
+module.exports = { register };

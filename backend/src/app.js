@@ -4,7 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
-const discoveryRouter = require("./routes/discoveryRouter");
+const { register: registerDiscoveryRouter } = require("./routes/discoveryRouter");
 const accountRouter = require("./routes/accountRouter");
 const projectRouter = require("./routes/projectRouter");
 const questionRouter = require("./routes/questionRouter");
@@ -13,6 +13,8 @@ const { requireAuth } = require("./middlewares/auth");
 
 //2.웹 앱 초기화
 const app = express();
+const discoveryRouter = express.Router();
+registerDiscoveryRouter(discoveryRouter);
 
 const HOST = "localhost";
 const PORT = process.env.PORT || 3000;
