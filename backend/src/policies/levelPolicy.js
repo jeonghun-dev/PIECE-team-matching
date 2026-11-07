@@ -37,54 +37,48 @@ const SCORE_RULES = Object.freeze({
   }),
 });
 
-class LevelPolicy {
-  constructor(scoreRules = SCORE_RULES) {
-    this.scoreRules = scoreRules;
-  }
 
-  // history : 소유 자격증, 수상횟수, 프로젝트 수에 대한 => 학습 레벨 도출
-  calculate(history = {}) {
-    const rawCerts = Array.isArray(history.certificates)    // array 인지 확인 -> JS 객체로 사용
-      ? history.certificates    // FE 에서 JSON으로 보내면 .json으로 받으므로 array 형태
-      : typeof history.certificates === 'string' && history.certificates.trim() !== ''  // DB 에선 string으로 오기 때문
+// history : 소유 자격증, 수상횟수, 프로젝트 수에 대한 => 학습 레벨 도출
+const calculate = (history = {}) => {
+  const rawCerts = Array.isArray(history.certificates)    // array 인지 확인 -> JS 객체로 사용
+    ? history.certificates    // FE 에서 JSON으로 보내면 .json으로 받으므로 array 형태
+    : typeof history.certificates === 'string' && history.certificates.trim() !== ''  // DB 에선 string으로 오기 때문
       ? history.certificates.split(',').map((c) => c.trim())
       : [];
 
-    // 중복 자격증 제거 후 정해진 6종 배점 합산
-    const uniqueCerts = [...new Set(rawCerts.filter(Boolean))]; // Set : 중복 제거하는, '...' : 스프레드 문법 -> array로 변환
-    const certificateScore = uniqueCerts.reduce((sum, certCode) => {
-      const point = this.scoreRules.CERTIFICATES[certCode] ?? 0;
-      return sum + point;
-    }, 0);
+  // 중복 자격증 제거 후 정해진 6종 배점 합산
+  const uniqueCerts = [...new Set(rawCerts.filter(Boolean))]; // Set : 중복 제거하는, '...' : 스프레드 문법 -> array로 변환
+  const certificateScore = uniqueCerts.reduce((sum, certCode) => {
+    const point = SCORE_RULES.CERTIFICATES[certCode] ?? 0;
+    return sum + point;
+  }, 0);
 
-    const awardCount = Math.max(0, Number.parseInt(history.awardCount ?? 0, 10) || 0);
-    const projectCount = Math.max(0, Number.parseInt(history.projectCount ?? 0, 10) || 0);
+  const awardCount = Math.max(0, Number.parseInt(history.awardCount ?? 0, 10) || 0);
+  const projectCount = Math.max(0, Number.parseInt(history.projectCount ?? 0, 10) || 0);
 
-    const awardScore = awardCount * this.scoreRules.AWARD_UNIT_SCORE;
-    const cappedProjects = Math.min(projectCount, this.scoreRules.MAX_PROJECT_COUNT_FOR_SCORE);
-    const projectScore = cappedProjects * this.scoreRules.PROJECT_UNIT_SCORE;
+  const awardScore = awardCount * SCORE_RULES.AWARD_UNIT_SCORE;
+  const cappedProjects = Math.min(projectCount, SCORE_RULES.MAX_PROJECT_COUNT_FOR_SCORE);
+  const projectScore = cappedProjects * SCORE_RULES.PROJECT_UNIT_SCORE;
 
-    const totalScore = Number((certificateScore + awardScore + projectScore).toFixed(1));
+  const totalScore = Number((certificateScore + awardScore + projectScore).toFixed(1));
 
-    let level = 'STARTER';
-    if (totalScore >= this.scoreRules.LEVEL_THRESHOLDS.ACHIEVER_MIN) {
-      level = 'ACHIEVER';
-    } else if (totalScore >= this.scoreRules.LEVEL_THRESHOLDS.BUILDER_MIN) {
-      level = 'BUILDER';
-    }
-
-    return {
-      certificates: uniqueCerts,
-      awardCount,
-      projectCount,
-      certificateScore: Number(certificateScore.toFixed(1)),
-      awardScore: Number(awardScore.toFixed(1)),
-      projectScore: Number(projectScore.toFixed(1)),
-      totalScore,
-      level,
-    };
+  let level = 'STARTER';
+  if (totalScore >= SCORE_RULES.LEVEL_THRESHOLDS.ACHIEVER_MIN) {
+    level = 'ACHIEVER';
+  } else if (totalScore >= SCORE_RULES.LEVEL_THRESHOLDS.BUILDER_MIN) {
+    level = 'BUILDER';
   }
+
+  return {
+    certificates: uniqueCerts,
+    awardCount,
+    projectCount,
+    certificateScore: Number(certificateScore.toFixed(1)),
+    awardScore: Number(awardScore.toFixed(1)),
+    projectScore: Number(projectScore.toFixed(1)),
+    totalScore,
+    level,
+  };
 }
 
-module.exports = LevelPolicy;
-module.exports.SCORE_RULES = SCORE_RULES;
+module.exports = { calculate, SCORE_RULES };
