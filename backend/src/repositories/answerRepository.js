@@ -189,6 +189,7 @@ async function acceptIfOpen(answerId, authorId) {
             a.is_accepted = 1
         WHERE a.id = ?
             AND q.author_id = ?
+            AND a.author_id <> q.author_id
             AND q.is_solved = 0
             AND q.deleted_at IS NULL
             AND a.deleted_at IS NULL

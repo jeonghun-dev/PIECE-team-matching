@@ -142,7 +142,9 @@ export default function AnswerList({
             const canAcceptAnswer =
               currentUserId != null &&
               questionAuthorId != null &&
+              answer.authorId != null &&
               Number(currentUserId) === Number(questionAuthorId) &&
+              !isAuthor &&
               !isSolved &&
               !answer.isAccepted;
 

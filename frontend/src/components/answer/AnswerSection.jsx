@@ -5,7 +5,7 @@ import {
   updateAnswer,
   deleteAnswer,
   acceptAnswer,
-} from "../../api/answerApi";
+} from "../../api/answersApi";
 import { useAuth } from "../../hooks/useAuth";
 import AnswerList from "./AnswerList";
 import AnswerForm from "./AnswerForm";
