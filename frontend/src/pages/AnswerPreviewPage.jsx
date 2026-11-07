@@ -5,6 +5,7 @@ import AnswerForm from "../components/answer/AnswerForm";
 const sampleAnswers = [
   {
     id: 1,
+    authorId: 1,
     authorNickname: "테스트팀장",
     authorLevel: "BUILDER",
     authorScore: 6,
