@@ -6,6 +6,7 @@ export default function AnswerList({
   currentUserId = null,
   questionAuthorId = null,
   isSolved = false,
+  isMutating = false,
   onUpdateAnswer,
   onDeleteAnswer,
   onAcceptAnswer,
@@ -15,7 +16,8 @@ export default function AnswerList({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
-  const isBusy = isSaving || isDeleting || isAccepting;
+  const [actionAnswerId, setActionAnswerId] = useState(null);
+  const isBusy = isSaving || isDeleting || isAccepting || isMutating;
 
   // 답변 수정 시작
   function handleEdit(answer) {
@@ -54,6 +56,7 @@ export default function AnswerList({
     } catch (error) {
       window.alert(
         error.response?.data?.message ||
+          error.message ||
           "답변 수정에 실패했습니다. 다시 시도해 주세요.",
       );
     } finally {
@@ -72,7 +75,7 @@ export default function AnswerList({
     if (!confirmed) {
       return;
     }
-
+    setActionAnswerId(answerId);
     setIsDeleting(true);
 
     try {
@@ -80,6 +83,7 @@ export default function AnswerList({
     } catch (error) {
       window.alert(
         error.response?.data?.message ||
+          error.message ||
           "답변 삭제에 실패했습니다. 다시 시도해 주세요.",
       );
     } finally {
@@ -100,7 +104,7 @@ export default function AnswerList({
     if (!confirmed) {
       return;
     }
-
+    setActionAnswerId(answerId);
     setIsAccepting(true);
 
     try {
@@ -108,6 +112,7 @@ export default function AnswerList({
     } catch (error) {
       window.alert(
         error.response?.data?.message ||
+          error.message ||
           "답변 채택에 실패했습니다. 다시 시도해 주세요.",
       );
     } finally {
@@ -187,7 +192,9 @@ export default function AnswerList({
                       className="answer-card__accept"
                       onClick={() => handleAccept(answer.id)}
                     >
-                      답변 채택
+                      {isAccepting && actionAnswerId === answer.id
+                        ? "채택 중..."
+                        : "답변 채택"}
                     </button>
                   </div>
                 )}
@@ -234,7 +241,9 @@ export default function AnswerList({
                             className="answer-card__delete"
                             onClick={() => handleDelete(answer.id)}
                           >
-                            삭제
+                            {isDeleting && actionAnswerId === answer.id
+                              ? "삭제 중..."
+                              : "삭제"}
                           </button>
                         )}
                       </>

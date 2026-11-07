@@ -33,6 +33,7 @@ export default function AnswerForm({ onSubmit, isSubmitting = false }) {
       // 실패하면 작성한 내용은 유지
       setErrorMessage(
         error.response?.data?.message ||
+          error.message ||
           "답변 등록에 실패했습니다. 다시 시도해 주세요.",
       );
     } finally {
