@@ -61,6 +61,50 @@ async function save(question) {
   return result.insertId;
 }
 
+//모집 글 질문을 저장하는 함수
+
+async function saveForProject(question) {
+  const [result] = await pool.execute(
+   `  
+      INSERT INTO questions (
+          author_id,
+          project_id,
+          title,
+          content
+      )
+      VALUES(?,?,?,?)
+      `,
+  [
+      question.authorId,
+      question.projectId,
+      question.title,
+      question.content
+
+  ]
+
+  );
+  return result.insertId;
+}
+
+// 삭제되지 않은 모집 글이 존재하는지 확인한다.
+async function existsProject(projectId){
+  const[rows] = await pool.execute(
+      `
+      SELECT id
+      FROM projects
+      WHERE id = ?
+        AND deleted_at IS NULL
+      
+      `,
+      [projectId]
+  );
+  return rows.length >0;
+}
+
+
+
+
+
 // 삭제되지 않은 일반 질문 한 건을 조회하는 함수이다.
 async function findById(id) {
   const [rows] = await pool.execute(
@@ -162,6 +206,8 @@ async function softDelete(id, authorId) {
 }
 
 module.exports = {
+  existsProject,
+  saveForProject,
   findPage,
   count,
   save,
