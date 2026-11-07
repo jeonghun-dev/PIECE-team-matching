@@ -8,6 +8,12 @@ const router = express.Router();
 // 모집 글 등록
 router.post("/", AuthMiddleware.requireAuth, projectController.publish);
 
+// 모집 글 질문 목록 조회
+router.get(
+    "/:projectId/questions",
+    AuthMiddleware.requireAuth,
+    questionController.listForProject
+);
 
 //모집 글에 질문 등록
 router.post(
