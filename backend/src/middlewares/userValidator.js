@@ -3,17 +3,10 @@ validateSignupInput(...)
 validateLoginInput(...)
 validateProfileInput(...)
 */
-
-const ALLOWED_COLLABORATION_MODES = ['ONLINE', 'OFFLINE', 'ANY'];   // 협업 방식
-const ALLOWED_ACTIVE_TIMES = ['WEEKDAY_DAY', 'WEEKDAY_NIGHT', 'WEEKEND_AM', 'WEEKEND_PM']; // 활동 시간
-const ALLOWED_CERTIFICATES = [  // 자격증 목록
-  'ENGINEER',
-  'INDUSTRIAL',
-  'SQLD',
-  'LINUX',
-  'PROGRAMMING',
-  'ADSP',
-];
+const { COLLABORATION_MODE, ACTIVE_TIME, CERTIFICATE } = require("../constants");
+const ALLOWED_COLLABORATION_MODES = Object.values(COLLABORATION_MODE);// 협업 방식
+const ALLOWED_ACTIVE_TIMES = Object.values(ACTIVE_TIME);// 활동 시간
+const ALLOWED_CERTIFICATES = Object.values(CERTIFICATE);// 자격증 목록
 
 // 정규표현식
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,11 +54,11 @@ function validateProfileAndHistoryFields(body, { isSignup = false } = {}) { // �
 
   // 주요 활동 시간 (4종 중 1개 이상 선택)
   // const A = B ? C : D ? E : []; : B가 false면 D, D가 false면 [].
-  const parsedActiveTimes = Array.isArray(activeTimes) 
+  const parsedActiveTimes = Array.isArray(activeTimes)
     ? activeTimes   // 배열이 있다면, 그 값 그대로
     : typeof activeTimes === 'string' && activeTimes.trim() !== ''  // 없다면, string에 공백없는지 = 값은 있다
-    ? activeTimes.split(',').map((t) => t.trim())   // 배열로 만들기
-    : [];   // 그 외 상황은 빈 배열
+      ? activeTimes.split(',').map((t) => t.trim())   // 배열로 만들기
+      : [];   // 그 외 상황은 빈 배열
 
   if (parsedActiveTimes.length === 0) {
     throw createValidationError('주요 활동 시간을 최소 1개 이상 선택해야 합니다.');
@@ -105,11 +98,11 @@ function validateProfileAndHistoryFields(body, { isSignup = false } = {}) { // �
     const certList = Array.isArray(certificates)
       ? certificates
       : typeof certificates === 'string'
-      ? certificates
+        ? certificates
           .split(',')
           .map((c) => c.trim())
           .filter(Boolean)
-      : null;
+        : null;
 
     if (!certList) {
       throw createValidationError('보유 자격증 형식이 올바르지 않습니다.');
@@ -151,106 +144,111 @@ function validateProfileAndHistoryFields(body, { isSignup = false } = {}) { // �
   }
 }
 
-class UserValidator {
-  // 회원가입 입력값 검증 미들웨어
-  validateSignupInput(req, res, next) {
-    try {
-      const {
-        email,
-        nickname,
-        password,
-        passwordConfirm,
-        termsAgreed,
-        privacyAgreed,
-      } = req.body || {};
+// 회원가입 입력값 검증 미들웨어
+const validateSignupInput = (req, res, next) => {
+  try {
+    // 기존 로직 동일
 
-      // 이메일 검증
-      if (
-        !email ||
-        typeof email !== 'string' ||
-        email.trim().length > 100 ||
-        !EMAIL_REGEX.test(email.trim())
-      ) {
-        throw createValidationError('유효한 이메일 주소를 입력해주세요. (최대 100자)');
-      }
+    const {
+      email,
+      nickname,
+      password,
+      passwordConfirm,
+      termsAgreed,
+      privacyAgreed,
+    } = req.body || {};
 
-      // 닉네임 검증
-      if (
-        !nickname ||
-        typeof nickname !== 'string' ||
-        !NICKNAME_REGEX.test(nickname.trim())
-      ) {
-        throw createValidationError(
-          '닉네임은 2~30자의 한글, 영문, 숫자, 밑줄(_), 하이픈(-)만 사용할 수 있습니다.'
-        );
-      }
-
-      // 비밀번호 검증
-      if (!password || typeof password !== 'string' || !PASSWORD_REGEX.test(password)) {
-        throw createValidationError(
-          '비밀번호는 영문, 숫자, 특수문자를 모두 포함하여 8자 이상이어야 합니다.'
-        );
-      }
-
-      // 비밀번호 확인 일치 검증
-      if (password !== passwordConfirm) {
-        throw createValidationError('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
-      }
-
-      // 필수 약관 동의 검증 (서비스 이용약관, 개인정보 수집·이용)
-      if (!termsAgreed || !privacyAgreed) {
-        throw createValidationError(
-          '서비스 이용약관 및 개인정보 수집·이용에 모두 동의해야 가입할 수 있습니다.'
-        );
-      }
-
-      // 초기 프로필 및 학습 이력 입력값 검증
-      validateProfileAndHistoryFields(req.body, { isSignup: true });
-
-      return next();
-    } catch (error) {
-      return next(error);
+    // 이메일 검증
+    if (
+      !email ||
+      typeof email !== 'string' ||
+      email.trim().length > 100 ||
+      !EMAIL_REGEX.test(email.trim())
+    ) {
+      throw createValidationError('유효한 이메일 주소를 입력해주세요. (최대 100자)');
     }
-  }
 
-  // 로그인 입력값 검증 미들웨어 (REQ-USR-002, NFR-017)
-  validateLoginInput(req, res, next) {
-    try {
-      const { email, password } = req.body || {};
-
-      if (!email || typeof email !== 'string' || !email.trim()) {
-        throw createValidationError('이메일을 입력해주세요.');
-      }
-      if (!EMAIL_REGEX.test(email.trim())) {
-        throw createValidationError('올바른 이메일 형식을 입력해주세요.');
-      }
-      if (!password || typeof password !== 'string' || !password.trim()) {
-        throw createValidationError('비밀번호를 입력해주세요.');
-      }
-
-      return next();
-    } catch (error) {
-      return next(error);
+    // 닉네임 검증
+    if (
+      !nickname ||
+      typeof nickname !== 'string' ||
+      !NICKNAME_REGEX.test(nickname.trim())
+    ) {
+      throw createValidationError(
+        '닉네임은 2~30자의 한글, 영문, 숫자, 밑줄(_), 하이픈(-)만 사용할 수 있습니다.'
+      );
     }
-  }
 
-  // 내 프로필 및 학습 이력 수정 입력값 검증 미들웨어
-  validateProfileInput(req, res, next) {
-    try {
-      if (!req.body || typeof req.body !== 'object') {
-        throw createValidationError('수정할 프로필 데이터를 입력해주세요.');
-      }
-
-      validateProfileAndHistoryFields(req.body, { isSignup: false });
-
-      return next();
-    } catch (error) {
-      return next(error);
+    // 비밀번호 검증
+    if (!password || typeof password !== 'string' || !PASSWORD_REGEX.test(password)) {
+      throw createValidationError(
+        '비밀번호는 영문, 숫자, 특수문자를 모두 포함하여 8자 이상이어야 합니다.'
+      );
     }
-  }
-}
 
-module.exports = UserValidator;
-module.exports.ALLOWED_COLLABORATION_MODES = ALLOWED_COLLABORATION_MODES;   // 상수를 가져오기 위해서. 
-module.exports.ALLOWED_ACTIVE_TIMES = ALLOWED_ACTIVE_TIMES;
-module.exports.ALLOWED_CERTIFICATES = ALLOWED_CERTIFICATES;
+    // 비밀번호 확인 일치 검증
+    if (password !== passwordConfirm) {
+      throw createValidationError('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+    }
+
+    // 필수 약관 동의 검증 (서비스 이용약관, 개인정보 수집·이용)
+    if (!termsAgreed || !privacyAgreed) {
+      throw createValidationError(
+        '서비스 이용약관 및 개인정보 수집·이용에 모두 동의해야 가입할 수 있습니다.'
+      );
+    }
+
+    // 초기 프로필 및 학습 이력 입력값 검증
+    validateProfileAndHistoryFields(req.body, { isSignup: true });
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 로그인 입력값 검증 미들웨어 (REQ-USR-002, NFR-017)
+const validateLoginInput = (req, res, next) => {
+  try {
+    // 기존 로직 동일
+    const { email, password } = req.body || {};
+
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      throw createValidationError('이메일을 입력해주세요.');
+    }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      throw createValidationError('올바른 이메일 형식을 입력해주세요.');
+    }
+    if (!password || typeof password !== 'string' || !password.trim()) {
+      throw createValidationError('비밀번호를 입력해주세요.');
+    }
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 내 프로필 및 학습 이력 수정 입력값 검증 미들웨어
+const validateProfileInput = (req, res, next) => {
+  try {
+    // 기존 로직 동일
+
+    if (!req.body || typeof req.body !== 'object') {
+      throw createValidationError('수정할 프로필 데이터를 입력해주세요.');
+    }
+
+    validateProfileAndHistoryFields(req.body, { isSignup: false });
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = {
+  validateSignupInput,
+  validateLoginInput,
+  validateProfileInput,
+  ALLOWED_COLLABORATION_MODES,
+  ALLOWED_ACTIVE_TIMES,
+  ALLOWED_CERTIFICATES,
+};

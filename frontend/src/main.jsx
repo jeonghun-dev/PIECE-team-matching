@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./components/common/AuthProvider.jsx";
 
-import "./styles/colors.css"; //공통 색상 변수
-import "./styles/tokens.css"; //공통 크기, 간격 변수
+import "./styles/colors.css";
+import "./styles/tokens.css";
 import "./index.css";
 import App from "./App.jsx";
 

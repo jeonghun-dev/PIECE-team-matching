@@ -101,7 +101,33 @@ async function existsProject(projectId){
   return rows.length >0;
 }
 
+// 해당 모집 글의 삭제되지 않은 질문을 최신순으로 조회한다.
+async function findByProjectId(projectId) {
+    const [rows] = await pool.execute(
+        `
+      SELECT
+        q.id,
+        q.project_id AS projectId,
+        q.author_id AS authorId,
+        u.nickname AS authorNickname,
+        q.title,
+        q.content,
+        q.is_solved AS isSolved,
+        q.created_at AS createdAt
+      FROM questions q
+      JOIN users u ON u.id = q.author_id
+      WHERE q.project_id = ?
+        AND q.deleted_at IS NULL
+      ORDER BY q.created_at DESC, q.id DESC
+    `,
+        [projectId]
+    );
 
+    return rows.map((row) => ({
+        ...row,
+        isSolved: Boolean(row.isSolved)
+    }));
+}
 
 
 
@@ -206,6 +232,7 @@ async function softDelete(id, authorId) {
 }
 
 module.exports = {
+    findByProjectId,
   existsProject,
   saveForProject,
   findPage,
