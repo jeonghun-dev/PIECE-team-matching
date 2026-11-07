@@ -1,0 +1,92 @@
+/* 공통 상단 메뉴 */
+
+.header {
+    background-color: var(--color-surface);
+    border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    max-width: var(--content-max-width);
+    min-height: var(--header-min-height);
+    margin: 0 auto;
+    padding: 0 var(--space-5);
+    box-sizing: border-box;
+}
+
+.header__logo {
+    font-size: var(--font-size-section-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+/* 공통 메뉴 */
+.header__nav {
+    display: flex;
+    gap: var(--space-5);
+    flex: 1;
+}
+
+.header__menu {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.header__menu:hover,
+.header__menu--active {
+    color: var(--color-primary);
+}
+
+/* 오른쪽 영역 */
+.header__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.header__user {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    text-decoration: none;
+    padding: 0 var(--space-2);
+}
+
+/* 버튼  */
+.header__button {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-height-sm);
+    padding: 0 var(--button-padding-x-sm);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.header__button--primary {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-text-on-solid);
+}
+
+.header__button--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* 키보드 포커스 */
+.header a:focus-visible,
+.header button:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
