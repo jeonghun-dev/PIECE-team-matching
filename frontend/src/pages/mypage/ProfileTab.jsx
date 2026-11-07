@@ -13,7 +13,7 @@ export default function MyPage() {
 */
 // SCR-17 마이페이지 - 기술 프로필 및 학습 이력 탭 (박도영)
 import { useEffect, useState, useCallback } from 'react';
-import client from '../../api/client';
+import { getMeApi, updateProfileApi } from '../../api/auth';
 import './ProfileTab.css';
 
 const CERTIFICATE_OPTIONS = [
@@ -92,6 +92,7 @@ function ProfileTab() {
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [urlError, setUrlError] = useState('');
 
   // 계정 기본 정보 (읽기 전용)
   const [email, setEmail] = useState('');
@@ -181,7 +182,7 @@ function ProfileTab() {
     setLoading(true);
     setFetchError('');
     try {
-      const resp = await client.get('/users/me');
+      const resp = await getMeApi();
       applyUserData(resp.data.data);
     } catch (error) {
       const message =
@@ -251,6 +252,7 @@ function ProfileTab() {
     if (e) e.preventDefault();
     setValidationError('');
     setSuccessMessage('');
+    setUrlError('');
 
     const trimmedIntro = intro.trim();
     const trimmedUrl = portfolioUrl.trim();
@@ -283,7 +285,7 @@ function ProfileTab() {
 
     setSaving(true);
     try {
-      const resp = await client.put('/users/me', {
+      const resp = await updateProfileApi({
         intro: trimmedIntro || null,
         collaborationMode,
         activeTimes,

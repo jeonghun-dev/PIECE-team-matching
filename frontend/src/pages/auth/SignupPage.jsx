@@ -59,6 +59,7 @@ function SignupPage() {
   const [emailError, setEmailError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
   const allAgreed = termsAgreed && privacyAgreed;
 
@@ -96,6 +97,7 @@ function SignupPage() {
     setNicknameError('');
     setEmailError('');
     setErrorMessage('');
+    setUrlError('');
 
     const trimmedNickname = nickname.trim();
     const trimmedEmail = email.trim();
@@ -157,7 +159,7 @@ function SignupPage() {
 
     setSubmitting(true);
     try {
-      const resp = await client.post('/auth/signup', {
+      const resp = await post('/auth/signup', {
         nickname: trimmedNickname,
         email: trimmedEmail,
         password,
