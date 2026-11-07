@@ -28,7 +28,7 @@ const ACTIVE_TIME_OPTIONS = [
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_REGEX = /^[가-힣a-zA-Z0-9_-]{2,30}$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
-const URL_REGEX = /^https?:\/\/.+/i;
+const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -136,15 +136,16 @@ function SignupPage() {
       return;
     }
 
-    // 변경 후 (500자 길이 제한 추가)
-    if (
-      trimmedPortfolioUrl &&
-      (trimmedPortfolioUrl.length > 500 || !URL_REGEX.test(trimmedPortfolioUrl))
-    ) {
-      setErrorMessage(
-        '포트폴리오 URL은 http:// 또는 https://로 시작하는 500자 이하 주소여야 합니다.'
-      );
-      return;
+    // 변경 후 (500자 길이 제한 추가) 포트폴리오 URL 검증
+    if (trimmedPortfolioUrl) {
+      if (trimmedPortfolioUrl.length > 500) {
+        setUrlError('포트폴리오 URL은 500자 이하로 입력해 주세요.');
+        return;
+      }
+      if (!URL_REGEX.test(trimmedPortfolioUrl)) {
+        setUrlError('깃허브 링크 주소만 입력할 수 있습니다.');
+        return;
+      }
     }
 
     if (!termsAgreed || !privacyAgreed) {
@@ -156,7 +157,7 @@ function SignupPage() {
 
     setSubmitting(true);
     try {
-      const resp = await signupApi({
+      const resp = await client.post('/auth/signup', {
         nickname: trimmedNickname,
         email: trimmedEmail,
         password,
@@ -462,6 +463,7 @@ function SignupPage() {
               placeholder="https://github.com/username 또는 포트폴리오 주소"
               style={{ width: '100%', marginTop: '8px' }}
             />
+            {urlError && <p style={{ color: 'red', marginTop: '4px' }}>{urlError}</p>}
           </div>
         </section>
 

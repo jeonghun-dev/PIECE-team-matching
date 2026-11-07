@@ -38,7 +38,7 @@ const ACTIVE_TIME_OPTIONS = [
   { code: 'WEEKEND_PM', label: '주말 저녁' },
 ];
 
-const URL_REGEX = /^https?:\/\/.+/i;
+const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 const MAX_INTRO_LENGTH = 200;
 const MAX_PROJECT_COUNT = 3;
 const MAX_BAR_SCORE = 10;
@@ -230,19 +230,19 @@ function ProfileTab() {
     ),
     ...(awardCount > 0
       ? [
-          {
-            label: `대회 수상 ${awardCount}회`,
-            scoreText: `+${formatScore(preview.awardScore)}점`,
-          },
-        ]
+        {
+          label: `대회 수상 ${awardCount}회`,
+          scoreText: `+${formatScore(preview.awardScore)}점`,
+        },
+      ]
       : []),
     ...(projectCount > 0
       ? [
-          {
-            label: `프로젝트 완료 ${projectCount}개`,
-            scoreText: `+${formatScore(preview.projectScore)}점`,
-          },
-        ]
+        {
+          label: `프로젝트 완료 ${projectCount}개`,
+          scoreText: `+${formatScore(preview.projectScore)}점`,
+        },
+      ]
       : []),
   ];
 
@@ -270,11 +270,15 @@ function ProfileTab() {
       return;
     }
 
-    if (trimmedUrl && (trimmedUrl.length > 500 || !URL_REGEX.test(trimmedUrl))) {
-      setValidationError(
-        '포트폴리오 URL은 http:// 또는 https://로 시작하는 500자 이하 주소여야 합니다.'
-      );
-      return;
+    if (trimmedUrl) {
+      if (trimmedUrl.length > 500) {
+        setUrlError('포트폴리오 URL은 500자 이하로 입력해 주세요.');
+        return;
+      }
+      if (!URL_REGEX.test(trimmedUrl)) {
+        setUrlError('깃허브 링크 주소만 입력할 수 있습니다.');
+        return;
+      }
     }
 
     setSaving(true);
@@ -442,9 +446,8 @@ function ProfileTab() {
                     type="button"
                     role="radio"
                     aria-checked={isSelected}
-                    className={`profile-chip ${
-                      isSelected ? 'profile-chip--active' : ''
-                    }`}
+                    className={`profile-chip ${isSelected ? 'profile-chip--active' : ''
+                      }`}
                     onClick={() => {
                       setCollaborationMode(option.code);
                       setSuccessMessage('');
@@ -467,9 +470,8 @@ function ProfileTab() {
                     key={option.code}
                     type="button"
                     aria-pressed={isSelected}
-                    className={`profile-chip ${
-                      isSelected ? 'profile-chip--active' : ''
-                    }`}
+                    className={`profile-chip ${isSelected ? 'profile-chip--active' : ''
+                      }`}
                     onClick={() => handleToggleActiveTime(option.code)}
                   >
                     {option.label}
@@ -517,6 +519,7 @@ function ProfileTab() {
             }}
             placeholder="https://github.com/username 또는 포트폴리오 주소"
           />
+          {urlError && <p style={{ color: 'red', marginTop: '4px' }}>{urlError}</p>}
         </div>
       </section>
 
@@ -551,9 +554,8 @@ function ProfileTab() {
                   return (
                     <label
                       key={cert.code}
-                      className={`cert-item ${
-                        isChecked ? 'cert-item--checked' : ''
-                      }`}
+                      className={`cert-item ${isChecked ? 'cert-item--checked' : ''
+                        }`}
                     >
                       <span className="cert-item__left">
                         <input
