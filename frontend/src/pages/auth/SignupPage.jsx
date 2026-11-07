@@ -21,7 +21,8 @@ const COLLABORATION_OPTIONS = [
 const ACTIVE_TIME_OPTIONS = [
   { code: 'WEEKDAY_DAY', label: '평일 낮' },
   { code: 'WEEKDAY_NIGHT', label: '평일 저녁' },
-  { code: 'WEEKEND_AM', label: '주말' },
+  { code: 'WEEKEND_AM', label: '주말 낮' },
+  { code: 'WEEKEND_PM', label: '주말 저녁' },
 ];
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,9 +48,7 @@ function SignupPage() {
   const [collaborationMode, setCollaborationMode] = useState('ONLINE');
   const [activeTimes, setActiveTimes] = useState(['WEEKDAY_NIGHT']);
   const [lookingForTeam, setLookingForTeam] = useState(true);
-  const [portfolioItems, setPortfolioItems] = useState([
-    { type: 'GitHub', url: '' },
-  ]);
+  const [portfolioUrl, setPortfolioUrl] = useState('');
 
   // 4. 약관 동의
   const [termsAgreed, setTermsAgreed] = useState(false);
@@ -77,17 +76,6 @@ function SignupPage() {
     );
   };
 
-  // 포트폴리오 URL 입력 변경 및 추가
-  const handlePortfolioChange = (index, field, value) => {
-    setPortfolioItems((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, [field]: value } : item))
-    );
-  };
-
-  const handleAddPortfolioUrl = () => {
-    setPortfolioItems((prev) => [...prev, { type: 'GitHub', url: '' }]);
-  };
-
   // 전체 동의 토글
   const handleToggleAllAgreed = (checked) => {
     setTermsAgreed(checked);
@@ -96,7 +84,7 @@ function SignupPage() {
 
   // 점수 표시 계산
   const awardScore = awardCount * 3;
-  const projectScore = Math.min(projectCount, 3) * 1.5;
+  const projectScore = projectCount * 1.5;
 
   const isPasswordMatch =
     password.length > 0 &&
@@ -111,8 +99,7 @@ function SignupPage() {
 
     const trimmedNickname = nickname.trim();
     const trimmedEmail = email.trim();
-    const firstPortfolioUrl =
-      portfolioItems.map((item) => item.url.trim()).find((url) => url !== '') || '';
+    const trimmedPortfolioUrl = portfolioUrl.trim();
 
     // 프론트 입력 검증
     if (!trimmedNickname || !NICKNAME_REGEX.test(trimmedNickname)) {
@@ -149,7 +136,7 @@ function SignupPage() {
       return;
     }
 
-    if (firstPortfolioUrl && !URL_REGEX.test(firstPortfolioUrl)) {
+    if (trimmedPortfolioUrl && !URL_REGEX.test(trimmedPortfolioUrl)) {
       setErrorMessage(
         '포트폴리오 URL은 http:// 또는 https://로 시작하는 주소여야 합니다.'
       );
@@ -176,7 +163,7 @@ function SignupPage() {
         collaborationMode,
         activeTimes,
         lookingForTeam,
-        portfolioUrl: firstPortfolioUrl || null,
+        portfolioUrl: trimmedPortfolioUrl || null,
         termsAgreed,
         privacyAgreed,
       });
@@ -372,13 +359,13 @@ function SignupPage() {
                 <span>{projectCount}개</span>
                 <button
                   type="button"
-                  onClick={() => setProjectCount((prev) => prev + 1)}
+                  onClick={() => setProjectCount((prev) => Math.min(3, prev + 1))}
                 >
                   +
                 </button>
                 <span>+{projectScore}점</span>
               </div>
-              <p>1개당 1.5점 (최대 4.5점)</p>
+              <p>1개당 1.5점 (최대 3개, 4.5점)</p>
             </div>
           </div>
         </section>
@@ -414,7 +401,7 @@ function SignupPage() {
 
             <div style={{ flex: 1 }}>
               <label>주요 활동 시간 *</label>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
                 {ACTIVE_TIME_OPTIONS.map((option) => {
                   const selected = activeTimes.includes(option.code);
                   return (
@@ -461,39 +448,16 @@ function SignupPage() {
           <br />
 
           <div>
-            <label>포트폴리오 URL</label>
-            {portfolioItems.map((item, idx) => (
-              <div
-                key={idx}
-                style={{ display: 'flex', gap: '8px', marginTop: '8px' }}
-              >
-                <select
-                  value={item.type}
-                  onChange={(e) =>
-                    handlePortfolioChange(idx, 'type', e.target.value)
-                  }
-                >
-                  <option value="GitHub">GitHub</option>
-                  <option value="Notion">Notion</option>
-                  <option value="Blog">Blog</option>
-                  <option value="기타">기타</option>
-                </select>
-                <input
-                  type="url"
-                  value={item.url}
-                  onChange={(e) =>
-                    handlePortfolioChange(idx, 'url', e.target.value)
-                  }
-                  placeholder="https://github.com/username"
-                  style={{ flex: 1 }}
-                />
-              </div>
-            ))}
-            <div style={{ marginTop: '8px' }}>
-              <button type="button" onClick={handleAddPortfolioUrl}>
-                + URL 추가
-              </button>
-            </div>
+            <label htmlFor="portfolioUrl">포트폴리오 URL</label>
+            <br />
+            <input
+              id="portfolioUrl"
+              type="url"
+              value={portfolioUrl}
+              onChange={(e) => setPortfolioUrl(e.target.value)}
+              placeholder="https://github.com/username 또는 포트폴리오 주소"
+              style={{ width: '100%', marginTop: '8px' }}
+            />
           </div>
         </section>
 
