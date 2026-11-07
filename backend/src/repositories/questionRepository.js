@@ -61,6 +61,76 @@ async function save(question) {
   return result.insertId;
 }
 
+//모집 글 질문을 저장하는 함수
+
+async function saveForProject(question) {
+  const [result] = await pool.execute(
+   `  
+      INSERT INTO questions (
+          author_id,
+          project_id,
+          title,
+          content
+      )
+      VALUES(?,?,?,?)
+      `,
+  [
+      question.authorId,
+      question.projectId,
+      question.title,
+      question.content
+
+  ]
+
+  );
+  return result.insertId;
+}
+
+// 삭제되지 않은 모집 글이 존재하는지 확인한다.
+async function existsProject(projectId){
+  const[rows] = await pool.execute(
+      `
+      SELECT id
+      FROM projects
+      WHERE id = ?
+        AND deleted_at IS NULL
+      
+      `,
+      [projectId]
+  );
+  return rows.length >0;
+}
+
+// 해당 모집 글의 삭제되지 않은 질문을 최신순으로 조회한다.
+async function findByProjectId(projectId) {
+    const [rows] = await pool.execute(
+        `
+      SELECT
+        q.id,
+        q.project_id AS projectId,
+        q.author_id AS authorId,
+        u.nickname AS authorNickname,
+        q.title,
+        q.content,
+        q.is_solved AS isSolved,
+        q.created_at AS createdAt
+      FROM questions q
+      JOIN users u ON u.id = q.author_id
+      WHERE q.project_id = ?
+        AND q.deleted_at IS NULL
+      ORDER BY q.created_at DESC, q.id DESC
+    `,
+        [projectId]
+    );
+
+    return rows.map((row) => ({
+        ...row,
+        isSolved: Boolean(row.isSolved)
+    }));
+}
+
+
+
 // 삭제되지 않은 일반 질문 한 건을 조회하는 함수이다.
 async function findById(id) {
   const [rows] = await pool.execute(
@@ -162,6 +232,9 @@ async function softDelete(id, authorId) {
 }
 
 module.exports = {
+    findByProjectId,
+  existsProject,
+  saveForProject,
   findPage,
   count,
   save,

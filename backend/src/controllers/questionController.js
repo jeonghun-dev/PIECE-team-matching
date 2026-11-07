@@ -94,7 +94,40 @@ async function remove(req, res, next) {
   }
 }
 
+async function createForProject(req, res, next) {
+  try {
+    const data = await questionService.createForProject(
+        req.user,
+        req.params.projectId,
+        req.body
+    );
+    sendSuccess(res,data,null,201);
+  } catch(error) {
+    next(error);
+  }
+}
+
+// 모집 글에 달린 질문 목록을 응답한다.
+async function listForProject(req, res, next) {
+  try {
+    const data = await questionService.listForProject(
+        req.user,
+        req.params.projectId
+    );
+
+    sendSuccess(res, data);
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+
+
+
 module.exports = {
+  listForProject,
+  createForProject,
   list,
   create,
   detail,

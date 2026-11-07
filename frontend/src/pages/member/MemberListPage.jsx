@@ -8,14 +8,20 @@ import {
   MemberShell,
 } from "./MemberUI";
 import {
+  ACTIVE_TIME,
+  ACTIVE_TIME_OPTIONS,
+  COLLABORATION_MODE,
+  COLLABORATION_OPTIONS,
+  LEVEL,
+  LEVEL_OPTIONS,
+} from "../../constants";
+import {
   certificateLabels,
   activeTimeLabels,
   collaborationLabels,
   members,
 } from "./memberData";
 import "./MemberPages.css";
-
-const levelLabels = ["STARTER", "BUILDER", "ACHIEVER"];
 
 function MemberCard({ member }) {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -71,9 +77,9 @@ function MemberCard({ member }) {
 }
 
 export default function MemberList() {
-  const [levels, setLevels] = useState(["BUILDER"]);
-  const [collaborationMode, setCollaborationMode] = useState("ONLINE");
-  const [activeTime, setActiveTime] = useState("WEEKDAY_NIGHT");
+  const [levels, setLevels] = useState([LEVEL.BUILDER]);
+  const [collaborationMode, setCollaborationMode] = useState(COLLABORATION_MODE.ONLINE);
+  const [activeTime, setActiveTime] = useState(ACTIVE_TIME.WEEKDAY_NIGHT);
   const [sortOrder, setSortOrder] = useState("recent");
   const [appliedFilters, setAppliedFilters] = useState({
     levels: [],
@@ -127,7 +133,7 @@ export default function MemberList() {
           <fieldset className="filter-group filter-group--levels">
             <legend>레벨</legend>
             <div className="filter-options">
-              {levelLabels.map((level) => (
+              {LEVEL_OPTIONS.map(({ code: level, label }) => (
                 <button
                   className={`filter-chip${levels.includes(level) ? " is-active" : ""}`}
                   key={level}
@@ -135,7 +141,7 @@ export default function MemberList() {
                   type="button"
                   aria-pressed={levels.includes(level)}
                 >
-                  {level}
+                  {label}
                 </button>
               ))}
             </div>
@@ -144,7 +150,7 @@ export default function MemberList() {
           <fieldset className="filter-group">
             <legend>협업 방식</legend>
             <div className="filter-options">
-              {Object.entries(collaborationLabels).map(([mode, label]) => (
+              {COLLABORATION_OPTIONS.map(({ code: mode, label }) => (
                 <button
                   className={`filter-chip${collaborationMode === mode ? " is-active" : ""}`}
                   key={mode}
@@ -162,7 +168,7 @@ export default function MemberList() {
             <span className="filter-label">주요 활동 시간</span>
             <select value={activeTime} onChange={(event) => setActiveTime(event.target.value)}>
               <option value="">전체 시간</option>
-              {Object.entries(activeTimeLabels).map(([time, label]) => (
+              {ACTIVE_TIME_OPTIONS.map(({ code: time, label }) => (
                 <option key={time} value={time}>{label}</option>
               ))}
             </select>

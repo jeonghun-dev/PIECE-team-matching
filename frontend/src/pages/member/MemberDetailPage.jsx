@@ -18,7 +18,7 @@ import "./MemberPages.css";
 export default function MemberDetail() {
   const { id } = useParams();
   const member = members.find((item) => item.id === Number(id));
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false); 
 
   if (!member) {
     return (
@@ -77,7 +77,7 @@ export default function MemberDetail() {
                 <span>총 {member.totalScore}점 · {member.level}</span>
               </div>
               <ul className="learning-history">
-                {member.certificates.map((certificate) => (
+                {member.certificates.map((certificate) => ( 
                   <li key={certificate}>
                     <span className="learning-history__icon" aria-hidden="true">
                       🏅
