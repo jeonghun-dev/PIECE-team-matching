@@ -15,11 +15,10 @@ function AuthProvider({ children }) {
                 setLoading(false);
                 return;
             }
-
             try {
                 const resp = await client.get("/users/me");
                 setUser(resp.data.data);
-            } catch (error) {
+            } catch {
                 localStorage.removeItem("token");
             } finally {
                 setLoading(false);
