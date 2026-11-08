@@ -543,7 +543,7 @@ function ProfileTab() {
             className="profile-card__save-btn"
             disabled={saving}
           >
-            {saving ? '저장 중…' : '이력 저장'}
+            {saving ? '저장 중…' : '저장하기'}
           </button>
         </div>
 
@@ -711,17 +711,6 @@ function ProfileTab() {
               )}
             </ul>
           </aside>
-        </div>
-
-        {/* 우측 하단 변경사항 저장 버튼 */}
-        <div className="profile-card__footer-actions">
-          <button
-            type="submit"
-            className="profile-card__save-btn profile-card__save-btn--lg"
-            disabled={saving}
-          >
-            {saving ? '저장 중…' : '변경사항 저장'}
-          </button>
         </div>
       </section>
     </form>
