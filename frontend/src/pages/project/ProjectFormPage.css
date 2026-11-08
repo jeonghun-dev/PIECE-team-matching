@@ -371,3 +371,25 @@ textarea.project-form__input {
         align-items: flex-start;
     }
 }
+
+/* 수정 모드: 불러오는 중 / 실패 / 수정 불가 안내 */
+.project-form-page__notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-7) var(--space-5);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Link를 버튼 모양으로 쓸 때 */
+a.project-form__button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}

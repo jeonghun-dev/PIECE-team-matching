@@ -1,8 +1,9 @@
-// SCR-08 모집 글 작성/수정
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { createProject } from "../../api/projects";
-import { LEVEL_OPTIONS, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS } from "../../constants";
+// 모집 글 작성/수정
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { createProject, getProject, updateProject } from "../../api/projects";
+import { useAuth } from "../../hooks/useAuth";
+import { LEVEL_OPTIONS, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS, PROJECT_STATUS } from "../../constants";
 import "./ProjectFormPage.css";
 
 // 모집 정원 범위 
@@ -37,8 +38,34 @@ const getToday = () => {
     return `${year}-${month}-${day}`;
 };
 
-// 입력값 검사 - 오류가 있는 항목만 메시지를 담아 반환
-const validate = (project) => {
+// 서버 날짜 값을 date input 형식 'YYYY-MM-DD'로 변환 / 브라우저 기준으로 변환
+const toDateInput = (value) => {
+    if (!value) {
+        return "";
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+    }
+    const date = new Date(value);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+// 서버 활동 시간 값을 배열로 변환
+const toTimeArray = (value) => {
+    if (Array.isArray(value)) {
+        return value;
+    }
+    if (!value) {
+        return [];
+    }
+    return value.split(",");
+};
+
+// 입력값 검사
+const validate = (project, minCapacity = MIN_CAPACITY) => {
     const errors = {};
 
     // 프로젝트 명: 필수, 100자 이하
@@ -51,6 +78,8 @@ const validate = (project) => {
     // 모집 인원: 2~5명
     if (project.capacity < MIN_CAPACITY || project.capacity > MAX_CAPACITY) {
         errors.capacity = "모집 인원은 작성자 포함 2~5명으로 선택해 주세요.";
+    } else if (project.capacity < minCapacity) {
+        errors.capacity = `현재 팀원 수(${minCapacity}명)보다 적게 줄일 수 없습니다.`;
     }
 
     // 모집 마감일: 필수, 오늘 이후 
@@ -92,14 +121,80 @@ const validate = (project) => {
 
 function ProjectFormPage() {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const { user } = useAuth();
 
-    // 1. 상태: 입력값, 항목별 오류, 서버 오류, 등록 중 여부
+    // 주소에 id가 있으면 수정 모드
+    const isEdit = id !== undefined;
+    const modeText = isEdit ? "수정" : "작성";
+    const submitText = isEdit ? "수정하기" : "등록하기";
+    const submittingText = isEdit ? "수정 중…" : "등록 중…";
+
+    // 상태: 입력값, 항목별 오류, 서버 오류, 등록 중 여부
     const [project, setProject] = useState(emptyProject);
     const [errors, setErrors] = useState({});
     const [serverError, setServerError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // 2. 일반 입력칸 (input, textarea, 라디오 - 학습 수준·진행 방식)
+    // 수정 모드 전용 상태: 불러오기 중, 불러오기 실패, 다시 시도 횟수, 글 정보
+    const [isLoading, setIsLoading] = useState(isEdit);
+    const [loadError, setLoadError] = useState("");
+    const [reloadKey, setReloadKey] = useState(0);
+    const [authorId, setAuthorId] = useState(null);
+    const [status, setStatus] = useState("");
+    const [minCapacity, setMinCapacity] = useState(MIN_CAPACITY);
+
+    // 수정 모드: 기존 모집 글 불러오기
+    useEffect(() => {
+        if (!isEdit) {
+            return;
+        }
+
+        const loadProject = async () => {
+            try {
+                const res = await getProject(id);
+                const data = res.data.data;
+
+                // 입력칸에 기존 값 채우기 (서버 요청 본문과 같은 이름만)
+                setProject({
+                    title: data.title,
+                    content: data.content,
+                    meetingMethod: data.meetingMethod,
+                    targetLevel: data.targetLevel,
+                    capacity: data.capacity,
+                    progressMode: data.progressMode,
+                    activeTimes: toTimeArray(data.activeTimes),
+                    deadline: toDateInput(data.deadline),
+                });
+                setAuthorId(data.authorId);
+                setStatus(data.status);
+
+                // 현재 팀원 수보다 정원을 줄일 수 없음 (NFR-026)
+                if (data.memberCount) {
+                    setMinCapacity(Math.max(MIN_CAPACITY, data.memberCount));
+                }
+            } catch (error) {
+                let message = "모집 글을 불러오지 못했습니다.";
+                if (error.response && error.response.data && error.response.data.message) {
+                    message = error.response.data.message;
+                }
+                setLoadError(message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadProject();
+    }, [isEdit, id, reloadKey]);
+
+    // 불러오기 다시 시도
+    const handleReload = () => {
+        setLoadError("");
+        setIsLoading(true);
+        setReloadKey(reloadKey + 1);
+    };
+
+    // 일반 입력칸 (input, textarea, 라디오 - 학습 수준·진행 방식)
     const handleChange = (e) => {
         const { name, value } = e.target;
         const nextProject = { ...project, [name]: value };
@@ -107,22 +202,22 @@ function ProjectFormPage() {
 
         // 이미 오류가 표시된 항목은 고치는 즉시 다시 검사 (NFR-011)
         if (errors[name]) {
-            setErrors({ ...errors, [name]: validate(nextProject)[name] });
+            setErrors({ ...errors, [name]: validate(nextProject, minCapacity)[name] });
         }
     };
 
-    // 3. 모집 인원 - / + 버튼
+    // 모집 인원 - / + 버튼
     const handleCapacity = (step) => {
         const nextCapacity = project.capacity + step;
 
-        if (nextCapacity < MIN_CAPACITY || nextCapacity > MAX_CAPACITY) {
+        if (nextCapacity < minCapacity || nextCapacity > MAX_CAPACITY) {
             return;
         }
 
         setProject({ ...project, capacity: nextCapacity });
     };
 
-    // 4. 주요 활동 시간 (여러 개 선택)
+    // 주요 활동 시간 (여러 개 선택)
     const handleTimeChange = (e) => {
         const { value, checked } = e.target;
         let nextTimes;
@@ -138,11 +233,11 @@ function ProjectFormPage() {
 
         // 이미 오류가 표시돼 있으면 고치는 즉시 다시 검사
         if (errors.activeTimes) {
-            setErrors({ ...errors, activeTimes: validate(nextProject).activeTimes });
+            setErrors({ ...errors, activeTimes: validate(nextProject,minCapacity).activeTimes });
         }
     };
 
-    // 5. 등록
+    // 등록
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -151,7 +246,7 @@ function ProjectFormPage() {
         }
 
         // 제출 전 전체 검사
-        const nextErrors = validate(project);
+        const nextErrors = validate(project,minCapacity);
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) {
             return;
@@ -160,17 +255,24 @@ function ProjectFormPage() {
         setServerError("");
         setIsSubmitting(true);
 
-        try {
-            const res = await createProject({
-                ...project,
-                title: project.title.trim(),
-            });
+        const data = {
+            ...project,
+            title: project.title.trim(),
+        };
 
-            // 등록된 모집 글 상세로 이동
-            navigate(`/projects/${res.data.data.id}`);
+        try {
+            if (isEdit) {
+                // 수정: 기존 글 변경 후 그 글 상세로 이동
+                await updateProject(id, data);
+                navigate(`/projects/${id}`);
+            } else {
+                // 작성: 새 글 등록 후 새 글 상세로 이동
+                const res = await createProject(data);
+                navigate(`/projects/${res.data.data.id}`);
+            }
         } catch (error) {
             // 실패하면 입력 내용은 그대로 두고 서버 메시지 표시
-            let message = "모집 글 등록에 실패했습니다. 다시 시도해 주세요.";
+             let message = isEdit ? "모집 글 수정에 실패했습니다. 다시 시도해 주세요." : "모집 글 등록에 실패했습니다. 다시 시도해 주세요.";
             if (error.response && error.response.data && error.response.data.message) {
                 message = error.response.data.message;
             }
@@ -180,15 +282,57 @@ function ProjectFormPage() {
         }
     };
 
+     if (isEdit && isLoading) {
+        return (
+            <main className="project-form-page">
+                <p className="project-form-page__notice">모집 글을 불러오는 중입니다.</p>
+            </main>
+        );
+    }
+
+    if (isEdit && loadError) {
+        return (
+            <main className="project-form-page">
+                <div className="project-form-page__notice" role="alert">
+                    <p>{loadError}</p>
+                    <button type="button" className="project-form__button project-form__button--primary" onClick={handleReload}>
+                        다시 시도
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    // 작성자 본인만 / 모집완료 글은 수정 불가
+    let blockMessage = "";
+    if (isEdit && user && String(user.id) !== String(authorId)) {
+        blockMessage = "작성자만 모집 글을 수정할 수 있습니다.";
+    } else if (isEdit && status === PROJECT_STATUS.CLOSED) {
+        blockMessage = "모집완료된 글은 수정할 수 없습니다.";
+    }
+
+    if (blockMessage) {
+        return (
+            <main className="project-form-page">
+                <div className="project-form-page__notice" role="alert">
+                    <p>{blockMessage}</p>
+                    <Link className="project-form__button project-form__button--primary" to={`/projects/${id}`}>
+                        모집 글로 돌아가기
+                    </Link>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className="project-form-page">
             {/* 상단: 경로 + 제목 + 버튼 */}
             <div className="project-form-page__head">
                 <div>
                     <p className="project-form-page__breadcrumb">
-                        <Link to="/projects">모집 게시판</Link> › 모집 글 작성
+                        <Link to="/projects">모집 게시판</Link> › 모집 글 {modeText}
                     </p>
-                    <h1 className="project-form-page__title">프로젝트 모집 글 작성</h1>
+                    <h1 className="project-form-page__title">프로젝트 모집 글 {modeText}</h1>
                 </div>
 
                 <div className="project-form-page__actions">
@@ -202,7 +346,7 @@ function ProjectFormPage() {
                         className="project-form__button project-form__button--primary"
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? "등록 중…" : "등록하기"}
+                        {isSubmitting ? submittingText : submitText}
                     </button>
                 </div>
             </div>
@@ -246,7 +390,7 @@ function ProjectFormPage() {
                                     type="button"
                                     className="project-form__step-button"
                                     onClick={() => handleCapacity(-1)}
-                                    disabled={project.capacity <= MIN_CAPACITY}
+                                    disabled={project.capacity <= minCapacity}
                                     aria-label="모집 인원 줄이기"
                                 >
                                     −
