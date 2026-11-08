@@ -10,6 +10,7 @@ const projectRouter = require("./routes/projectRouter");
 const recruitmentRouter = require("./routes/recruitmentRouter");
 const questionRouter = require("./routes/questionRouter");
 const createAnswerRouter = require("./routes/answerRouter");
+const moderationRouter = require("./routes/moderationRouter");
 const { requireAuth } = require("./middlewares/auth");
 const { startDeadlineJob } = require("./jobs/deadlineJob");
 
@@ -34,6 +35,7 @@ app.use("/api/projects", projectRouter);
 app.use("/api", recruitmentRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api", createAnswerRouter(requireAuth));
+app.use("/api", moderationRouter);
 
 app.use(notFound); // 404 Not Found 처리 미들웨어
 app.use(errorHandler); // 모든 에러 처리 미들웨어
