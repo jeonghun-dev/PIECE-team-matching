@@ -3,64 +3,74 @@
  * 담당: 박도영
  * 구분: 필수, 추가 기능 (회원가입·로그인·인증: 필수 / 회원 상태 및 프로필 연동: 추가 기능)
  */
-class User {
-  // 필수, 추가 기능: 회원 기본 속성 초기화
-  constructor({
-    id = null,
+
+// 본인 정보 응답 직렬화 (passwordHash 제외)
+const toMeJSON = (user) => ({
+  id: user.id,
+  email: user.email,
+  nickname: user.nickname,
+  role: user.role,
+  status: user.status,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
+
+// 타 사용자 공개 프로필 응답 직렬화 (NFR-050: email, passwordHash 제외)
+const toPublicJSON = (user) => ({
+  id: user.id,
+  nickname: user.nickname,
+  createdAt: user.createdAt,
+});
+
+// 회원 객체 팩토리 함수
+const createUser = ({
+  id = null,
+  email,
+  nickname,
+  passwordHash,
+  role = 'USER',
+  status = 'ACTIVE',
+  createdAt = null,
+  updatedAt = null,
+}) => {
+  const user = {
+    id,
     email,
     nickname,
     passwordHash,
-    role = 'USER',
-    status = 'ACTIVE',
-    createdAt = null,
-    updatedAt = null,
-  }) {
-    this.id = id;
-    this.email = email;
-    this.nickname = nickname;
-    this.passwordHash = passwordHash;
-    this.role = role; // 'USER' | 'ADMIN'
-    this.status = status; // 'ACTIVE' | 'SUSPENDED'
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-  }
+    role, // 'USER' | 'ADMIN'
+    status, // 'ACTIVE' | 'SUSPENDED'
+    createdAt,
+    updatedAt,
+    // 기존 객체 메서드 호출 호환
+    toMeJSON() {
+      return toMeJSON(this);
+    },
+    toPublicJSON() {
+      return toPublicJSON(this);
+    },
+  };
+  return user;
+};
 
-  // 필수, 추가 기능: DB row(snake_case)를 User 모델(camelCase)로 변환
-  static fromRow(row) {
-    if (!row) return null;
-    return new User({
-      id: row.id,
-      email: row.email,
-      nickname: row.nickname,
-      passwordHash: row.password_hash ?? row.passwordHash,
-      role: row.role || 'USER',
-      status: row.status || 'ACTIVE',
-      createdAt: row.created_at ?? row.createdAt ?? null,
-      updatedAt: row.updated_at ?? row.updatedAt ?? null,
-    });
-  }
+// DB row(snake_case)를 User 모델(camelCase)로 변환
+const fromRow = (row) => {
+  if (!row) return null;
+  return createUser({
+    id: row.id,
+    email: row.email,
+    nickname: row.nickname,
+    passwordHash: row.password_hash ?? row.passwordHash,
+    role: row.role || 'USER',
+    status: row.status || 'ACTIVE',
+    createdAt: row.created_at ?? row.createdAt ?? null,
+    updatedAt: row.updated_at ?? row.updatedAt ?? null,
+  });
+};
 
-  // 필수: 본인 정보 응답 직렬화 (passwordHash 제외)
-  toMeJSON() {
-    return {
-      id: this.id,
-      email: this.email,
-      nickname: this.nickname,
-      role: this.role,
-      status: this.status,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-
-  // 추가 기능: 타 사용자 공개 프로필 응답 직렬화 (NFR-050: email, passwordHash 제외)
-  toPublicJSON() {
-    return {
-      id: this.id,
-      nickname: this.nickname,
-      createdAt: this.createdAt,
-    };
-  }
-}
-
-module.exports = User;
+module.exports = {
+  createUser,
+  fromRow,
+  toMeJSON,
+  toPublicJSON,
+};
