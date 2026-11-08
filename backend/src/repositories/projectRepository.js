@@ -172,28 +172,57 @@ const count = async (keyword = "", level, status) => {
 };
 
 // 삭제되지 않은 모집 글을 최신순으로 한 페이지 조회한다.
-const findPage = async (limit, offset, keyword = "", level, status) => {
+const findPage = async (
+    limit,
+    offset,
+    keyword = "",
+    level,
+    status,
+    sort = "latest"
+) => {
     const { condition, params } = buildSearchCondition(
         keyword,
         level,
         status
     );
+    const sortOrders ={
+        latest: "created_at DESC, id DESC" ,
+        views : "view_count DESC, created_at DESC, id DESC",
+        questions: "questionCount DESC, created_at DESC, id DESC "
+    };
+
+    const orderBy = sortOrders[sort];
+
     const [rows] = await pool.execute(
         `
       SELECT
         id,
         author_id AS authorId,
         title,
+        LEFT(content, 200) AS contentPreview,
+        meeting_method AS meetingMethod,
         target_level AS targetLevel,
         capacity,
+          (
+          SELECT COUNT(*)
+          FROM project_members pm
+          WHERE pm.project_id = projects.id
+          ) AS memberCount,  
         progress_mode AS progressMode,
+        active_times AS activeTimes,
         status,
         view_count AS viewCount,
         deadline,
-        created_at AS createdAt
+        created_at AS createdAt,
+        (
+            SELECT COUNT(*)
+            FROM questions q
+            WHERE q.project_id = projects.id
+              AND q.deleted_at IS NULL
+        ) AS questionCount
       FROM projects
       WHERE ${condition}
-      ORDER BY created_at DESC, id DESC
+      ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
     `,
         [...params, limit, offset]
@@ -214,9 +243,25 @@ const findById = async (id) => {
         meeting_method AS meetingMethod,
         target_level AS targetLevel,
         capacity,
+        (
+            SELECT COUNT(*)
+            FROM project_members pm
+            WHERE pm.project_id = projects.id
+        ) AS memberCount,
+        (
+            SELECT COUNT(*)
+            FROM project_requests pr
+            WHERE pr.project_id = projects.id
+              AND pr.type = ?
+              AND pr.status = ?
+        ) AS pendingCount,
         progress_mode AS progressMode,
         active_times AS activeTimes,
         deadline,
+        DATEDIFF(
+                deadline,
+                DATE(UTC_TIMESTAMP() + INTERVAL 9 HOUR)
+        ) AS dDay,
         status,
         view_count AS viewCount,
         created_at AS createdAt,
@@ -225,7 +270,7 @@ const findById = async (id) => {
       WHERE id = ?
         AND deleted_at IS NULL
     `,
-        [id]
+        [REQUEST_TYPE.APPLY, REQUEST_STATUS.PENDING, id]
     );
 
     if (rows.length === 0) {

@@ -39,6 +39,10 @@ function validateQuestionInput(input) {
     badRequest("제목은 200자 이하여야 합니다.");
   }
 
+  if (content.length > 2000) {
+    badRequest("내용은 2000자 이하여야 합니다.");
+  }
+
   return {
     title,
     content
@@ -238,7 +242,7 @@ async function edit(actor, id, input) {
   const questionId = Number(id);
   const questionInput = validateQuestionInput(input);
 
-  const question = await questionRepository.findById(
+  const question = await questionRepository.findForModification(
       questionId
   );
 
@@ -254,7 +258,7 @@ async function edit(actor, id, input) {
     throw error;
   }
 
-  await questionRepository.update(
+  const affectedRows = await questionRepository.update(
       questionId,
       {
         authorId: actor.id,
@@ -262,6 +266,12 @@ async function edit(actor, id, input) {
         content: questionInput.content
       }
   );
+
+  if (affectedRows === 0) {
+    const error = new Error("질문을 찾을 수 없습니다.");
+    error.status = 404;
+    throw error;
+  }
 
   return {
     id: questionId
@@ -287,8 +297,8 @@ async function remove(actor, id) {
   }
 
   const questionId = Number(id);
-  const question = await questionRepository.findById(
-    questionId
+  const question = await questionRepository.findForModification(
+      questionId
   );
 
   if (question === null) {
