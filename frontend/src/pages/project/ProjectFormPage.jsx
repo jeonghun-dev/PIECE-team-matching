@@ -189,7 +189,7 @@ function ProjectForm() {
                 }
                 setLoadError(message);
             } finally {
-                if (ignore) {
+                if (!ignore) {
                     setIsLoading(false);
                 }
             }
