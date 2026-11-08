@@ -119,7 +119,7 @@ const validate = (project, minCapacity = MIN_CAPACITY) => {
     return errors;
 };
 
-function ProjectFormPage() {
+function ProjectForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { user } = useAuth();
@@ -150,9 +150,15 @@ function ProjectFormPage() {
             return;
         }
 
+        // 응답이 오기 전 다른 화면으로 이동하면 이전 응답은 무시
+        let ignore = false;
+
         const loadProject = async () => {
             try {
                 const res = await getProject(id);
+                if(ignore){
+                    return;
+                }
                 const data = res.data.data;
 
                 // 입력칸에 기존 값 채우기 (서버 요청 본문과 같은 이름만)
@@ -174,17 +180,27 @@ function ProjectFormPage() {
                     setMinCapacity(Math.max(MIN_CAPACITY, data.memberCount));
                 }
             } catch (error) {
+                if (ignore) {
+                    return;
+                }
                 let message = "모집 글을 불러오지 못했습니다.";
                 if (error.response && error.response.data && error.response.data.message) {
                     message = error.response.data.message;
                 }
                 setLoadError(message);
             } finally {
-                setIsLoading(false);
+                if (ignore) {
+                    setIsLoading(false);
+                }
             }
         };
 
         loadProject();
+
+        return () => {
+            ignore = true;
+        };
+
     }, [isEdit, id, reloadKey]);
 
     // 불러오기 다시 시도
@@ -549,6 +565,11 @@ function ProjectFormPage() {
             </form>
         </main>
     );
+}
+
+function ProjectFormPage() {
+    const { id } = useParams();
+    return <ProjectForm key = {id || "new"} />;
 }
 
 export default ProjectFormPage;
