@@ -330,5 +330,38 @@ const detail = async (actor, id) => {
     };
 };
 
+// 마감일이 지난 모집 글을 모집완료로 바꾸고 대기 요청 취소
+// 마감 스케줄러가 매일 자정과 서버 시작 시 호출
+const closeExpired = async () => {
+    const today = getToday();
 
-module.exports = { publish, edit, remove,list,detail };
+    const tx = await pool.getConnection();
+    try {
+        await tx.beginTransaction();
+
+        // 대상 글을 먼저 잠가서 수락·수정 처리와 겹치지 않게 함
+        const projectIds = await projectRepository.findExpiredForUpdate(tx, today);
+
+        for (const projectId of projectIds) {
+            await projectRepository.close(tx, projectId);
+            await projectRepository.cancelPendingRequests(tx, projectId);
+        }
+
+        await tx.commit();
+        return projectIds.length;
+    } catch (error) {
+        await tx.rollback();
+        throw error;
+    } finally {
+        tx.release();
+    }
+};
+
+module.exports = { 
+    publish, 
+    edit, 
+    remove,
+    list,
+    detail,
+    closeExpired
+ };

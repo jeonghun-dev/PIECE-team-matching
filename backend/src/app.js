@@ -11,6 +11,7 @@ const recruitmentRouter = require("./routes/recruitmentRouter");
 const questionRouter = require("./routes/questionRouter");
 const createAnswerRouter = require("./routes/answerRouter");
 const { requireAuth } = require("./middlewares/auth");
+const { startDeadlineJob } = require("./jobs/deadlineJob");
 
 //2.웹 앱 초기화
 const app = express();
@@ -40,4 +41,6 @@ app.use(errorHandler); // 모든 에러 처리 미들웨어
 // 5. 서버 실행
 app.listen(PORT, () => {
   console.log(`http://${HOST}:${PORT} 서버가 실행 중입니다.`);
+
+  startDeadlineJob(); // 서버 시작 시 마감 스케줄러 시작
 });

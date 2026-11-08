@@ -122,6 +122,21 @@ const close = async (tx, id) => {
   return result.affectedRows;
 };
 
+// 마감일이 지난 모집중 글 번호 조회 (트랜잭션 끝날 때까지 잠금)
+const findExpiredForUpdate = async (tx, today) => {
+  const [rows] = await tx.query(
+    `SELECT id
+       FROM projects
+      WHERE status = ?
+        AND deadline < ?
+        AND deleted_at IS NULL
+      FOR UPDATE`,
+    [PROJECT_STATUS.OPEN, today]
+  );
+
+  return rows.map((row) => row.id);
+};
+
 // 목록과 전체 개수에 같은 검색·필터 조건을 적용한다.
 const buildSearchCondition = (keyword, level, status) => {
     const conditions = ["deleted_at IS NULL"];
@@ -349,5 +364,6 @@ module.exports ={
     update,
     softDelete,
     cancelPendingRequests,
-    close
+    close,
+    findExpiredForUpdate
 };
