@@ -1,0 +1,36 @@
+/* 프로젝트 참여 요청 버튼 */
+.project-apply-button {
+  width: 100%;
+  min-height: var(--control-height-lg);
+  padding: var(--space-3) var(--button-padding-x-lg);
+
+  background-color: var(--color-primary);
+  color: var(--color-text-on-solid);
+  border: none;
+  border-radius: var(--radius-control);
+
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+/* 마우스를 올렸을 때 */
+.project-apply-button:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+/* 키보드로 버튼을 선택했을ㄷ 때 */
+.project-apply-button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* 지원함, 소속됨, 모집 마감 */
+.project-apply-button:disabled {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
+}
