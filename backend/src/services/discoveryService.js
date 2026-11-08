@@ -59,7 +59,6 @@ async function membersFor(actor, filters) {
     level,
     collaborationMode,
     activeTime,
-    lookingForTeam,
     limit: pagination.limit,
     offset: pagination.offset,
   });

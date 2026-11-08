@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
 
 const projects = [
   {
@@ -22,10 +21,6 @@ const projects = [
   },
 ];
 
-function MemberShell({ children }) {
-  return <div className="member-app">{children}</div>;
-}
-
 function MemberMark({ name, large = false }) {
   return (
     <span
@@ -35,46 +30,6 @@ function MemberMark({ name, large = false }) {
       {name?.slice(0, 1) || "?"}
     </span>
   );
-}
-
-function MemberHeader({ activeItem }) {
-  return (
-    <header className="member-header">
-      <div className="member-header__inner">
-        <Link aria-label="PIECE 홈" className="member-brand" to="/">
-          <span className="member-brand__icon" aria-hidden="true">✣</span>
-          <span>PIECE</span>
-        </Link>
-        <nav aria-label="주요 메뉴" className="member-nav">
-          <NavLink to="/projects">모집 게시판</NavLink>
-          <NavLink to="/questions">질문 게시판</NavLink>
-          <NavLink
-            className={activeItem === "members" ? "is-current" : ""}
-            to="/members"
-          >
-            팀원 찾기
-          </NavLink>
-          <NavLink to="/requests">
-            요청함 <span className="member-request-count">3</span>
-          </NavLink>
-        </nav>
-        <div className="member-header__actions">
-          <Link className="button button--primary header-create-button" to="/projects/new">
-            + 모집 글 작성
-          </Link>
-          <Link aria-label="요청함 알림" className="member-notification" to="/requests">
-            ♧<span aria-hidden="true" />
-          </Link>
-          <span className="member-header__avatar" aria-hidden="true">성</span>
-          <Link className="member-mypage-link" to="/mypage">마이페이지</Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function MemberFooter() {
-  return <footer className="member-footer">PIECE · 6팀 DevMates</footer>;
 }
 
 function InviteModal({ member, onClose }) {
@@ -95,7 +50,7 @@ function InviteModal({ member, onClose }) {
 
   return (
     <div
-      className="invite-backdrop"
+      className="member-invite__backdrop"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -103,23 +58,23 @@ function InviteModal({ member, onClose }) {
       <section
         aria-labelledby="invite-title"
         aria-modal="true"
-        className="invite-dialog"
+        className="member-invite__dialog"
         role="dialog"
       >
-        <div className="invite-dialog__heading">
+        <div className="member-invite__heading">
           <h2 id="invite-title">프로젝트에 초대하기</h2>
-          <button aria-label="닫기" className="invite-close" onClick={onClose} type="button">×</button>
+          <button aria-label="닫기" className="member-invite__close" onClick={onClose} type="button">×</button>
         </div>
-        <p className="invite-description">
+        <p className="member-invite__description">
           <strong>{member.nickname}</strong> 님을 초대할 모집 글을 선택하세요
         </p>
 
-        <div aria-label="초대할 프로젝트" className="invite-projects">
+        <div aria-label="초대할 프로젝트" className="member-invite__projects">
           {projects
             .filter((project) => project.status === "OPEN")
             .map((project) => (
             <label
-              className={`invite-project${selectedProjectId === String(project.id) ? " is-selected" : ""}`}
+              className={`member-invite__project${selectedProjectId === String(project.id) ? " member-invite__project--selected" : ""}`}
               key={project.id}
             >
               <input
@@ -129,7 +84,7 @@ function InviteModal({ member, onClose }) {
                 type="radio"
                 value={project.id}
               />
-              <span className="invite-project__copy">
+              <span className="member-invite__project-copy">
                 <strong>{project.title}</strong>
                 <small>
                   {project.memberCount} / {project.capacity}명 · 마감 {project.deadline}
@@ -140,7 +95,7 @@ function InviteModal({ member, onClose }) {
             ))}
         </div>
 
-        <label className="invite-message-label" htmlFor="invite-message">
+        <label className="member-invite__message-label" htmlFor="invite-message">
           초대 메시지 <span>(선택)</span>
         </label>
         <textarea
@@ -150,11 +105,11 @@ function InviteModal({ member, onClose }) {
           rows={3}
           value={message}
         />
-        {notice && <p className="invite-notice" role="status">{notice}</p>}
-        <div className="invite-dialog__actions">
-          <button className="button button--muted" onClick={onClose} type="button">취소</button>
+        {notice && <p className="member-invite__notice" role="status">{notice}</p>}
+        <div className="member-invite__actions">
+          <button className="member-page__button member-page__button--muted" onClick={onClose} type="button">취소</button>
           <button
-            className="button button--primary"
+            className="member-page__button member-page__button--primary"
             onClick={() => setNotice("화면 시안입니다. 초대 요청은 아직 전송되지 않았어요.")}
             type="button"
           >
@@ -168,8 +123,5 @@ function InviteModal({ member, onClose }) {
 
 export {
   InviteModal,
-  MemberFooter,
-  MemberHeader,
   MemberMark,
-  MemberShell,
 };

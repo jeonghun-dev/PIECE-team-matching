@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
   res.send("Express 서버 실행 중");
 });
 
-app.use("/api/members", discoveryRouter);
+app.use("/api/members", requireAuth, discoveryRouter);
 app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/questions", questionRouter);

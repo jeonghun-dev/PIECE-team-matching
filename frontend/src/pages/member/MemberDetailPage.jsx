@@ -2,10 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   InviteModal,
-  MemberFooter,
-  MemberHeader,
   MemberMark,
-  MemberShell,
 } from "./MemberUI";
 import {
   activeTimeLabels,
@@ -22,22 +19,19 @@ export default function MemberDetail() {
 
   if (!member) {
     return (
-      <MemberShell>
-        <MemberHeader activeItem="members" />
-        <main className="member-content member-empty-state">
+      <main className="member-page">
+        <div className="member-content member-page__empty-state">
           <strong>팀원 정보를 찾을 수 없습니다.</strong>
-          <Link className="button button--primary" to="/members">팀원 목록으로</Link>
-        </main>
-        <MemberFooter />
-      </MemberShell>
+          <Link className="member-page__button member-page__button--primary" to="/members">팀원 목록으로</Link>
+        </div>
+      </main>
     );
   }
 
   return (
-    <MemberShell>
-      <MemberHeader activeItem="members" />
-      <main className="member-content member-detail">
-        <Link className="member-back-link" to="/members">← 팀원 찾기</Link>
+    <main className="member-page">
+      <div className="member-content member-detail">
+        <Link className="member-detail__back-link" to="/members">← 팀원 찾기</Link>
 
         <div className="member-detail__layout">
           <aside className="member-profile-card">
@@ -62,7 +56,7 @@ export default function MemberDetail() {
               </div>
             </dl>
             <button
-              className="button button--primary member-profile-card__invite"
+              className="member-page__button member-page__button--primary member-profile-card__invite"
               onClick={() => setIsInviteOpen(true)}
               type="button"
             >
@@ -118,7 +112,7 @@ export default function MemberDetail() {
                   <span className="member-tag" key={certificate}>
                     {certificateLabels[certificate] ?? certificate}
                   </span>
-                )) : <p className="member-muted">등록된 자격증이 없습니다.</p>}
+                )) : <p className="member-detail__muted">등록된 자격증이 없습니다.</p>}
               </div>
             </section>
 
@@ -134,18 +128,17 @@ export default function MemberDetail() {
                   {member.portfolioUrl}
                 </a>
               ) : (
-                <p className="member-muted member-portfolio-empty">
+                <p className="member-detail__muted member-portfolio-empty">
                   등록된 포트폴리오가 없습니다.
                 </p>
               )}
             </section>
           </div>
         </div>
-      </main>
-      <MemberFooter />
+      </div>
       {isInviteOpen && (
         <InviteModal member={member} onClose={() => setIsInviteOpen(false)} />
       )}
-    </MemberShell>
+    </main>
   );
 }

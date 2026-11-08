@@ -1,14 +1,17 @@
 const pool = require("../config/db");
 
 async function findMembers(filters) {
-  const conditions = ["u.status = 'ACTIVE'", "u.role = 'USER'"];
+  const conditions = [
+    "u.status = 'ACTIVE'",
+    "u.role = 'USER'",
+    "u.looking_for_team = 1",
+  ];
   const values = [];
   const {
     search,
     level,
     collaborationMode,
     activeTime,
-    lookingForTeam,
     limit,
     offset,
   } = filters;
@@ -35,11 +38,6 @@ async function findMembers(filters) {
       `(${activeTimes.map(() => "FIND_IN_SET(?, u.active_times) > 0").join(" OR ")})`,
     );
     values.push(...activeTimes);
-  }
-
-  if (lookingForTeam !== undefined) {
-    conditions.push("u.looking_for_team = ?");
-    values.push(lookingForTeam === "true" ? 1 : 0);
   }
 
   const whereClause = conditions.join(" AND ");

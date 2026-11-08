@@ -2,10 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   InviteModal,
-  MemberFooter,
-  MemberHeader,
   MemberMark,
-  MemberShell,
 } from "./MemberUI";
 import {
   ACTIVE_TIME,
@@ -41,7 +38,7 @@ function MemberCard({ member }) {
               {member.level} · {member.totalScore}점
             </span>
           </div>
-          <span className="looking-badge">팀 구하는 중</span>
+          <span className="member-card__looking-badge">팀 구하는 중</span>
         </div>
 
         <p className="member-card__intro">{member.intro}</p>
@@ -57,11 +54,11 @@ function MemberCard({ member }) {
           <span><span aria-hidden="true">◷</span> {activeTimeLabels[member.activeTimes[0]]}</span>
         </div>
         <div className="member-card__actions">
-          <Link className="button button--outline" to={`/members/${member.id}`}>
+          <Link className="member-page__button member-page__button--outline" to={`/members/${member.id}`}>
             프로필 보기
           </Link>
           <button
-            className="button button--primary"
+            className="member-page__button member-page__button--primary"
             onClick={() => setIsInviteOpen(true)}
             type="button"
           >
@@ -121,21 +118,20 @@ export default function MemberList() {
   }
 
   return (
-    <MemberShell>
-      <MemberHeader activeItem="members" />
-      <main className="member-content">
-        <section className="member-page-heading">
+    <main className="member-page">
+      <div className="member-content">
+        <section className="member-list__heading">
           <h1>팀원 찾기</h1>
           <p>팀을 구하는 중인 사용자를 레벨 · 협업 방식 · 활동 시간으로 찾아 내 프로젝트로 초대하세요</p>
         </section>
 
-        <form className="member-filters" onSubmit={submitSearch}>
-          <fieldset className="filter-group filter-group--levels">
+        <form className="member-list__filters" onSubmit={submitSearch}>
+          <fieldset className="member-list__filter-group member-list__filter-group--levels">
             <legend>레벨</legend>
-            <div className="filter-options">
+            <div className="member-list__filter-options">
               {LEVEL_OPTIONS.map(({ code: level, label }) => (
                 <button
-                  className={`filter-chip${levels.includes(level) ? " is-active" : ""}`}
+                  className={`member-list__filter-chip${levels.includes(level) ? " member-list__filter-chip--active" : ""}`}
                   key={level}
                   onClick={() => toggleLevel(level)}
                   type="button"
@@ -147,12 +143,12 @@ export default function MemberList() {
             </div>
           </fieldset>
 
-          <fieldset className="filter-group">
+          <fieldset className="member-list__filter-group">
             <legend>협업 방식</legend>
-            <div className="filter-options">
+            <div className="member-list__filter-options">
               {COLLABORATION_OPTIONS.map(({ code: mode, label }) => (
                 <button
-                  className={`filter-chip${collaborationMode === mode ? " is-active" : ""}`}
+                  className={`member-list__filter-chip${collaborationMode === mode ? " member-list__filter-chip--active" : ""}`}
                   key={mode}
                   onClick={() => setCollaborationMode(collaborationMode === mode ? "" : mode)}
                   type="button"
@@ -164,8 +160,8 @@ export default function MemberList() {
             </div>
           </fieldset>
 
-          <label className="filter-group filter-group--time">
-            <span className="filter-label">주요 활동 시간</span>
+          <label className="member-list__filter-group member-list__filter-group--time">
+            <span className="member-list__filter-label">주요 활동 시간</span>
             <select value={activeTime} onChange={(event) => setActiveTime(event.target.value)}>
               <option value="">전체 시간</option>
               {ACTIVE_TIME_OPTIONS.map(({ code: time, label }) => (
@@ -174,15 +170,15 @@ export default function MemberList() {
             </select>
           </label>
 
-          <button className="button button--primary search-button" type="submit">
+          <button className="member-page__button member-page__button--primary member-list__search-button" type="submit">
             <span aria-hidden="true">⌕</span> 검색
           </button>
         </form>
 
-        <div className="member-results-heading">
+        <div className="member-list__results-heading">
           <p>검색 결과 <strong>{filteredMembers.length}명</strong></p>
           <label>
-            <span className="sr-only">정렬 기준</span>
+            <span className="member-page__visually-hidden">정렬 기준</span>
             <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
               <option value="recent">최신순</option>
               <option value="score">레벨 높은 순</option>
@@ -191,17 +187,16 @@ export default function MemberList() {
         </div>
 
         {filteredMembers.length ? (
-          <section aria-label="팀원 검색 결과" className="member-grid">
+          <section aria-label="팀원 검색 결과" className="member-list__grid">
             {filteredMembers.map((member) => <MemberCard key={member.id} member={member} />)}
           </section>
         ) : (
-          <div className="member-empty-state">
+          <div className="member-page__empty-state">
             <strong>검색 결과가 없습니다</strong>
             <p>필터를 변경하거나 다른 검색어를 입력해 보세요.</p>
           </div>
         )}
-      </main>
-      <MemberFooter />
-    </MemberShell>
+      </div>
+    </main>
   );
 }
