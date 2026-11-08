@@ -2,15 +2,22 @@
 
 // 목록과 전체 개수에 같은 검색·해결 상태 조건을 적용한다.
 function buildSearchCondition(keyword, status) {
-    const pattern = getSearchPattern(keyword);
-
     const conditions = [
         "q.project_id IS NULL",
-        "q.deleted_at IS NULL",
-        "(q.title LIKE ? ESCAPE '!' OR q.content LIKE ? ESCAPE '!')"
+        "q.deleted_at IS NULL"
     ];
 
-    const params = [pattern, pattern];
+    const params = [];
+
+    // 검색어가 있을 때만 제목·내용 검색 조건을 추가한다.
+    if (keyword !== "") {
+        const pattern = getSearchPattern(keyword);
+
+        conditions.push(
+            "(q.title LIKE ? ESCAPE '!' OR q.content LIKE ? ESCAPE '!')"
+        );
+        params.push(pattern, pattern);
+    }
 
     if (status !== undefined) {
         conditions.push("q.is_solved = ?");
