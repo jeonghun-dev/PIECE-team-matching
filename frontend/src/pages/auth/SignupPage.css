@@ -317,18 +317,20 @@
 .signup-chip-group {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .signup-chip {
-  min-height: var(--control-height-md);
-  padding: 0 var(--button-padding-x-sm);
+  flex: 1; /* 일렬로 균등하게 꽉 차도록 배치 */
+  min-height: var(--control-height-sm); /* 높이를 40px -> 32px로 컴팩트하게 축소 */
+  padding: 0 var(--space-1); /* 좌우 패딩을 줄임 */
   background-color: var(--color-page);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-control);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-caption); /* 14px -> 12px로 버튼 텍스트 크기 조정 */
   font-weight: var(--font-weight-regular);
   color: var(--color-text-muted);
+  white-space: nowrap; /* 줄바꿈 방지 */
   cursor: pointer;
   transition: border-color var(--transition-fast),
     background-color var(--transition-fast), color var(--transition-fast);
