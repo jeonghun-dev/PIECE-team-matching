@@ -156,8 +156,9 @@ async function listForProject(actor, projectId) {
 
 
 async function list(query) {
-  // 해결 여부 필터값 검사
-  const { status, sort="latest" } = query;
+  // 빈 해결 상태는 조건 생략과 동일하게 전체 조회로 처리한다.
+  const { sort = "latest" } = query;
+  const status = query.status === "" ? undefined : query.status;
 
   if (
       status !== undefined &&
