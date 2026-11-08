@@ -7,6 +7,7 @@ const { notFound, errorHandler } = require("./middlewares/errorHandler");
 const discoveryRouter = require("./routes/discoveryRouter");
 const accountRouter = require("./routes/accountRouter");
 const projectRouter = require("./routes/projectRouter");
+const recruitmentRouter = require("./routes/recruitmentRouter");
 const questionRouter = require("./routes/questionRouter");
 const createAnswerRouter = require("./routes/answerRouter");
 const { requireAuth } = require("./middlewares/auth");
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 app.use("/api/members", discoveryRouter);
 app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
+app.use("/api", recruitmentRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api", createAnswerRouter(requireAuth));
 
