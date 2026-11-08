@@ -14,29 +14,31 @@ export default function MyPage() {
 // SCR-17 마이페이지 - 기술 프로필 및 학습 이력 탭 (박도영)
 import { useEffect, useState, useCallback } from 'react';
 import { getMeApi, updateProfileApi } from '../../api/auth';
+import {
+  ACTIVE_TIME,
+  ACTIVE_TIME_OPTIONS,
+  CERTIFICATE,
+  CERTIFICATE_OPTIONS as BASE_CERTIFICATE_OPTIONS,
+  COLLABORATION_MODE,
+  COLLABORATION_OPTIONS,
+  LEVEL,
+} from '../../constants';
 import './ProfileTab.css';
 
-const CERTIFICATE_OPTIONS = [
-  { code: 'ENGINEER', label: '정보처리기사', score: 2.0, pointText: '+2점' },
-  { code: 'INDUSTRIAL', label: '정보처리산업기사', score: 1.0, pointText: '+1점' },
-  { code: 'SQLD', label: 'SQLD', score: 1.0, pointText: '+1점' },
-  { code: 'LINUX', label: '리눅스마스터', score: 1.0, pointText: '+1점' },
-  { code: 'PROGRAMMING', label: '프로그래밍기능사', score: 0.5, pointText: '+0.5점' },
-  { code: 'ADSP', label: 'ADsP', score: 0.5, pointText: '+0.5점' },
-];
+const CERTIFICATE_META = {
+  [CERTIFICATE.ENGINEER]: { score: 2.0, pointText: '+2점' },
+  [CERTIFICATE.INDUSTRIAL]: { score: 1.0, pointText: '+1점' },
+  [CERTIFICATE.SQLD]: { score: 1.0, pointText: '+1점' },
+  [CERTIFICATE.LINUX]: { score: 1.0, pointText: '+1점' },
+  [CERTIFICATE.PROGRAMMING]: { score: 0.5, pointText: '+0.5점' },
+  [CERTIFICATE.ADSP]: { score: 0.5, pointText: '+0.5점' },
+};
 
-const COLLABORATION_OPTIONS = [
-  { code: 'ONLINE', label: '온라인' },
-  { code: 'OFFLINE', label: '오프라인' },
-  { code: 'ANY', label: '무관' },
-];
-
-const ACTIVE_TIME_OPTIONS = [
-  { code: 'WEEKDAY_DAY', label: '평일 낮' },
-  { code: 'WEEKDAY_NIGHT', label: '평일 저녁' },
-  { code: 'WEEKEND_AM', label: '주말 낮' },
-  { code: 'WEEKEND_PM', label: '주말 저녁' },
-];
+const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
+  ...item,
+  score: CERTIFICATE_META[item.code]?.score ?? 0,
+  pointText: CERTIFICATE_META[item.code]?.pointText ?? '',
+}));
 
 const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 const MAX_INTRO_LENGTH = 200;
@@ -69,11 +71,11 @@ function calculatePreviewLearning(certificates, awardCount, projectCount) {
     (certificateScore + awardScore + projectScore).toFixed(1)
   );
 
-  let level = 'STARTER';
+  let level = LEVEL.STARTER;
   if (totalScore >= 7.5) {
-    level = 'ACHIEVER';
+    level = LEVEL.ACHIEVER;
   } else if (totalScore >= 2.5) {
-    level = 'BUILDER';
+    level = LEVEL.BUILDER;
   }
 
   return {
@@ -100,7 +102,7 @@ function ProfileTab() {
 
   // 서버에 저장된 현재 학습 수준 (상단 배너 표시용)
   const [savedLearning, setSavedLearning] = useState({
-    level: 'STARTER',
+    level: LEVEL.STARTER,
     totalScore: 0,
     certificateScore: 0,
     awardScore: 0,
@@ -109,8 +111,8 @@ function ProfileTab() {
 
   // 기술 프로필 수정 상태
   const [intro, setIntro] = useState('');
-  const [collaborationMode, setCollaborationMode] = useState('ONLINE');
-  const [activeTimes, setActiveTimes] = useState(['WEEKDAY_NIGHT']);
+  const [collaborationMode, setCollaborationMode] = useState(COLLABORATION_MODE.ONLINE);
+  const [activeTimes, setActiveTimes] = useState([ACTIVE_TIME.WEEKDAY_NIGHT]);
   const [lookingForTeam, setLookingForTeam] = useState(true);
   const [portfolioUrl, setPortfolioUrl] = useState('');
 
@@ -126,11 +128,11 @@ function ProfileTab() {
 
     const profile = data.profile || {};
     setIntro(profile.intro || '');
-    setCollaborationMode(profile.collaborationMode || 'ONLINE');
+    setCollaborationMode(profile.collaborationMode || COLLABORATION_MODE.ONLINE);
     setActiveTimes(
       Array.isArray(profile.activeTimes) && profile.activeTimes.length > 0
         ? profile.activeTimes
-        : ['WEEKDAY_NIGHT']
+        : [ACTIVE_TIME.WEEKDAY_NIGHT]
     );
     setLookingForTeam(
       profile.lookingForTeam !== undefined ? Boolean(profile.lookingForTeam) : true
@@ -519,7 +521,7 @@ function ProfileTab() {
               setPortfolioUrl(e.target.value);
               setSuccessMessage('');
             }}
-            placeholder="https://github.com/username 또는 포트폴리오 주소"
+            placeholder="https://github.com/username 주소"
           />
           {urlError && <p style={{ color: 'red', marginTop: '4px' }}>{urlError}</p>}
         </div>
@@ -683,9 +685,9 @@ function ProfileTab() {
             </div>
 
             <div className="preview-gauge__labels">
-              <span>STARTER</span>
-              <span>BUILDER</span>
-              <span>ACHIEVER</span>
+              <span>{LEVEL.STARTER}</span>
+              <span>{LEVEL.BUILDER}</span>
+              <span>{LEVEL.ACHIEVER}</span>
             </div>
 
             <hr className="preview-box__divider" />

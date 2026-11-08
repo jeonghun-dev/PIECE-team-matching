@@ -2,28 +2,28 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signupApi } from '../../api/auth';
+import {
+  ACTIVE_TIME,
+  ACTIVE_TIME_OPTIONS,
+  CERTIFICATE,
+  CERTIFICATE_OPTIONS as BASE_CERTIFICATE_OPTIONS,
+  COLLABORATION_MODE,
+  COLLABORATION_OPTIONS,
+} from '../../constants';
 
-const CERTIFICATE_OPTIONS = [
-  { code: 'ENGINEER', label: '정보처리기사', pointText: '+2점' },
-  { code: 'INDUSTRIAL', label: '정보처리산업기사', pointText: '+1점' },
-  { code: 'SQLD', label: 'SQLD', pointText: '+1점' },
-  { code: 'LINUX', label: '리눅스마스터', pointText: '+1점' },
-  { code: 'PROGRAMMING', label: '프로그래밍기능사', pointText: '+0.5점' },
-  { code: 'ADSP', label: 'ADsP', pointText: '+0.5점' },
-];
+const CERTIFICATE_POINT_TEXT = {
+  [CERTIFICATE.ENGINEER]: '+2점',
+  [CERTIFICATE.INDUSTRIAL]: '+1점',
+  [CERTIFICATE.SQLD]: '+1점',
+  [CERTIFICATE.LINUX]: '+1점',
+  [CERTIFICATE.PROGRAMMING]: '+0.5점',
+  [CERTIFICATE.ADSP]: '+0.5점',
+};
 
-const COLLABORATION_OPTIONS = [
-  { code: 'ONLINE', label: '온라인' },
-  { code: 'OFFLINE', label: '오프라인' },
-  { code: 'ANY', label: '무관' },
-];
-
-const ACTIVE_TIME_OPTIONS = [
-  { code: 'WEEKDAY_DAY', label: '평일 낮' },
-  { code: 'WEEKDAY_NIGHT', label: '평일 저녁' },
-  { code: 'WEEKEND_AM', label: '주말 낮' },
-  { code: 'WEEKEND_PM', label: '주말 저녁' },
-];
+const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
+  ...item,
+  pointText: CERTIFICATE_POINT_TEXT[item.code] || '',
+}));
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_REGEX = /^[가-힣a-zA-Z0-9_-]{2,30}$/;
@@ -45,8 +45,8 @@ function SignupPage() {
   const [projectCount, setProjectCount] = useState(0);
 
   // 3. 프로필 설정
-  const [collaborationMode, setCollaborationMode] = useState('ONLINE');
-  const [activeTimes, setActiveTimes] = useState(['WEEKDAY_NIGHT']);
+  const [collaborationMode, setCollaborationMode] = useState(COLLABORATION_MODE.ONLINE);
+  const [activeTimes, setActiveTimes] = useState([ACTIVE_TIME.WEEKDAY_NIGHT]);
   const [lookingForTeam, setLookingForTeam] = useState(true);
   const [portfolioUrl, setPortfolioUrl] = useState('');
 
