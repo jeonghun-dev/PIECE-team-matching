@@ -159,7 +159,7 @@ function SignupPage() {
 
     setSubmitting(true);
     try {
-      const resp = await post('/auth/signup', {
+      const resp = await signupApi({
         nickname: trimmedNickname,
         email: trimmedEmail,
         password,
@@ -462,7 +462,7 @@ function SignupPage() {
               type="url"
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
-              placeholder="https://github.com/username 또는 포트폴리오 주소"
+              placeholder="https://github.com/username 주소"
               style={{ width: '100%', marginTop: '8px' }}
             />
             {urlError && <p style={{ color: 'red', marginTop: '4px' }}>{urlError}</p>}
