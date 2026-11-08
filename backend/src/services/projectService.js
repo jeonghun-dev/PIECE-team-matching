@@ -230,7 +230,7 @@ const remove = async (actor, id) => {
 
 // 모집 글 목록을 페이지 단위로 조회한다.
 const list = async (query) => {
-    const { level, status } = query;
+    const { level, status, sort="latest"} = query;
 
     if (
         level !== undefined &&
@@ -245,6 +245,15 @@ const list = async (query) => {
     ) {
         throw createError(400, "모집 상태가 올바르지 않습니다.");
     }
+
+
+// 정렬 기준 검사 — 여기에 추가
+    if (!["latest", "views", "questions"].includes(sort)) {
+        throw createError(400, "정렬 기준이 올바르지 않습니다.");
+    }
+
+
+
 
     // 질문 검색과 동일하게 검색어는 공백 제거 후 최대 100자로 제한한다.
     if (query.keyword !== undefined && typeof query.keyword !== "string") {
@@ -275,7 +284,8 @@ const list = async (query) => {
         paging.offset,
         keyword,
         level,
-        status
+        status,
+        sort
     );
 
     return toPageResponse(items, totalCount, paging);
