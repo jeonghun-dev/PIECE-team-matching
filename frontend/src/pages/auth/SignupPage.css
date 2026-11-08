@@ -1,0 +1,529 @@
+.signup-page {
+  flex: 1;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-7) var(--space-5);
+  background-color: var(--color-page);
+  box-sizing: border-box;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 600px;
+  padding: var(--space-7) var(--space-6);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* 상단 브랜드 및 타이틀 */
+.signup-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.signup-card__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.signup-card__logo {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  border-radius: var(--radius-badge);
+  background-color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-card__logo-dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-circle);
+  background-color: var(--color-surface);
+}
+
+.signup-card__brand-name {
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+}
+
+.signup-card__title {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-title);
+  color: var(--color-text);
+}
+
+.signup-card__subtitle {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--color-text-muted);
+}
+
+/* 폼 및 섹션 구분 */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.signup-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.signup-section__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.signup-section__title {
+  margin: 0;
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+}
+
+.signup-section__desc {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-muted);
+}
+
+.signup-divider {
+  border: none;
+  border-top: var(--border-width) solid var(--color-border);
+  margin: 0;
+}
+
+/* 공통 입력 필드 및 2열 배치 */
+.signup-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.signup-label {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+}
+
+.signup-required {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+.signup-input {
+  width: 100%;
+  min-height: var(--control-height-md);
+  padding: var(--input-padding-y) var(--input-padding-x);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-input-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+.signup-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.signup-input:focus {
+  border-color: var(--color-primary);
+  outline: var(--focus-ring-width) solid var(--color-primary-soft);
+  outline-offset: 0;
+}
+
+.signup-input:focus-visible {
+  border-color: var(--color-primary);
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.signup-input--error {
+  border-color: var(--color-danger);
+}
+
+.signup-input--error:focus,
+.signup-input--error:focus-visible {
+  border-color: var(--color-danger);
+  outline-color: var(--color-danger-soft);
+}
+
+/* 보조 문구 / 에러 / 성공 문구 */
+.signup-helper {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-muted);
+}
+
+.signup-error {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-danger);
+}
+
+.signup-success {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-success);
+}
+
+/* 2. 보유 자격증 2열 그리드 */
+.signup-cert-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.signup-cert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.signup-cert-item:hover {
+  border-color: var(--color-input-border);
+}
+
+.signup-cert-item--checked {
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.signup-cert-item__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.signup-cert-item__checkbox {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.signup-cert-item__label {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text);
+}
+
+.signup-cert-item--checked .signup-cert-item__label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.signup-cert-item__point {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+/* 대회 수상 & 프로젝트 완료 카운터 */
+.signup-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.signup-counter__btn {
+  width: var(--control-height-md);
+  height: var(--control-height-md);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.signup-counter__btn:hover {
+  background-color: var(--color-page);
+}
+
+.signup-counter__value {
+  flex: 1;
+  min-height: var(--control-height-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.signup-counter__badge {
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-radius: var(--radius-badge);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+/* 3. 협업 방식 & 주요 활동 시간 칩 버튼 */
+.signup-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.signup-chip {
+  flex: 1; /* 일렬로 균등하게 꽉 차도록 배치 */
+  min-height: var(--control-height-sm); /* 높이를 40px -> 32px로 컴팩트하게 축소 */
+  padding: 0 var(--space-1); /* 좌우 패딩을 줄임 */
+  background-color: var(--color-page);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-caption); /* 14px -> 12px로 버튼 텍스트 크기 조정 */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  white-space: nowrap; /* 줄바꿈 방지 */
+  cursor: pointer;
+  transition: border-color var(--transition-fast),
+    background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.signup-chip--active {
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 팀 구인 여부 토글 박스 */
+.signup-toggle-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.signup-toggle-box__title {
+  display: block;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.signup-toggle-box__desc {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.signup-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.signup-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.signup-switch__slider {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-disabled-bg);
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.signup-switch__slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-circle);
+  transition: transform var(--transition-fast);
+}
+
+.signup-switch input:checked + .signup-switch__slider {
+  background-color: var(--color-primary);
+}
+
+.signup-switch input:checked + .signup-switch__slider::before {
+  transform: translateX(20px);
+}
+
+.signup-switch input:focus-visible + .signup-switch__slider {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* 4. 약관 동의 박스 */
+.signup-terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-page);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.signup-terms__all {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.signup-terms__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signup-terms__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.signup-terms__checkbox {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.signup-terms__more {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+/* 제출 버튼 및 하단 안내 */
+.signup-submit {
+  width: 100%;
+  min-height: var(--control-height-lg);
+  padding: 0 var(--button-padding-x-lg);
+  background-color: var(--color-primary);
+  color: var(--color-text-on-solid);
+  border: none;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.signup-submit:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.signup-submit:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.signup-submit:disabled {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
+}
+
+.signup-card__footer {
+  margin-top: var(--space-5);
+  text-align: center;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.signup-card__link {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.signup-card__link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.signup-page__copyright {
+  margin-top: var(--space-6);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* 화면이 좁아졌을 때 내용이 잘리거나 겹치지 않도록 처리 */
+@media (max-width: 640px) {
+  .signup-row,
+  .signup-cert-grid {
+    grid-template-columns: 1fr;
+  }
+}

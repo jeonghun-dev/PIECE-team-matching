@@ -1,7 +1,9 @@
 
 // 모집 글 저장 + 작성자를 팀원(LEADER)으로 등록
 // tx: Service에서 연 트랜잭션 연결
-const { REQUEST_STATUS, PROJECT_STATUS } = require("../constants");
+const { REQUEST_STATUS, PROJECT_STATUS, REQUEST_TYPE } = require("../constants");
+//목록조회에 사용할 db 연결 풀
+const pool = require("../config/db");
 
 const save = async (tx, project) => {
   const [result] = await tx.query(
@@ -119,12 +121,188 @@ const close = async (tx, id) => {
 
   return result.affectedRows;
 };
-module.exports = {
-  save,
-  findByIdForUpdate,
-  countMembers,
-  update,
-  softDelete,
-  cancelPendingRequests,
-  close
+
+// 목록과 전체 개수에 같은 검색·필터 조건을 적용한다.
+const buildSearchCondition = (keyword, level, status) => {
+    const conditions = ["deleted_at IS NULL"];
+    const params = [];
+
+    if (keyword !== "") {
+        const pattern = `%${keyword.replace(/[!%_]/g, "!$&")}%`;
+
+        conditions.push(
+            "(title LIKE ? ESCAPE '!' OR content LIKE ? ESCAPE '!')"
+        );
+        params.push(pattern, pattern);
+    }
+
+    if (level !== undefined) {
+        conditions.push("target_level = ?");
+        params.push(level);
+    }
+
+    if (status !== undefined) {
+        conditions.push("status = ?");
+        params.push(status);
+    }
+
+    return {
+        condition: conditions.join(" AND "),
+        params
+    };
+};
+
+// 검색 조건에 맞는 삭제되지 않은 모집 글의 전체 개수를 조회한다.
+const count = async (keyword = "", level, status) => {
+    const { condition, params } = buildSearchCondition(
+        keyword,
+        level,
+        status
+    );
+    const [rows] = await pool.execute(
+        `
+      SELECT COUNT(*) AS total
+      FROM projects
+      WHERE ${condition}
+    `,
+        params
+    );
+
+    return Number(rows[0].total);
+};
+
+// 삭제되지 않은 모집 글을 최신순으로 한 페이지 조회한다.
+const findPage = async (limit, offset, keyword = "", level, status) => {
+    const { condition, params } = buildSearchCondition(
+        keyword,
+        level,
+        status
+    );
+    const [rows] = await pool.execute(
+        `
+      SELECT
+        id,
+        author_id AS authorId,
+        title,
+        target_level AS targetLevel,
+        capacity,
+        progress_mode AS progressMode,
+        status,
+        view_count AS viewCount,
+        deadline,
+        created_at AS createdAt
+      FROM projects
+      WHERE ${condition}
+      ORDER BY created_at DESC, id DESC
+      LIMIT ? OFFSET ?
+    `,
+        [...params, limit, offset]
+    );
+
+    return rows;
+};
+
+// 삭제되지 않은 모집 글 한 건을 조회한다.
+const findById = async (id) => {
+    const [rows] = await pool.execute(
+        `
+      SELECT
+        id,
+        author_id AS authorId,
+        title,
+        content,
+        meeting_method AS meetingMethod,
+        target_level AS targetLevel,
+        capacity,
+        progress_mode AS progressMode,
+        active_times AS activeTimes,
+        deadline,
+        status,
+        view_count AS viewCount,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+      FROM projects
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
+        [id]
+    );
+
+    if (rows.length === 0) {
+        return null;
+    }
+
+    return rows[0];
+};
+
+// 삭제되지 않은 모집 글의 조회수를 1 증가시킨다.
+const increaseViewCount = async (id) => {
+    const [result] = await pool.execute(
+        `
+      UPDATE projects
+      SET view_count = view_count + 1
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
+        [id]
+    );
+
+    return result.affectedRows;
+};
+// 해당 사용자가 프로젝트에 소속되어 있는지 확인한다.
+const existsMember = async (projectId, userId) => {
+    const [rows] = await pool.execute(
+        `
+      SELECT id
+      FROM project_members
+      WHERE project_id = ?
+        AND user_id = ?
+      LIMIT 1
+    `,
+        [projectId, userId]
+    );
+
+    return rows.length > 0;
+};
+
+// 해당 사용자가 보낸 대기 중인 참여 요청이 있는지 확인한다.
+const existsPendingApplication = async (projectId, userId) => {
+    const [rows] = await pool.execute(
+        `
+      SELECT id
+      FROM project_requests
+      WHERE project_id = ?
+        AND sender_id = ?
+        AND type = ?
+        AND status = ?
+      LIMIT 1
+    `,
+        [
+            projectId,
+            userId,
+            REQUEST_TYPE.APPLY,
+            REQUEST_STATUS.PENDING
+        ]
+    );
+
+    return rows.length > 0;
+};
+
+
+
+
+module.exports ={
+    existsPendingApplication,
+    findById,
+    existsMember,
+    increaseViewCount,
+    findPage,
+    count,
+    save,
+    findByIdForUpdate,
+    countMembers,
+    update,
+    softDelete,
+    cancelPendingRequests,
+    close
 };

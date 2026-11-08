@@ -12,6 +12,8 @@ import ProjectManagePage from "./pages/project/ProjectManagePage";
 import QuestionListPage from "./pages/question/QuestionListPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
+import AnswerPreviewPage from "./pages/AnswerPreviewPage";
+import ProjectApplyPreviewPage from "./pages/ProjectApplyPreviewPage";
 import MemberListPage from "./pages/member/MemberListPage";
 import MemberDetailPage from "./pages/member/MemberDetailPage";
 import InboxPage from "./pages/inbox/InboxPage";
@@ -22,6 +24,15 @@ import ErrorPage from "./pages/ErrorPage";
 function App() {
   return (
     <Routes>
+      {import.meta.env.DEV && (
+        <>
+          <Route path="/dev/answers" element={<AnswerPreviewPage />} />
+          <Route
+            path="/dev/project-apply"
+            element={<ProjectApplyPreviewPage />}
+          />
+        </>
+      )}
       {/* 메인 */}
       <Route path="/" element={<HomePage />} />
 
@@ -32,37 +43,165 @@ function App() {
 
       {/* 모집 글 */}
       <Route path="/projects" element={<ProjectListPage />} />
-      <Route path="/projects/new" element={<ProtectedRoute><ProjectFormPage /></ProtectedRoute>} /> 
-      <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} /> 
-      <Route path="/projects/:id/edit" element={<ProtectedRoute><ProjectFormPage /></ProtectedRoute>} />
-      <Route path="/projects/:id/manage" element={<ProtectedRoute><ProjectManagePage /></ProtectedRoute>} /> 
-
+      <Route
+        path="/projects/new"
+        element={
+          <ProtectedRoute>
+            <ProjectFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute>
+            <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id/edit"
+        element={
+          <ProtectedRoute>
+            <ProjectFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id/manage"
+        element={
+          <ProtectedRoute>
+            <ProjectManagePage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 질문 */}
       <Route path="/questions" element={<QuestionListPage />} />
-      <Route path="/questions/new" element={<ProtectedRoute><QuestionFormPage /></ProtectedRoute>} />
-      <Route path="/questions/:id" element={<ProtectedRoute><QuestionDetailPage /></ProtectedRoute>} />
-      <Route path="/questions/:id/edit" element={<ProtectedRoute><QuestionFormPage /></ProtectedRoute>} />
+      <Route
+        path="/questions/new"
+        element={
+          <ProtectedRoute>
+            <QuestionFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/questions/:id"
+        element={
+          <ProtectedRoute>
+            <QuestionDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/questions/:id/edit"
+        element={
+          <ProtectedRoute>
+            <QuestionFormPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 팀원 찾기 */}
-      <Route path="/members" element={<ProtectedRoute><MemberListPage /></ProtectedRoute>} />
-      <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
+      <Route
+        path="/members"
+        element={
+          <ProtectedRoute>
+            <MemberListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/members/:id"
+        element={
+          <ProtectedRoute>
+            <MemberDetailPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 요청함 (?tab=received / sent) */}
-      <Route path="/requests" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <InboxPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 마이페이지 */}
-      <Route path="/mypage" element={<Navigate to="/mypage/profile" replace />} />
-      <Route path="/mypage/profile" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
-      <Route path="/mypage/teams" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
-      <Route path="/mypage/projects" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+      <Route
+        path="/mypage"
+        element={<Navigate to="/mypage/profile" replace />}
+      />
+      <Route
+        path="/mypage/profile"
+        element={
+          <ProtectedRoute>
+            <MyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mypage/teams"
+        element={
+          <ProtectedRoute>
+            <MyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mypage/projects"
+        element={
+          <ProtectedRoute>
+            <MyPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 관리자 */}
-      <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-      <Route path="/admin/projects" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-      <Route path="/admin/qna" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-      <Route path="/admin/reports" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/projects"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/qna"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 없는 주소 */}
       <Route path="*" element={<ErrorPage />} />

@@ -174,6 +174,10 @@ async function accept(actor, answerId) {
     throw createError(403, "질문 작성자만 채택할 수 있습니다.");
   }
 
+  if (String(answer.author_id) === String(actor.id)) {
+    throw createError(403, "본인이 작성한 답변은 채택할 수 없습니다.");
+  }
+
   if (Number(question.is_solved) === 1) {
     throw createError(409, "이미 해결된 질문입니다.");
   }

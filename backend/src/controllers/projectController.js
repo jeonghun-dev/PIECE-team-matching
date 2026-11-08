@@ -31,4 +31,30 @@ const remove = async (req, resp, next) => {
     }
 };
 
-module.exports = { publish, edit, remove };
+// 모집 글 목록을 조회하고 공통 응답으로 반환한다.
+const list = async (req, resp, next) => {
+    try {
+        const result = await projectService.list(req.query);
+
+        sendSuccess(resp, result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// 모집 글 상세를 조회하고 공통 응답으로 반환한다.
+const detail = async (req, resp, next) => {
+    try {
+        const result = await projectService.detail(
+            req.user,
+            req.params.id
+        );
+
+        sendSuccess(resp, result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+module.exports = { publish, edit, remove,list,detail };
