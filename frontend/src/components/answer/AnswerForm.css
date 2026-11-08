@@ -1,0 +1,57 @@
+.answer-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+}
+
+.answer-form__textarea {
+  width: 100%;
+  min-height: var(--textarea-min-height);
+  padding: var(--input-padding-y) var(--input-padding-x);
+  box-sizing: border-box;
+  resize: vertical;
+
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-input-border);
+  border-radius: var(--radius-control);
+}
+
+.answer-form__textarea:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.answer-form__submit {
+  align-self: flex-end;
+  min-height: var(--control-height-md);
+  padding: 0 var(--button-padding-x-md);
+
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-on-solid);
+
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.answer-form__submit:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.answer-form__submit:disabled {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
+}

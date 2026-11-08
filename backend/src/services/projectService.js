@@ -1,5 +1,6 @@
 // 모집 글 업무 규칙 계층
 
+const{getPagination, toPageResponse} = require("../utils/pagination");
 const pool = require("../config/db");
 const projectRepository = require("../repositories/projectRepository");
 const { LEVEL, PROGRESS_MODE, ACTIVE_TIME, PROJECT_STATUS } = require("../constants");
@@ -21,7 +22,7 @@ const getToday = () => {
 // URL의 모집 글 번호 검사 (1 이상의 정수)
 const parseProjectId = (id) => {
     const projectId = Number(id);
-    if (!Number.isInteger(projectId) || projectId < 1) {
+    if (!Number.isSafeInteger(projectId) || projectId < 1) {
         throw createError(400, "모집 글 번호가 올바르지 않습니다.");
     }
     return projectId;
@@ -226,4 +227,108 @@ const remove = async (actor, id) => {
         tx.release();
     }
 };
-module.exports = { publish, edit, remove };
+
+// 모집 글 목록을 페이지 단위로 조회한다.
+const list = async (query) => {
+    const { level, status, sort="latest"} = query;
+
+    if (
+        level !== undefined &&
+        !Object.values(LEVEL).includes(level)
+    ) {
+        throw createError(400, "학습 레벨이 올바르지 않습니다.");
+    }
+
+    if (
+        status !== undefined &&
+        !Object.values(PROJECT_STATUS).includes(status)
+    ) {
+        throw createError(400, "모집 상태가 올바르지 않습니다.");
+    }
+
+
+// 정렬 기준 검사 — 여기에 추가
+    if (!["latest", "views", "questions"].includes(sort)) {
+        throw createError(400, "정렬 기준이 올바르지 않습니다.");
+    }
+
+
+
+
+    // 질문 검색과 동일하게 검색어는 공백 제거 후 최대 100자로 제한한다.
+    if (query.keyword !== undefined && typeof query.keyword !== "string") {
+        throw createError(400, "검색어는 문자열이어야 합니다.");
+    }
+    const keyword = (query.keyword ?? "").trim();
+    if (keyword.length > 100) {
+        throw createError(400, "검색어는 100자 이하여야 합니다.");
+    }
+
+    const paging = getPagination(query);
+
+    if (
+        !Number.isSafeInteger(paging.page) ||
+        !Number.isSafeInteger(paging.offset)
+    ) {
+        throw createError(400, "페이지 범위가 너무 큽니다.");
+    }
+
+    const totalCount = await projectRepository.count(
+        keyword,
+        level,
+        status
+    );
+
+    const items = await projectRepository.findPage(
+        paging.limit,
+        paging.offset,
+        keyword,
+        level,
+        status,
+        sort
+    );
+
+    return toPageResponse(items, totalCount, paging);
+};
+
+// 모집 글 상세와 현재 사용자의 지원·소속 상태를 조회한다.
+const detail = async (actor, id) => {
+    const projectId = parseProjectId(id);
+
+    const affectedRows =
+        await projectRepository.increaseViewCount(projectId);
+
+    if (affectedRows === 0) {
+        throw createError(404, "모집 글을 찾을 수 없습니다.");
+    }
+
+    const project = await projectRepository.findById(projectId);
+
+    if (!project) {
+        throw createError(404, "모집 글을 찾을 수 없습니다.");
+    }
+
+    let isMember = false;
+    let hasApplied = false;
+
+    if (actor && actor.id) {
+        isMember = await projectRepository.existsMember(
+            projectId,
+            actor.id
+        );
+
+        hasApplied = await projectRepository.existsPendingApplication(
+            projectId,
+            actor.id
+        );
+    }
+
+    return {
+        ...project,
+        isMember,
+        hasApplied
+    };
+};
+
+
+module.exports = { publish, edit, remove,list,detail };
