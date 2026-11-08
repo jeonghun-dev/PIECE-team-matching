@@ -1,0 +1,373 @@
+/* 모집 글 작성/수정 폼 */
+
+.project-form-page {
+    --level-starter: #2f9e8a;
+    --level-builder: var(--color-primary);
+    --level-achiever: #d9482b;
+
+    max-width: var(--detail-max-width);
+    margin: 0 auto;
+    padding: var(--space-7) var(--space-5);
+    box-sizing: border-box;
+}
+
+/* ===== 상단: 경로 + 제목 + 버튼 ===== */
+.project-form-page__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.project-form-page__breadcrumb {
+    margin: 0 0 var(--space-1);
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+
+.project-form-page__breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.project-form-page__breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.project-form-page__title {
+    margin: 0;
+    font-size: var(--font-size-page-title);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-title);
+    color: var(--color-text);
+}
+
+.project-form-page__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+/* ===== 폼 카드 ===== */
+.project-form {
+    padding: var(--space-6);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+}
+
+/* 구역 (1. 모집 정보 / 2. 프로젝트 설명) */
+.project-form__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* 두 구역 사이 구분선 */
+.project-form__section + .project-form__section {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: var(--border-width) solid var(--color-border);
+}
+
+.project-form__section-title {
+    margin: 0;
+    font-size: var(--font-size-section-title);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-heading);
+    color: var(--color-text);
+}
+
+/* 두 칸 배치 (모집 인원 | 마감일, 진행 방식 | 활동 시간) */
+.project-form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+/* 항목 하나 (라벨 + 입력칸 + 안내/오류) */
+.project-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.project-form__fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* legend는 flex gap이 적용되지 않아 아래 여백을 따로 지정 */
+.project-form__fieldset > legend {
+    margin-bottom: var(--space-2);
+}
+
+.project-form__label {
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.project-form__required {
+    color: var(--color-danger);
+}
+
+/* ===== 입력칸 공통 ===== */
+.project-form__input {
+    width: 100%;
+    min-height: var(--control-height-md);
+    margin: 0;
+    padding: var(--input-padding-y) var(--input-padding-x);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    font-family: inherit;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    color: var(--color-text);
+    box-sizing: border-box;
+}
+
+textarea.project-form__input {
+    min-height: var(--textarea-min-height);
+    resize: vertical;
+}
+
+.project-form__input:focus {
+    border-color: var(--color-primary);
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.project-form__input--error {
+    border-color: var(--color-danger);
+}
+
+/* 안내 문구 (회색) / 오류 문구 (빨강) */
+.project-form__help {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    line-height: var(--line-height-caption);
+    color: var(--color-text-muted);
+}
+
+.project-form__error {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-danger);
+}
+
+/* ===== 모집 인원 - / + ===== */
+.project-form__stepper {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.project-form__stepper-value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.project-form__step-button {
+    width: var(--control-height-md);
+    min-height: var(--control-height-md);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.project-form__step-button:disabled {
+    background-color: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
+    cursor: not-allowed;
+}
+
+.project-form__step-button:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* ===== 학습 수준 카드 ===== */
+.project-form__levels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+}
+
+.project-form__level {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.project-form__level--selected {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+}
+
+.project-form__level:has(input:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.project-form__level-top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.project-form__level-top input {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+    margin: 0;
+    accent-color: var(--color-primary);
+}
+
+.project-form__level-badge {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-badge);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-on-solid);
+}
+
+.project-form__level-badge--starter {
+    background-color: var(--level-starter);
+}
+
+.project-form__level-badge--builder {
+    background-color: var(--level-builder);
+}
+
+.project-form__level-badge--achiever {
+    background-color: var(--level-achiever);
+}
+
+.project-form__level-score {
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+
+/* ===== 칩 (진행 방식 / 활동 시간) ===== */
+.project-form__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.project-form__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-height-md);
+    padding: 0 var(--button-padding-x-md);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-page);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.project-form__chip--selected {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+/* 실제 input은 눈에만 숨김 (클릭·키보드·스크린리더는 그대로 동작) */
+.project-form__chip-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.project-form__chip:has(.project-form__chip-input:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* ===== 서버 오류 ===== */
+.project-form__server-error {
+    margin: 0 0 var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-control);
+    background-color: var(--color-danger-soft);
+    font-size: var(--font-size-body);
+    color: var(--color-danger);
+}
+
+/* ===== 버튼 ===== */
+/* 취소: 글자만 (디자인 기준) */
+.project-form__button {
+    min-height: var(--control-height-lg);
+    padding: 0 var(--button-padding-x-lg);
+    border: none;
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.project-form__button:hover {
+    background-color: var(--color-page);
+}
+
+/* 등록하기: 파란 배경 + 흰 글자 */
+.project-form__button--primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-on-solid);
+}
+
+.project-form__button--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.project-form__button:disabled {
+    background-color: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
+    cursor: not-allowed;
+}
+
+.project-form__button:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* 창을 줄였을 때 겹치지 않게 한 줄로 */
+@media (max-width: 720px) {
+    .project-form__row,
+    .project-form__levels {
+        grid-template-columns: 1fr;
+    }
+
+    .project-form-page__head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
