@@ -1,15 +1,27 @@
 // SCR-06 회원가입 완료 (박도영)
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  CERTIFICATE,
+  CERTIFICATE_OPTIONS,
+  LEVEL,
+} from '../../constants';
 
-const CERTIFICATE_INFO = {
-  ENGINEER: { label: '정보처리기사', score: 2 },
-  INDUSTRIAL: { label: '정보처리산업기사', score: 1 },
-  SQLD: { label: 'SQLD', score: 1 },
-  LINUX: { label: '리눅스마스터', score: 1 },
-  PROGRAMMING: { label: '프로그래밍기능사', score: 0.5 },
-  ADSP: { label: 'ADsP', score: 0.5 },
+const CERTIFICATE_SCORES = {
+  [CERTIFICATE.ENGINEER]: 2,
+  [CERTIFICATE.INDUSTRIAL]: 1,
+  [CERTIFICATE.SQLD]: 1,
+  [CERTIFICATE.LINUX]: 1,
+  [CERTIFICATE.PROGRAMMING]: 0.5,
+  [CERTIFICATE.ADSP]: 0.5,
 };
+
+const CERTIFICATE_INFO = Object.fromEntries(
+  CERTIFICATE_OPTIONS.map((item) => [
+    item.code,
+    { label: item.label, score: CERTIFICATE_SCORES[item.code] ?? 0 },
+  ])
+);
 
 const MAX_BAR_SCORE = 10;
 
@@ -36,7 +48,11 @@ function SignupCompletePage() {
   const level =
     learning.level ||
     user.level ||
-    (totalScore >= 7.5 ? 'ACHIEVER' : totalScore >= 2.5 ? 'BUILDER' : 'STARTER');
+    (totalScore >= 7.5
+      ? LEVEL.ACHIEVER
+      : totalScore >= 2.5
+        ? LEVEL.BUILDER
+        : LEVEL.STARTER);
 
   // 바 위치 계산 (최대 10점 기준, 10점 이상이면 100%로 동일)
   const markerPercent = Math.min(
@@ -180,9 +196,9 @@ function SignupCompletePage() {
               marginBottom: '16px',
             }}
           >
-            <span>STARTER</span>
-            <span>BUILDER</span>
-            <span>ACHIEVER</span>
+            <span>{LEVEL.STARTER}</span>
+            <span>{LEVEL.BUILDER}</span>
+            <span>{LEVEL.ACHIEVER}</span>
           </div>
 
           <hr style={{ border: 'none', borderTop: '1px solid #e5e9f2', margin: '16px 0' }} />

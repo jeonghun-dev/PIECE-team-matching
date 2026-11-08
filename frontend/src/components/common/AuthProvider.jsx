@@ -1,6 +1,6 @@
 // 로그인 상태(토큰, 사용자 정보)를 앱 전체에 제공
 import { useEffect, useState } from "react";
-import client from '../../api/client';
+import { getMeApi, logoutApi } from "../../api/auth";
 import { AuthContext } from "../../hooks/useAuth";
 
 function AuthProvider({ children }) {
@@ -16,7 +16,7 @@ function AuthProvider({ children }) {
                 return;
             }
             try {
-                const resp = await client.get("/users/me");
+                const resp = await getMeApi();
                 setUser(resp.data.data);
             } catch {
                 localStorage.removeItem("token");
@@ -32,12 +32,18 @@ function AuthProvider({ children }) {
     const login = (token, userInfo) => {
         localStorage.setItem("token", token);
         setUser(userInfo);
-    }
+    };
 
     // 로그아웃했을 때 호출
-    const logout = () => {
-        localStorage.removeItem("token");
-        setUser(null);
+    const logout = async () => {
+        try {
+            await logoutApi();
+        } catch {
+            // 서버 토큰 만료 등의 에러가 나도 클라이언트 토큰은 정리
+        } finally {
+            localStorage.removeItem("token");
+            setUser(null);
+        }
     };
 
     const value = {
@@ -47,7 +53,6 @@ function AuthProvider({ children }) {
         login,
         logout,
     };
-
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,34 +1,34 @@
 // SCR-05 회원가입 (박도영)
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import client from '../../api/client';
+import { signupApi } from '../../api/auth';
+import {
+  ACTIVE_TIME,
+  ACTIVE_TIME_OPTIONS,
+  CERTIFICATE,
+  CERTIFICATE_OPTIONS as BASE_CERTIFICATE_OPTIONS,
+  COLLABORATION_MODE,
+  COLLABORATION_OPTIONS,
+} from '../../constants';
 
-const CERTIFICATE_OPTIONS = [
-  { code: 'ENGINEER', label: '정보처리기사', pointText: '+2점' },
-  { code: 'INDUSTRIAL', label: '정보처리산업기사', pointText: '+1점' },
-  { code: 'SQLD', label: 'SQLD', pointText: '+1점' },
-  { code: 'LINUX', label: '리눅스마스터', pointText: '+1점' },
-  { code: 'PROGRAMMING', label: '프로그래밍기능사', pointText: '+0.5점' },
-  { code: 'ADSP', label: 'ADsP', pointText: '+0.5점' },
-];
+const CERTIFICATE_POINT_TEXT = {
+  [CERTIFICATE.ENGINEER]: '+2점',
+  [CERTIFICATE.INDUSTRIAL]: '+1점',
+  [CERTIFICATE.SQLD]: '+1점',
+  [CERTIFICATE.LINUX]: '+1점',
+  [CERTIFICATE.PROGRAMMING]: '+0.5점',
+  [CERTIFICATE.ADSP]: '+0.5점',
+};
 
-const COLLABORATION_OPTIONS = [
-  { code: 'ONLINE', label: '온라인' },
-  { code: 'OFFLINE', label: '오프라인' },
-  { code: 'ANY', label: '무관' },
-];
-
-const ACTIVE_TIME_OPTIONS = [
-  { code: 'WEEKDAY_DAY', label: '평일 낮' },
-  { code: 'WEEKDAY_NIGHT', label: '평일 저녁' },
-  { code: 'WEEKEND_AM', label: '주말 낮' },
-  { code: 'WEEKEND_PM', label: '주말 저녁' },
-];
+const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
+  ...item,
+  pointText: CERTIFICATE_POINT_TEXT[item.code] || '',
+}));
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_REGEX = /^[가-힣a-zA-Z0-9_-]{2,30}$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
-const URL_REGEX = /^https?:\/\/.+/i;
+const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -45,8 +45,8 @@ function SignupPage() {
   const [projectCount, setProjectCount] = useState(0);
 
   // 3. 프로필 설정
-  const [collaborationMode, setCollaborationMode] = useState('ONLINE');
-  const [activeTimes, setActiveTimes] = useState(['WEEKDAY_NIGHT']);
+  const [collaborationMode, setCollaborationMode] = useState(COLLABORATION_MODE.ONLINE);
+  const [activeTimes, setActiveTimes] = useState([ACTIVE_TIME.WEEKDAY_NIGHT]);
   const [lookingForTeam, setLookingForTeam] = useState(true);
   const [portfolioUrl, setPortfolioUrl] = useState('');
 
@@ -59,6 +59,7 @@ function SignupPage() {
   const [emailError, setEmailError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
   const allAgreed = termsAgreed && privacyAgreed;
 
@@ -96,6 +97,7 @@ function SignupPage() {
     setNicknameError('');
     setEmailError('');
     setErrorMessage('');
+    setUrlError('');
 
     const trimmedNickname = nickname.trim();
     const trimmedEmail = email.trim();
@@ -136,11 +138,16 @@ function SignupPage() {
       return;
     }
 
-    if (trimmedPortfolioUrl && !URL_REGEX.test(trimmedPortfolioUrl)) {
-      setErrorMessage(
-        '포트폴리오 URL은 http:// 또는 https://로 시작하는 주소여야 합니다.'
-      );
-      return;
+    // 변경 후 (500자 길이 제한 추가) 포트폴리오 URL 검증
+    if (trimmedPortfolioUrl) {
+      if (trimmedPortfolioUrl.length > 500) {
+        setUrlError('포트폴리오 URL은 500자 이하로 입력해 주세요.');
+        return;
+      }
+      if (!URL_REGEX.test(trimmedPortfolioUrl)) {
+        setUrlError('깃허브 링크 주소만 입력할 수 있습니다.');
+        return;
+      }
     }
 
     if (!termsAgreed || !privacyAgreed) {
@@ -152,7 +159,7 @@ function SignupPage() {
 
     setSubmitting(true);
     try {
-      const resp = await client.post('/auth/signup', {
+      const resp = await signupApi({
         nickname: trimmedNickname,
         email: trimmedEmail,
         password,
@@ -455,9 +462,10 @@ function SignupPage() {
               type="url"
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
-              placeholder="https://github.com/username 또는 포트폴리오 주소"
+              placeholder="https://github.com/username 주소"
               style={{ width: '100%', marginTop: '8px' }}
             />
+            {urlError && <p style={{ color: 'red', marginTop: '4px' }}>{urlError}</p>}
           </div>
         </section>
 

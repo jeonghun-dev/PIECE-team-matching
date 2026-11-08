@@ -1,8 +1,10 @@
 // SCR-04 로그인 (박도영)
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import client from '../../api/client';
+import { loginApi } from '../../api/auth';
 import { useAuth } from '../../hooks/useAuth';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,8 +20,10 @@ function LoginPage() {
     e.preventDefault();
     setErrorMessage('');
 
-    // 공백 검증
-    if (!email.trim()) {
+    const trimmedEmail = email.trim();
+
+    // 1. 빈 값 검사
+    if (!trimmedEmail) {
       setErrorMessage('이메일을 입력해주세요.');
       return;
     }
@@ -28,10 +32,20 @@ function LoginPage() {
       return;
     }
 
+    // 2. 길이 및 형식 검사
+    if (trimmedEmail.length > 100 || !EMAIL_REGEX.test(trimmedEmail)) {
+      setErrorMessage('올바른 이메일 형식을 입력해주세요. (최대 100자)');
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMessage('비밀번호는 8자 이상 입력해주세요.');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const resp = await client.post('/auth/login', {
-        email: email.trim(),
+      const resp = await loginApi({
+        email: trimmedEmail,
         password,
       });
 
