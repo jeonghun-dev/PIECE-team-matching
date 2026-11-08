@@ -166,6 +166,36 @@ async function findById(id) {
   };
 }
 
+// 수정·삭제할 일반 질문 또는 모집 글 질문을 조회한다.
+async function findForModification(id) {
+    const [rows] = await pool.execute(
+        `
+      SELECT
+        q.id,
+        q.author_id AS authorId,
+        q.project_id AS projectId
+      FROM questions q
+      WHERE q.id = ?
+        AND q.deleted_at IS NULL
+        AND (
+          q.project_id IS NULL
+          OR EXISTS (
+            SELECT 1
+            FROM projects p
+            WHERE p.id = q.project_id
+              AND p.deleted_at IS NULL
+          )
+        )
+    `,
+        [id]
+    );
+
+    return rows.length === 0 ? null : rows[0];
+}
+
+
+
+
 // 삭제되지 않은 일반 질문의 조회수를 1 증가시키는 함수이다.
 async function increaseViewCount(id) {
   const [result] = await pool.execute(
@@ -194,7 +224,6 @@ async function update(id, input) {
         content = ?
       WHERE id = ?
         AND author_id = ?
-        AND project_id IS NULL
         AND deleted_at IS NULL
     `,
       [
@@ -219,7 +248,6 @@ async function softDelete(id, authorId) {
       SET deleted_at = CURRENT_TIMESTAMP
       WHERE id = ?
         AND author_id = ?
-        AND project_id IS NULL
         AND deleted_at IS NULL
     `,
     [
@@ -232,6 +260,7 @@ async function softDelete(id, authorId) {
 }
 
 module.exports = {
+    findForModification,
     findByProjectId,
   existsProject,
   saveForProject,
