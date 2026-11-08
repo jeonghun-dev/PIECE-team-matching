@@ -72,7 +72,7 @@ const report = async (actor, input) => {
     throw createError(404, "신고 대상을 찾을 수 없습니다.");
   }
 
-  if (target.authorId === actor.id) {
+  if (String(target.authorId) === String(actor.id)) {
     throw createError(403, "본인이 작성한 글은 신고할 수 없습니다.");
   }
 
