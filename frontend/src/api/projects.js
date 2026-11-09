@@ -6,13 +6,12 @@ export const getProjects = (params = {}) => {
     return client.get("/projects", { params });
 };
 
-
-// 모집 글 상세 조회 
+// 모집 글 상세 조회
 export const getProject = (id) => {
     return client.get(`/projects/${id}`);
 };
 
-// 모집 글 등록
+// 모집 글 작성
 export const createProject = (data) => {
     return client.post("/projects", data);
 };
@@ -20,4 +19,9 @@ export const createProject = (data) => {
 // 모집 글 수정
 export const updateProject = (id, data) => {
     return client.put(`/projects/${id}`, data);
+};
+
+// 모집 글 삭제
+export const deleteProject = (id) => {
+    return client.delete(`/projects/${id}`);
 };
