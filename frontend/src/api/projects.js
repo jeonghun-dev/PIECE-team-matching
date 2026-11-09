@@ -16,3 +16,8 @@ export const createProject = (data) => {
 export const updateProject = (id, data) => {
     return client.put(`/projects/${id}`, data);
 };
+
+// 모집 글 삭제
+export const deleteProject = (id) => {
+    return client.delete(`/projects/${id}`);
+};
