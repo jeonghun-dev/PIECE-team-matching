@@ -34,7 +34,8 @@ const findByDirection = async (userId, direction, { type, status, limit, offset 
   const [rows] = await pool.execute(
     `SELECT r.id, r.project_id AS projectId, p.title AS projectTitle,
        r.sender_id AS senderId, r.receiver_id AS receiverId,
-       other.nickname AS otherNickname, r.type, r.status, r.message,
+       other.nickname AS otherNickname, other.level AS otherLevel,
+       other.total_score AS otherTotalScore, r.type, r.status, r.message,
        r.created_at AS createdAt, r.processed_at AS processedAt
      FROM project_requests r
      JOIN projects p ON p.id = r.project_id
