@@ -38,35 +38,11 @@
 }
 
 .signup-card__logo-img {
-  height: 30px !important;
-  max-width: 160px !important;
-  width: auto !important;
+  height: 30px;
+  max-width: 160px;
+  width: auto;
   object-fit: contain;
   display: block;
-}
-
-.signup-card__logo {
-  width: var(--icon-size-md);
-  height: var(--icon-size-md);
-  border-radius: var(--radius-badge);
-  background-color: var(--color-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.signup-card__logo-dot {
-  width: var(--space-2);
-  height: var(--space-2);
-  border-radius: var(--radius-circle);
-  background-color: var(--color-surface);
-}
-
-.signup-card__brand-name {
-  font-size: var(--font-size-section-title);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-heading);
-  color: var(--color-text);
 }
 
 .signup-card__title {
