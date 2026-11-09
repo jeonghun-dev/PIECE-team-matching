@@ -1,15 +1,28 @@
-const { LEVEL } = require("../constants");
+const { LEVEL, COLLABORATION_MODE, ACTIVE_TIME } = require("../constants");
 const discoveryRepository = require("../repositories/discoveryRepository");
 const { getPagination } = require("../utils/pagination");
 
 const LEVELS = new Set(Object.values(LEVEL));
-const COLLABORATION_MODES = new Set(["ONLINE", "OFFLINE", "ANY"]);
-const ACTIVE_TIMES = new Set([
-  "WEEKDAY_DAY",
-  "WEEKDAY_NIGHT",
-  "WEEKEND_AM",
-  "WEEKEND_PM",
-]);
+const COLLABORATION_MODES = new Set(Object.values(COLLABORATION_MODE));
+const ACTIVE_TIMES = new Set(Object.values(ACTIVE_TIME));
+const RECOMMENDATION_LIMIT = 4;
+
+function requireActor(actor) {
+  if (!actor || !actor.id) {
+    const error = new Error("로그인이 필요합니다.");
+    error.status = 401;
+    throw error;
+  }
+}
+
+function getActorLevel(actor) {
+  if (!LEVELS.has(actor.level)) {
+    const error = new Error("현재 학습 레벨 정보를 확인할 수 없습니다.");
+    error.status = 409;
+    throw error;
+  }
+  return actor.level;
+}
 
 function invalidFilter(name) {
   const error = new Error(`${name} 필터 값이 올바르지 않습니다.`);
@@ -25,14 +38,13 @@ function getStringFilter(filters, name) {
 }
 
 async function membersFor(actor, filters) {
-  void actor;
+  requireActor(actor);
   const pagination = getPagination(filters);
   const search = getStringFilter(filters, "search")?.trim();
   const level = getStringFilter(filters, "level");
   const levels = level?.split(",").filter(Boolean);
   const collaborationMode = getStringFilter(filters, "collaborationMode");
   const activeTime = getStringFilter(filters, "activeTime");
-  const lookingForTeam = getStringFilter(filters, "lookingForTeam");
 
   if (levels?.some((item) => !LEVELS.has(item))) throw invalidFilter("level");
   if (
@@ -47,14 +59,6 @@ async function membersFor(actor, filters) {
   ) {
     throw invalidFilter("activeTime");
   }
-  if (
-    lookingForTeam !== undefined &&
-    lookingForTeam !== "true" &&
-    lookingForTeam !== "false"
-  ) {
-    throw invalidFilter("lookingForTeam");
-  }
-
   const { items, totalCount } = await discoveryRepository.findMembers({
     search,
     levels,
@@ -67,4 +71,26 @@ async function membersFor(actor, filters) {
   return { items, totalCount, pagination };
 }
 
-module.exports = { membersFor };
+async function membersRecommended(actor) {
+  requireActor(actor);
+  const level = getActorLevel(actor);
+  const { items } = await discoveryRepository.findMembers({
+    levels: [level],
+    excludeUserId: actor.id,
+    excludeSharedTeamMembers: true,
+    limit: RECOMMENDATION_LIMIT,
+    offset: 0,
+    includeTotalCount: false,
+  });
+  return items;
+}
+
+async function projectsFor(actor) {
+  requireActor(actor);
+  return discoveryRepository.findOpenByLevel(
+    getActorLevel(actor),
+    RECOMMENDATION_LIMIT,
+  );
+}
+
+module.exports = { membersFor, membersRecommended, projectsFor };
