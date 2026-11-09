@@ -169,3 +169,26 @@
   border-color: var(--color-border);
   cursor: not-allowed;
 }
+
+/* 작성 시간: 작성자 정보 옆 */
+.answer-card__time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+/* 신고 버튼: 헤더 오른쪽 끝 */
+.answer-card__report {
+  margin-left: auto;
+}
+
+.answer-card__report-form {
+  margin-top: var(--space-4);
+}
+
+.answer-card__report-success {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
+}
