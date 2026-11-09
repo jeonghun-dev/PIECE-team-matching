@@ -30,3 +30,15 @@ export async function acceptAnswer(answerId) {
 
   return response.data.data;
 }
+
+// 답변 신고 (신고 사유/상세 내용 전달)
+export async function reportAnswer(answerId, input) {
+  const response = await client.post("/reports", {
+    targetType: "ANSWER",
+    targetId: answerId,
+    reason: input.reason,
+    detail: input.detail,
+  });
+
+  return response.data.data;
+}

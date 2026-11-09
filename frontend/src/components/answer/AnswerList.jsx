@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import ReportButton from "../report/ReportButton";
+import ReportForm from "../report/ReportForm";
 import "./AnswerList.css";
 
 export default function AnswerList({
@@ -10,6 +13,7 @@ export default function AnswerList({
   onUpdateAnswer,
   onDeleteAnswer,
   onAcceptAnswer,
+  onReportAnswer,
 }) {
   const [editingAnswerId, setEditingAnswerId] = useState(null);
   const [editContent, setEditContent] = useState("");
@@ -17,6 +21,9 @@ export default function AnswerList({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [actionAnswerId, setActionAnswerId] = useState(null);
+  // 신고 폼을 연 답변 번호, 이번 화면에서 신고를 마친 답변 번호 목록
+  const [reportingAnswerId, setReportingAnswerId] = useState(null);
+  const [reportedAnswerIds, setReportedAnswerIds] = useState([]);
   const isBusy = isSaving || isDeleting || isAccepting || isMutating;
 
   // 답변 수정 시작
@@ -119,6 +126,17 @@ export default function AnswerList({
       setIsAccepting(false);
     }
   }
+
+  // 답변 신고 제출 (실패하면 ReportForm이 오류 메시지 표시)
+  async function handleReport(answerId, input) {
+    if (typeof onReportAnswer !== "function") {
+      return;
+    }
+
+    await onReportAnswer(answerId, input);
+    setReportedAnswerIds((ids) => [...ids, answerId]);
+    setReportingAnswerId(null);
+  }
   return (
     <section className="answer-list" aria-label="답변 목록">
       <h2 className="answer-list__title">
@@ -147,6 +165,9 @@ export default function AnswerList({
               !isAuthor &&
               !isSolved &&
               !answer.isAccepted;
+            const createdTime = formatRelativeTime(answer.createdAt);
+            const canReport = currentUserId != null && !isAuthor;
+            const isReported = reportedAnswerIds.includes(answer.id);
 
             return (
               <article
@@ -170,6 +191,25 @@ export default function AnswerList({
                   <span className="answer-card__level">
                     {answer.authorLevel} · {answer.authorScore}점
                   </span>
+
+                  {createdTime && (
+                    <time
+                      className="answer-card__time"
+                      dateTime={createdTime.dateTime}
+                      title={`${createdTime.exact} (한국 시간)`}
+                    >
+                      {createdTime.label}
+                    </time>
+                  )}
+
+                  {canReport && (
+                    <span className="answer-card__report">
+                      <ReportButton
+                        disabled={isReported || reportingAnswerId === answer.id}
+                        onClick={() => setReportingAnswerId(answer.id)}
+                      />
+                    </span>
+                  )}
                 </header>
 
                 {/* 답변 내용 또는 수정 입력창 */}
@@ -251,6 +291,22 @@ export default function AnswerList({
                       </>
                     )}
                   </div>
+                )}
+
+                {/* 다른 사람 답변: 신고 폼 */}
+                {canReport && reportingAnswerId === answer.id && (
+                  <div className="answer-card__report-form">
+                    <ReportForm
+                      onSubmit={(input) => handleReport(answer.id, input)}
+                      onCancel={() => setReportingAnswerId(null)}
+                    />
+                  </div>
+                )}
+
+                {isReported && (
+                  <p className="answer-card__report-success" role="status">
+                    신고가 접수되었습니다.
+                  </p>
                 )}
               </article>
             );

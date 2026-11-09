@@ -5,6 +5,7 @@ import {
   updateAnswer,
   deleteAnswer,
   acceptAnswer,
+  reportAnswer,
 } from "../../api/answersApi";
 import { useAuth } from "../../hooks/useAuth";
 import AnswerList from "./AnswerList";
@@ -224,6 +225,11 @@ export default function AnswerSection({
     }
   }
 
+  // 답변 신고
+  async function handleReportAnswer(answerId, input) {
+    await reportAnswer(answerId, input);
+  }
+
   if (authLoading) {
     return <p>로그인 정보를 확인하고 있습니다.</p>;
   }
@@ -279,6 +285,7 @@ export default function AnswerSection({
         onUpdateAnswer={handleUpdateAnswer}
         onDeleteAnswer={handleDeleteAnswer}
         onAcceptAnswer={handleAcceptAnswer}
+        onReportAnswer={handleReportAnswer}
       />
       <AnswerForm onSubmit={handleCreateAnswer} isSubmitting={isMutating} />
     </div>
