@@ -31,6 +31,29 @@
     display: block;
 }
 
+/* 로고 + 관리자 배지 */
+.header__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.header__admin-badge {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-badge);
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-caption);
+}
+
+/* 관리자 페이지 메뉴: 빨간 글자 */
+.header__menu--admin,
+.header__menu--admin:hover {
+    color: var(--color-danger);
+}
+
 /* 공통 메뉴 */
 .header__nav {
     display: flex;
