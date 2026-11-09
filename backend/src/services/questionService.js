@@ -147,26 +147,18 @@ async function listForProject(actor, projectId) {
   return questions;
 }
 
-
-
-
-
-
-
-
-
 async function list(query) {
   // 빈 해결 상태는 조건 생략과 동일하게 전체 조회로 처리한다.
   // 정렬 기준이 없거나 빈 문자열이면 최신순으로 조회한다.
   const sort =
-      query.sort === "" || query.sort === undefined
-          ? "latest"
-          : query.sort;
+    query.sort === "" || query.sort === undefined
+      ? "latest"
+      : query.sort;
   const status = query.status === "" ? undefined : query.status;
 
   if (
-      status !== undefined &&
-      !["solved", "unsolved"].includes(status)
+    status !== undefined &&
+    !["solved", "unsolved"].includes(status)
   ) {
     badRequest("해결 상태가 올바르지 않습니다.");
   }
@@ -188,10 +180,9 @@ async function list(query) {
   }
 
   const total = await questionRepository.count(
-      keyword,
-      status
+    keyword,
+    status
   );
-
 
   const items = await questionRepository.findPage(
     keyword,
