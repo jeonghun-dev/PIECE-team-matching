@@ -2,11 +2,17 @@
 const pool = require("../config/db");
 const { REQUEST_STATUS } = require("../constants");
 
-const findByDirection = async (userId, direction, { type, status, limit, offset }) => {
+const buildRequestCondition = (userId, direction, { type, status }) => {
   const ownerColumn = direction === "received" ? "r.receiver_id" : "r.sender_id";
-  const otherColumn = direction === "received" ? "r.sender_id" : "r.receiver_id";
   const conditions = [`${ownerColumn} = ?`, "p.deleted_at IS NULL"];
   const values = [userId];
+
+  // 취소한 요청은 상대방의 받은 요청 목록에서 제외한다.
+  // 조회와 totalCount가 같은 조건 빌더를 사용해 페이지 수가 일치한다.
+  if (direction === "received") {
+    conditions.push("r.status <> ?");
+    values.push(REQUEST_STATUS.CANCELED);
+  }
 
   if (type) {
     conditions.push("r.type = ?");
@@ -16,6 +22,14 @@ const findByDirection = async (userId, direction, { type, status, limit, offset 
     conditions.push("r.status = ?");
     values.push(status);
   }
+
+  return { conditions, values };
+};
+
+const findByDirection = async (userId, direction, { type, status, limit, offset }) => {
+  const ownerColumn = direction === "received" ? "r.receiver_id" : "r.sender_id";
+  const otherColumn = direction === "received" ? "r.sender_id" : "r.receiver_id";
+  const { conditions, values } = buildRequestCondition(userId, direction, { type, status });
 
   const [rows] = await pool.execute(
     `SELECT r.id, r.project_id AS projectId, p.title AS projectTitle,
@@ -38,18 +52,7 @@ const findReceived = (userId, options) => findByDirection(userId, "received", op
 const findSent = (userId, options) => findByDirection(userId, "sent", options);
 
 const countByDirection = async (userId, direction, { type, status }) => {
-  const ownerColumn = direction === "received" ? "receiver_id" : "sender_id";
-  const conditions = [`r.${ownerColumn} = ?`, "p.deleted_at IS NULL"];
-  const values = [userId];
-
-  if (type) {
-    conditions.push("r.type = ?");
-    values.push(type);
-  }
-  if (status) {
-    conditions.push("r.status = ?");
-    values.push(status);
-  }
+  const { conditions, values } = buildRequestCondition(userId, direction, { type, status });
 
   const [rows] = await pool.execute(
     `SELECT COUNT(*) AS total
