@@ -152,6 +152,8 @@ async function findByProjectId(projectId) {
         q.project_id AS projectId,
         q.author_id AS authorId,
         u.nickname AS authorNickname,
+        u.level AS authorLevel,
+        u.total_score AS authorScore,
         q.title,
         q.content,
         q.is_solved AS isSolved,
