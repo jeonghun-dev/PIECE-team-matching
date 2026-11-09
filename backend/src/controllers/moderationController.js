@@ -135,6 +135,21 @@ const removeAnswer = async (req, resp, next) => {
   }
 };
 
+// 관리자: 신고 대상 1개의 신고 목록
+const listReportsByTarget = async (req, resp, next) => {
+  try {
+    const result = await moderationService.listReportsByTarget(
+      req.user,
+      req.params.targetType,
+      req.params.targetId,
+    );
+
+    return sendSuccess(resp, result, "신고 내역을 조회했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 관리자: 신고 대상 단위 처리
 const resolveReportTarget = async (req, resp, next) => {
   try {
@@ -169,6 +184,7 @@ module.exports = {
   unsuspend,
   listReports,
   resolveReport,
+  listReportsByTarget,
   resolveReportTarget,
   myReports,
   listProjects,

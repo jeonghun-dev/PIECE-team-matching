@@ -183,7 +183,7 @@ const listUsers = async (admin, query = {}) => {
 
   const items = users.map((user) => ({
     ...user,
-    score: Number(user.score),
+    totalScore: Number(user.totalScore),
     reportCount: Number(user.reportCount),
   }));
 
@@ -303,6 +303,27 @@ const listReports = async (admin, query = {}) => {
   });
 
   return toPageResponse(items, totalCount, paging);
+};
+
+// 신고 대상 1개의 신고 목록 (신고자·사유·상세 내용)
+const listReportsByTarget = async (admin, targetType, id) => {
+  assertAdmin(admin);
+
+  if (!Object.values(REPORT_TARGET_TYPE).includes(targetType)) {
+    throw createError(400, "신고 대상 종류가 올바르지 않습니다.");
+  }
+
+  const targetId = parseId(id, "신고 대상");
+  const reports = await moderationRepository.findReportsByTarget(
+    targetType,
+    targetId,
+  );
+
+  if (reports.length === 0) {
+    throw createError(404, "신고 내역을 찾을 수 없습니다.");
+  }
+
+  return { targetType, targetId, reports };
 };
 
 // 신고 대상 단위 처리: 그 대상의 대기 신고를 한꺼번에 RESOLVED 또는 REJECTED로 변경
@@ -480,7 +501,7 @@ const QNA_TYPE = Object.freeze({
   ANSWER: "ANSWER",
 });
 
-// 질문 답변 목록 (type=All 기본, QUESTION, ANSWER / 제목, 내용, 작성자 검색 / 페이지)
+// 질문 답변 목록 (type=ALL 기본, QUESTION, ANSWER / 제목, 내용, 작성자 검색 / 페이지)
 const listQna = async (admin, query = {}) => {
   assertAdmin(admin);
 
@@ -622,6 +643,7 @@ module.exports = {
   unsuspend,
   listReports,
   resolveReport,
+  listReportsByTarget,
   resolveReportTarget,
   myReports,
   listProjects,

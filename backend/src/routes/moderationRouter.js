@@ -38,6 +38,11 @@ router.patch(
 
 // 관리자: 신고 목록 / 신고 처리
 router.get("/admin/reports", adminOnly, moderationController.listReports);
+router.get(
+  "/admin/reports/targets/:targetType/:targetId",
+  adminOnly,
+  moderationController.listReportsByTarget,
+);
 router.patch(
   "/admin/reports/targets/:targetType/:targetId",
   adminOnly,

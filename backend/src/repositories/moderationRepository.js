@@ -86,7 +86,7 @@ const countUsers = async (filters) => {
 };
 
 // 회원 목록 조회 (비밀번호 해쉬 제외)
-// reportCount: 이 회원이 쓴 모집 글, 질문, 답변이 받은 신고 수 (처리 상태 무관)
+// reportCount: 이 회원이 쓴 모집 글·질문·답변이 받은 유효한 신고 수 (대기 + 조치 완료, 반려 제외)
 const findUsers = async (filters, limit, offset) => {
   const { where, params } = buildUserCondition(filters);
 
@@ -98,7 +98,7 @@ const findUsers = async (filters, limit, offset) => {
             u.role,
             u.status,
             u.level,
-            u.total_score AS score,
+            u.total_score AS totalScore,
             u.created_at AS createdAt,
             (
               SELECT COUNT(*)
@@ -109,7 +109,7 @@ const findUsers = async (filters, limit, offset) => {
                 ON r.target_type = 'QUESTION' AND tq.id = r.target_id
               LEFT JOIN answers ta
                 ON r.target_type = 'ANSWER' AND ta.id = r.target_id
-              WHERE COALESCE(tp.author_id, tq.author_id, ta.author_id) = u.id
+              WHERE COALESCE(tp.author_id, tq.author_id, ta.author_id) = u.id AND r.status <> 'REJECTED'
             ) AS reportCount
         FROM users u
         WHERE ${where}
@@ -163,7 +163,7 @@ const REPORT_TARGET_FROM = `
   LEFT JOIN users author
     ON author.id = COALESCE(p.author_id, q.author_id, a.author_id)`;
 
-// 신고 목록 검색 조건 만들기 (대상 글 기준으로 묶은 뒤 처리 생태로 거름))
+// 신고 목록 검색 조건 만들기 (대상 글 기준으로 묶은 뒤 처리 생태로 거름)
 // where: 묶기 전 조건, having: 묶은 뒤 조건
 const buildReportCondition = (filters) => {
   const conditions = ["1 = 1"];
@@ -641,6 +641,28 @@ const reopenQuestion = async (tx, questionId) => {
 
   return result.affectedRows;
 };
+// 신고 대상 1개에 접수된 신고 목록 (관리자 "보기"에서 신고자 상세 사유 확인용)
+const findReportsByTarget = async (targetType, targetId) => {
+  const [rows] = await pool.query(
+    `SELECT
+      r.id,
+      r.reporter_id AS reporterId,
+      reporter.nickname AS reporterNickname,
+      r.reason,
+      r.detail,
+      r.status,
+      r.created_at AS createdAt
+    FROM reports r
+    JOIN users reporter
+      ON reporter.id = r.reporter_id
+    WHERE r.target_type = ?
+      AND r.target_id = ?
+    ORDER BY r.created_at DESC, r.id DESC`,
+    [targetType, targetId],
+  );
+
+  return rows;
+};
 
 // 신고 대상 1개의 대기 중인 신고를 한꺼번에 처리 (조치 완료 또는 반려)
 const updateReportStatusByTarget = async (targetType, targetId, status) => {
@@ -681,6 +703,7 @@ module.exports = {
   findReports,
   findReport,
   updateReportStatus,
+  findReportsByTarget,
   updateReportStatusByTarget,
   findMyReportedTargetIds,
   countProjects,
