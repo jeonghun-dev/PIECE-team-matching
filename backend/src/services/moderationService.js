@@ -1,11 +1,14 @@
 // 신고, 관리자 기능 업무 규칙
+const pool = require("../config/db");
 const moderationRepository = require("../repositories/moderationRepository");
+const projectRepository = require("../repositories/projectRepository");
 const {
   REPORT_TARGET_TYPE,
   REPORT_REASON,
   REPORT_STATUS,
   USER_ROLE,
   USER_STATUS,
+  PROJECT_STATUS,
 } = require("../constants");
 const { getPagination, toPageResponse } = require("../utils/pagination");
 
@@ -296,6 +299,188 @@ const resolveReport = async (admin, id, status) => {
   return { id: reportId, status };
 };
 
+// ---------------- 관리자: 모집 글 ----------------
+
+// 모집 글 목록 (모집 상태, 제목 검색, 페이지)
+const listProjects = async (admin, query = {}) => {
+  assertAdmin(admin);
+
+  const paging = parsePaging(query);
+  const filters = {
+    status: parseFilter(
+      query.status,
+      PROJECT_STATUS,
+      "모집 상태 값이 올바르지 않습니다.",
+    ),
+    keyword: typeof query.keyword === "string" ? query.keyword.trim() : "",
+  };
+
+  const totalCount = await moderationRepository.countProjects(filters);
+  const rows = await moderationRepository.findProjects(
+    filters,
+    paging.limit,
+    paging.offset,
+  );
+
+  const projects = rows.map((row) => ({
+    ...row,
+    pendingReportCount: Number(row.pendingReportCount),
+  }));
+
+  return toPageResponse(projects, totalCount, paging);
+};
+
+// 모집 글 삭제 (작성자 삭제와 같이 소프트 삭제 + 대기 요청 취소, NFR-040)
+// 모집 글 Repository의 기존 함수를 같은 트렌젝션에서 사용
+const removeProject = async (admin, id) => {
+  assertAdmin(admin);
+
+  const projectId = parseId(id, "모집 글");
+
+  const tx = await pool.getConnection();
+
+  try {
+    await tx.beginTransaction();
+
+    const project = await projectRepository.findByIdForUpdate(tx, projectId);
+
+    if (!project) {
+      throw createError(404, "모집 글을 찾을 수 없습니다.");
+    }
+
+    await projectRepository.softDelete(tx, projectId);
+    await projectRepository.cancelPendingRequests(tx, projectId);
+
+    await tx.commit();
+
+    return { id: projectId };
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    tx.release();
+  }
+};
+
+// ---------------- 관리자: 질문·답변 ----------------
+
+// 질문·답변 목록 종류
+const QNA_TYPE = Object.freeze({
+  QUESTION: "QUESTION",
+  ANSWER: "ANSWER",
+});
+
+// 질문 답변 목록 (type=QUESTION 기본, type=ANSWER, 검색, 페이지)
+const listQna = async (admin, query = {}) => {
+  assertAdmin(admin);
+
+  const type =
+    parseFilter(
+      query.type,
+      QNA_TYPE,
+      "목록 종류는 QUESTION 또는 ANSWER만 가능합니다.",
+    ) ?? QNA_TYPE.QUESTION;
+  const paging = parsePaging(query);
+  const filters = {
+    keyword: typeof query.keyword === "string" ? query.keyword.trim() : "",
+  };
+
+  if (type === QNA_TYPE.ANSWER) {
+    const totalCount = await moderationRepository.countAnswers(filters);
+    const rows = await moderationRepository.findAnswers(
+      filters,
+      paging.limit,
+      paging.offset,
+    );
+
+    const answers = rows.map((row) => ({
+      ...row,
+      isAccepted: Number(row.isAccepted) === 1,
+      pendingReportCount: Number(row.pendingReportCount),
+    }));
+
+    return { type, ...toPageResponse(answers, totalCount, paging) };
+  }
+
+  const totalCount = await moderationRepository.countQuestions(filters);
+  const rows = await moderationRepository.findQuestions(
+    filters,
+    paging.limit,
+    paging.offset,
+  );
+
+  const questions = rows.map((row) => ({
+    ...row,
+    isSolved: Number(row.isSolved) === 1,
+    answerCount: Number(row.answerCount),
+    pendingReportCount: Number(row.pendingReportCount),
+  }));
+
+  return { type, ...toPageResponse(questions, totalCount, paging) };
+};
+
+// 질문 삭제 (소프트 삭제, 달린 답변은 목록에서 함께 제외됨)
+const removeQuestion = async (admin, id) => {
+  assertAdmin(admin);
+
+  const questionId = parseId(id, "질문");
+
+  const affectedRows =
+    await moderationRepository.softDeleteQuestion(questionId);
+
+  if (affectedRows !== 1) {
+    throw createError(404, "질문을 찾을 수 없습니다.");
+  }
+
+  return { id: questionId };
+};
+
+// 답변 삭제
+// 채택된 답변이면 채택 해제 + 질문 미해결 복귀를 같은 트랜잭션에서 처리
+const removeAnswer = async (admin, id) => {
+  assertAdmin(admin);
+
+  const answerId = parseId(id, "답변");
+
+  const tx = await pool.getConnection();
+
+  try {
+    await tx.beginTransaction();
+
+    const answer = await moderationRepository.findAnswerForDeleteForUpdate(
+      tx,
+      answerId,
+    );
+
+    if (!answer) {
+      throw createError(404, "답변을 찾을 수 없습니다.");
+    }
+
+    const wasAccepted = Number(answer.isAccepted) === 1;
+
+    const affectedRows = await moderationRepository.softDeleteAnswer(
+      tx,
+      answerId,
+    );
+
+    if (affectedRows !== 1) {
+      throw createError(409, "답변 상태가 변경되었습니다. 다시 확인해 주세요.");
+    }
+    if (wasAccepted) {
+      await moderationRepository.reopenQuestion(tx, answer.questionId);
+    }
+
+    await tx.commit();
+
+    return { id: answerId, questionReopened: wasAccepted };
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    tx.release();
+  }
+};
+
 module.exports = {
   report,
   listUsers,
@@ -303,4 +488,9 @@ module.exports = {
   unsuspend,
   listReports,
   resolveReport,
+  listProjects,
+  removeProject,
+  listQna,
+  removeQuestion,
+  removeAnswer,
 };

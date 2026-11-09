@@ -61,6 +61,26 @@ const findPendingApplication = async (tx, projectId, userId) => {
   return rows[0] ?? null;
 };
 
+// 같은 프로젝트와 대상 사용자 사이에 대기 중인 초대가 있는지 조회
+const findPendingInvitation = async (tx, projectId, userId) => {
+  const [rows] = await tx.query(
+    `SELECT id FROM project_requests
+     WHERE project_id = ? AND receiver_id = ? AND type = ? AND status = ?
+     LIMIT 1 FOR UPDATE`,
+    [projectId, userId, REQUEST_TYPE.INVITE, REQUEST_STATUS.PENDING],
+  );
+  return rows[0] ?? null;
+};
+
+const findInviteTarget = async (tx, userId) => {
+  const [rows] = await tx.query(
+    `SELECT id, status, role, looking_for_team AS lookingForTeam
+     FROM users WHERE id = ? FOR UPDATE`,
+    [userId],
+  );
+  return rows[0] ?? null;
+};
+
 // 새 요청을 대기 상태로 저장하고 생성된 요청 번호 반환
 const saveRequest = async (tx, request) => {
   const [result] = await tx.query(
@@ -256,6 +276,20 @@ const findMembers = async (projectId) => {
   return rows;
 };
 
+const findOwnedOpenProjects = async (userId) => {
+  const [rows] = await pool.execute(
+    `SELECT p.id, p.title, p.capacity, p.target_level AS targetLevel,
+       DATE_FORMAT(p.deadline, '%Y-%m-%d') AS deadline,
+       (SELECT COUNT(*) FROM project_members m WHERE m.project_id = p.id) AS memberCount
+     FROM projects p
+     WHERE p.author_id = ? AND p.status = ? AND p.deleted_at IS NULL
+       AND p.deadline >= DATE(UTC_TIMESTAMP() + INTERVAL 9 HOUR)
+     ORDER BY p.created_at DESC, p.id DESC`,
+    [userId, PROJECT_STATUS.OPEN],
+  );
+  return rows;
+};
+
 // 일반 팀원의 소속 삭제
 // Service에서 프로젝트 잠금과 권한 검사를 완료한 뒤 호출
 const removeMember = async (tx, projectId, userId) => {
@@ -274,6 +308,8 @@ module.exports = {
   findProjectForUpdate,
   findMember,
   findPendingApplication,
+  findPendingInvitation,
+  findInviteTarget,
   saveRequest,
   countMembers,
   findProject,
@@ -285,5 +321,6 @@ module.exports = {
   closeProject,
   cancelPendingRequests,
   findMembers,
+  findOwnedOpenProjects,
   removeMember,
 };

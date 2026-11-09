@@ -11,6 +11,13 @@ router.post(
   recruitmentController.apply,
 );
 
+// 모집 글 작성자의 팀원 초대
+router.post(
+  "/projects/:id/invitations",
+  AuthMiddleware.requireAuth,
+  recruitmentController.invite,
+);
+
 // 모집 글 작성자 전용 대기 지원자 목록 조회
 router.get(
   "/projects/:id/applications",
@@ -30,6 +37,13 @@ router.patch(
   "/requests/:id/reject",
   AuthMiddleware.requireAuth,
   recruitmentController.reject,
+);
+
+// 요청 보낸 사람의 취소 (참여 요청/초대 요청)
+router.patch(
+  "/requests/:id/cancel",
+  AuthMiddleware.requireAuth,
+  recruitmentController.cancel,
 );
 
 // 현재 팀원 목록 조회
