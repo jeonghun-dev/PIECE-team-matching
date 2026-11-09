@@ -1,0 +1,203 @@
+.question-detail-page {
+  --question-detail-starter: #2f9e8a;
+  --question-detail-achiever: #d9482b;
+  --question-detail-unsolved-bg: #fff8db;
+  --question-detail-unsolved-text: #946200;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--detail-max-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.question-detail-page * {
+  box-sizing: border-box;
+}
+
+.question-detail-breadcrumb,
+.question-detail-topline,
+.question-detail-meta,
+.question-detail-author {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.question-detail-breadcrumb,
+.question-detail-meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.question-detail-breadcrumb {
+  margin-bottom: var(--space-4);
+}
+
+.question-detail-breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.question-detail-breadcrumb a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.question-detail-card {
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.question-detail-topline {
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.question-detail-status,
+.question-detail-level {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-badge);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+}
+
+.question-detail-status {
+  background: var(--question-detail-unsolved-bg);
+  color: var(--question-detail-unsolved-text);
+}
+
+.question-detail-status--solved {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.question-detail-card h1 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-title);
+}
+
+.question-detail-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border-radius: var(--radius-circle);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.question-detail-nickname {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+}
+
+.question-detail-level {
+  background: var(--color-primary);
+  color: var(--color-text-on-solid);
+}
+
+.question-detail-level--starter {
+  background: var(--question-detail-starter);
+}
+
+.question-detail-level--achiever {
+  background: var(--question-detail-achiever);
+}
+
+.question-detail-body {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--color-border);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.question-detail-answers {
+  margin-top: var(--space-4);
+}
+
+.question-detail-report {
+  margin-top: var(--space-4);
+}
+
+.question-detail-report-success {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.question-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.question-detail-actions button {
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--button-padding-x-md);
+  border: var(--border-width) solid var(--color-primary);
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: var(--color-text-on-solid);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+  cursor: pointer;
+}
+
+.question-detail-actions button:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.question-detail-actions a {
+  color: var(--color-primary);
+}
+
+.question-detail-actions .question-detail-delete {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.question-detail-actions .question-detail-delete:hover:not(:disabled) {
+  background: var(--color-danger);
+  color: var(--color-text-on-solid);
+}
+
+.question-detail-actions button:disabled {
+  background: var(--color-disabled-bg);
+  border-color: var(--color-border);
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
+}
+
+.question-detail-delete-error {
+  margin-top: var(--space-3);
+  color: var(--color-danger);
+}
+
+.question-detail-page :is(a, button):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}

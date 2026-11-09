@@ -48,6 +48,7 @@ async function findPage(keyword, size, offset, status, sort = "latest") {
 
   const [rows] = await pool.execute(
     `SELECT q.id, q.author_id AS authorId, u.nickname AS authorNickname,
+      u.level AS authorLevel,
       q.title, LEFT(q.content, 200) AS contentPreview,
       q.view_count AS viewCount, q.is_solved AS isSolved,
       q.created_at AS createdAt,
@@ -180,6 +181,8 @@ async function findById(id) {
         q.id,
         q.author_id AS authorId,
         u.nickname AS authorNickname,
+        u.level AS authorLevel,
+        u.total_score AS authorScore,
         q.title,
         q.content,
         q.view_count AS viewCount,
