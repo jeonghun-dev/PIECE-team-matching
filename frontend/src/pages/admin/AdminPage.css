@@ -227,6 +227,26 @@
   white-space: nowrap;
 }
 
+/* 긴 제목, 내용은 두 줄까지만 */
+.admin-table__title {
+  max-width: 320px;
+}
+
+.admin-table__title > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: break-all;
+}
+
+.admin-table__title > .admin-table__sub {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  -webkit-line-clamp: 1;
+}
+
 .admin-table__actions-head {
   text-align: right;
 }
