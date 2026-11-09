@@ -1,4 +1,4 @@
-// 참여 요청, 팀 합류 업무 규칙
+// 참여 초대 요청, 팀 합류 업무 규칙
 const pool = require("../config/db");
 const recruitmentRepository = require("../repositories/recruitmentRepository");
 const {
@@ -195,12 +195,18 @@ const invite = async (actor, id, input = {}) => {
   const tx = await pool.getConnection();
   try {
     await tx.beginTransaction();
-    const project = await recruitmentRepository.findProjectForUpdate(tx, projectId);
+    const project = await recruitmentRepository.findProjectForUpdate(
+      tx,
+      projectId,
+    );
     if (!project) throw createError(404, "모집 글을 찾을 수 없습니다.");
     if (String(project.authorId) !== String(actor.id)) {
       throw createError(403, "모집 글 작성자만 초대할 수 있습니다.");
     }
-    if (project.status !== PROJECT_STATUS.OPEN || project.deadline < getToday()) {
+    if (
+      project.status !== PROJECT_STATUS.OPEN ||
+      project.deadline < getToday()
+    ) {
       throw createError(409, "모집 중인 프로젝트에서만 초대할 수 있습니다.");
     }
     const target = await recruitmentRepository.findInviteTarget(tx, userId);
@@ -213,7 +219,9 @@ const invite = async (actor, id, input = {}) => {
     if (await recruitmentRepository.findMember(tx, projectId, userId)) {
       throw createError(409, "이미 해당 팀에 소속되어 있습니다.");
     }
-    if (await recruitmentRepository.findPendingInvitation(tx, projectId, userId)) {
+    if (
+      await recruitmentRepository.findPendingInvitation(tx, projectId, userId)
+    ) {
       throw createError(409, "이미 대기 중인 초대 요청이 있습니다.");
     }
     const memberCount = await recruitmentRepository.countMembers(tx, projectId);
@@ -221,8 +229,11 @@ const invite = async (actor, id, input = {}) => {
       throw createError(409, "모집 정원이 가득 찼습니다.");
     }
     const requestId = await recruitmentRepository.saveRequest(tx, {
-      projectId, senderId: actor.id, receiverId: userId,
-      type: REQUEST_TYPE.INVITE, message,
+      projectId,
+      senderId: actor.id,
+      receiverId: userId,
+      type: REQUEST_TYPE.INVITE,
+      message,
     });
     await tx.commit();
     return { id: requestId, projectId, userId, status: REQUEST_STATUS.PENDING };
@@ -257,7 +268,7 @@ const listApplicants = async (actor, id) => {
   );
 };
 
-// 모집 글 작성자가 참여 요청을 수락
+// 요청을 받은 사람이 수락 (참여 요청: 모집 글 작성자, 초대 요청: 초대받은 회원)
 const accept = async (actor, id) => {
   if (!actor) {
     throw createError(401, "로그인이 필요합니다.");
@@ -298,29 +309,31 @@ const accept = async (actor, id) => {
       throw createError(409, "요청 정보가 변경되었습니다.");
     }
 
-    // 현재 함수는 참여 요청 수락을 담당
+    // 참여 요청(APPLY)과 초대 요청(INVITE) 수락을 함께 담당
     if (![REQUEST_TYPE.APPLY, REQUEST_TYPE.INVITE].includes(request.type)) {
       throw createError(400, "참여 또는 초대 요청만 처리할 수 있습니다.");
     }
-    const isAuthorizedRecipient = String(request.receiverId) === String(actor.id) && (
-      request.type === REQUEST_TYPE.APPLY
+    const isAuthorizedRecipient =
+      String(request.receiverId) === String(actor.id) &&
+      (request.type === REQUEST_TYPE.APPLY
         ? String(project.authorId) === String(actor.id)
-        : String(project.authorId) === String(request.senderId)
-    );
-    if (!isAuthorizedRecipient) throw createError(403, "요청을 받은 사용자만 수락할 수 있습니다.");
+        : String(project.authorId) === String(request.senderId));
+    if (!isAuthorizedRecipient)
+      throw createError(403, "요청을 받은 사용자만 수락할 수 있습니다.");
 
     if (request.status !== REQUEST_STATUS.PENDING) {
       throw createError(409, "이미 처리된 요청입니다.");
     }
 
-    const joiningUserId = request.type === REQUEST_TYPE.INVITE
-      ? request.receiverId
-      : request.senderId;
+    const joiningUserId =
+      request.type === REQUEST_TYPE.INVITE
+        ? request.receiverId
+        : request.senderId;
     if (String(joiningUserId) === String(project.authorId)) {
-      throw createError(409, "본인 모집 글의 참여 요청은 수락할 수 없습니다.");
+      throw createError(409, "본인 모집 글에는 팀원으로 합류할 수 없습니다.");
     }
 
-    // 참여 요청에서는 보낸 사람이 새 팀원이 됨
+    // 참여 요청은 보낸 사람, 초대 요청은 받은 사람이 새 팀원이 됨
     await joinTeam(tx, project, requestId, joiningUserId);
 
     await tx.commit();
@@ -338,7 +351,7 @@ const accept = async (actor, id) => {
   }
 };
 
-// 모집 글 작성자가 참여 요청을 거절
+// 요청을 받은 사람이 거절 (참여 요청: 모집 글 작성자, 초대 요청: 초대받은 회원)
 const reject = async (actor, id) => {
   if (!actor) {
     throw createError(401, "로그인이 필요합니다.");
@@ -379,12 +392,13 @@ const reject = async (actor, id) => {
     if (![REQUEST_TYPE.APPLY, REQUEST_TYPE.INVITE].includes(request.type)) {
       throw createError(400, "참여 또는 초대 요청만 처리할 수 있습니다.");
     }
-    const isAuthorizedRecipient = String(request.receiverId) === String(actor.id) && (
-      request.type === REQUEST_TYPE.APPLY
+    const isAuthorizedRecipient =
+      String(request.receiverId) === String(actor.id) &&
+      (request.type === REQUEST_TYPE.APPLY
         ? String(project.authorId) === String(actor.id)
-        : String(project.authorId) === String(request.senderId)
-    );
-    if (!isAuthorizedRecipient) throw createError(403, "요청을 받은 사용자만 거절할 수 있습니다.");
+        : String(project.authorId) === String(request.senderId));
+    if (!isAuthorizedRecipient)
+      throw createError(403, "요청을 받은 사용자만 거절할 수 있습니다.");
 
     if (request.status !== REQUEST_STATUS.PENDING) {
       throw createError(409, "이미 처리된 요청입니다.");
@@ -424,20 +438,34 @@ const cancel = async (actor, id) => {
   const tx = await pool.getConnection();
   try {
     await tx.beginTransaction();
-    const project = await recruitmentRepository.findProjectForUpdate(tx, requestInfo.projectId);
+    const project = await recruitmentRepository.findProjectForUpdate(
+      tx,
+      requestInfo.projectId,
+    );
     if (!project) throw createError(404, "모집 글을 찾을 수 없습니다.");
     const request = await recruitmentRepository.lockRequest(tx, requestId);
     if (!request) throw createError(404, "요청을 찾을 수 없습니다.");
-    if (String(request.projectId) !== String(project.id)) throw createError(409, "요청 정보가 변경되었습니다.");
-    if (String(request.senderId) !== String(actor.id)) throw createError(403, "요청을 보낸 사용자만 취소할 수 있습니다.");
-    if (request.status !== REQUEST_STATUS.PENDING) throw createError(409, "이미 처리된 요청입니다.");
+    if (String(request.projectId) !== String(project.id))
+      throw createError(409, "요청 정보가 변경되었습니다.");
+    if (String(request.senderId) !== String(actor.id))
+      throw createError(403, "요청을 보낸 사용자만 취소할 수 있습니다.");
+    if (request.status !== REQUEST_STATUS.PENDING)
+      throw createError(409, "이미 처리된 요청입니다.");
     if (![REQUEST_TYPE.APPLY, REQUEST_TYPE.INVITE].includes(request.type)) {
       throw createError(400, "참여 또는 초대 요청만 취소할 수 있습니다.");
     }
-    const updatedCount = await recruitmentRepository.updateStatus(tx, requestId, REQUEST_STATUS.CANCELED);
+    const updatedCount = await recruitmentRepository.updateStatus(
+      tx,
+      requestId,
+      REQUEST_STATUS.CANCELED,
+    );
     if (updatedCount !== 1) throw createError(409, "이미 처리된 요청입니다.");
     await tx.commit();
-    return { id: requestId, projectId: project.id, status: REQUEST_STATUS.CANCELED };
+    return {
+      id: requestId,
+      projectId: project.id,
+      status: REQUEST_STATUS.CANCELED,
+    };
   } catch (error) {
     await tx.rollback();
     throw error;
