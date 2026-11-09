@@ -71,6 +71,70 @@ const resolveReport = async (req, resp, next) => {
   }
 };
 
+// 관리글: 모집 글 목록
+const listProjects = async (req, resp, next) => {
+  try {
+    const result = await moderationService.listProjects(req.user, req.query);
+
+    return sendSuccess(resp, result, "모집 글 목록을 조회했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 관리자: 모집 글 삭제
+const removeProject = async (req, resp, next) => {
+  try {
+    const result = await moderationService.removeProject(
+      req.user,
+      req.params.id,
+    );
+
+    return sendSuccess(resp, result, "모집 글을 삭제했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 관리자: 질문, 답변 목록
+const listQna = async (req, resp, next) => {
+  try {
+    const result = await moderationService.listQna(req.user, req.query);
+
+    return sendSuccess(resp, result, "질문·답변 목록을 조회했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 관리자: 질문 삭제
+const removeQuestion = async (req, resp, next) => {
+  try {
+    const result = await moderationService.removeQuestion(
+      req.user,
+      req.params.id,
+    );
+
+    return sendSuccess(resp, result, "질문을 삭제했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 관리자: 답변 삭제
+const removeAnswer = async (req, resp, next) => {
+  try {
+    const result = await moderationService.removeAnswer(
+      req.user,
+      req.params.id,
+    );
+
+    return sendSuccess(resp, result, "답변을 삭제했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   report,
   listUsers,
@@ -78,4 +142,9 @@ module.exports = {
   unsuspend,
   listReports,
   resolveReport,
+  listProjects,
+  removeProject,
+  listQna,
+  removeQuestion,
+  removeAnswer,
 };
