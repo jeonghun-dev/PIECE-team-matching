@@ -14,6 +14,7 @@ const moderationRouter = require("./routes/moderationRouter");
 const inboxRouter = require("./routes/inboxRouter");
 const { requireAuth } = require("./middlewares/auth");
 const { startDeadlineJob } = require("./jobs/deadlineJob");
+const myPageRouter = require("./routes/myPageRouter");
 
 //2.웹 앱 초기화
 const app = express();
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/members", requireAuth, discoveryRouter);
+app.use("/api/users/me", myPageRouter);
 app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api", recruitmentRouter);
