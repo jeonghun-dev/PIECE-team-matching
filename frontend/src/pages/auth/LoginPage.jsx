@@ -74,7 +74,7 @@ function LoginPage() {
           <div className="login-card__brand">
             <h1 id="login-title">
               <img
-                src="/PIECE_rogo.png"
+                src="/piece-logo.png"
                 alt="PIECE"
                 className="login-card__logo-img"
               />

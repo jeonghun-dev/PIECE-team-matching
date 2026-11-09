@@ -204,7 +204,7 @@ function SignupPage() {
         <header className="signup-card__header">
           <div className="signup-card__brand">
             <img
-              src="/PIECE_rogo.png"
+              src="/piece-logo.png"
               alt="PIECE"
               className="signup-card__logo-img"
             />

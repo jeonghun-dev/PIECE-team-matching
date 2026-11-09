@@ -35,7 +35,7 @@ function Header() {
                 {/* 로고 → 메인 */}
                 <Link to="/" className="header__logo">
                     <img
-                        src="/PIECE_rogo.png"
+                        src="/piece-logo.png"
                         alt="PIECE"
                         className="header__logo-img"
                     />
