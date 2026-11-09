@@ -309,12 +309,15 @@ const countPendingReceived = async (userId) => {
 
 const countRequests = async (userId, direction, { type, status }) => {
   const ownerColumn = direction === "received" ? "receiver_id" : "sender_id";
-  const conditions = [`${ownerColumn} = ?`];
+  const conditions = [`r.${ownerColumn} = ?`, "p.deleted_at IS NULL"];
   const values = [userId];
-  if (type) { conditions.push("type = ?"); values.push(type); }
-  if (status) { conditions.push("status = ?"); values.push(status); }
+  if (type) { conditions.push("r.type = ?"); values.push(type); }
+  if (status) { conditions.push("r.status = ?"); values.push(status); }
   const [rows] = await pool.execute(
-    `SELECT COUNT(*) AS total FROM project_requests WHERE ${conditions.join(" AND ")}`,
+    `SELECT COUNT(*) AS total
+     FROM project_requests r
+     JOIN projects p ON p.id = r.project_id
+     WHERE ${conditions.join(" AND ")}`,
     values,
   );
   return Number(rows[0].total);
@@ -329,7 +332,8 @@ const findNotifications = async (userId, limit) => findRequests(
 const findOwnedOpenProjects = async (userId) => {
   const [rows] = await pool.execute(
     `SELECT p.id, p.title, p.capacity, p.target_level AS targetLevel,
-       p.deadline, (SELECT COUNT(*) FROM project_members m WHERE m.project_id = p.id) AS memberCount
+       DATE_FORMAT(p.deadline, '%Y-%m-%d') AS deadline,
+       (SELECT COUNT(*) FROM project_members m WHERE m.project_id = p.id) AS memberCount
      FROM projects p
      WHERE p.author_id = ? AND p.status = ? AND p.deleted_at IS NULL
        AND p.deadline >= DATE(UTC_TIMESTAMP() + INTERVAL 9 HOUR)
