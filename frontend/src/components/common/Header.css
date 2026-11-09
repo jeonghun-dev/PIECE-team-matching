@@ -23,6 +23,14 @@
     text-decoration: none;
 }
 
+.header__logo-img {
+    height: 24px ;
+    max-width: 140px ;
+    width: auto ;
+    object-fit: contain;
+    display: block;
+}
+
 /* 공통 메뉴 */
 .header__nav {
     display: flex;
