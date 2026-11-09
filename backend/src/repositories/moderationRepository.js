@@ -474,33 +474,52 @@ const softDeleteQuestion = async (questionId) => {
   return result.affectedRows;
 };
 
-// 삭제 전 답변 조회 (삭제된 답변, 삭제된 질문의 답변 제외)
-const findAnswerForDelete = async (answerId) => {
-  const [rows] = await pool.query(
+// 삭제 전 답변 잠금 조회 (트랜잭션 안에서 사용)
+// 질문 행도 함께 잠가서 삭제 중에 다른 채택이 끼어들지 않게 함
+const findAnswerForDeleteForUpdate = async (tx, answerId) => {
+  const [rows] = await tx.query(
     `SELECT
             a.id,
+            a.question_id AS questionId,
             a.is_accepted AS isAccepted
         FROM answers a
         JOIN questions q
             ON q.id = a.question_id
+        LEFT JOIN projects p
+            ON p.id = q.project_id
         WHERE a.id = ?
             AND a.deleted_at IS NULL
-            AND q.deleted_at IS NULL`,
+            AND q.deleted_at IS NULL
+            AND (q.project_id IS NULL OR p.deleted_at IS NULL)
+        FOR UPDATE`,
     [answerId],
   );
 
   return rows[0] ?? null;
 };
 
-// 답변 솦므트 삭제 (채택된 답변은 삭제하지 않음, NFR-039)
-const softDeleteAnswer = async (answerId) => {
-  const [result] = await pool.query(
+// 답변 소프트 삭제 + 채택 해제 (관리자는 채택된 답변도 삭제 가능)
+const softDeleteAnswer = async (tx, answerId) => {
+  const [result] = await tx.query(
     `UPDATE answers
-            SET deleted_at = CURRENT_TIMESTAMP
+            SET deleted_at = CURRENT_TIMESTAMP,
+                is_accepted = 0
             WHERE id = ?
-                AND deleted_at IS NULL
-                AND is_accepted = 0`,
+                AND deleted_at IS NULL`,
     [answerId],
+  );
+
+  return result.affectedRows;
+};
+
+// 채택 답변이 삭제된 질문을 미해결로 돌림 (다시 채택 가능)
+const reopenQuestion = async (tx, questionId) => {
+  const [result] = await tx.query(
+    `UPDATE questions
+            SET is_solved = 0
+            WHERE id = ?
+                AND is_solved = 1`,
+    [questionId],
   );
 
   return result.affectedRows;
@@ -524,6 +543,7 @@ module.exports = {
   countAnswers,
   findAnswers,
   softDeleteQuestion,
-  findAnswerForDelete,
+  findAnswerForDeleteForUpdate,
   softDeleteAnswer,
+  reopenQuestion,
 };

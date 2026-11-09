@@ -435,30 +435,50 @@ const removeQuestion = async (admin, id) => {
   return { id: questionId };
 };
 
-// 답변 삭제 (채택된 답변은 관리자도 삭제 불가, NFR-039)
+// 답변 삭제
+// 채택된 답변이면 채택 해제 + 질문 미해결 복귀를 같은 트랜잭션에서 처리
 const removeAnswer = async (admin, id) => {
   assertAdmin(admin);
 
   const answerId = parseId(id, "답변");
 
-  const answer = await moderationRepository.findAnswerForDelete(answerId);
+  const tx = await pool.getConnection();
 
-  if (!answer) {
-    throw createError(404, "답변을 찾을 수 없습니다.");
+  try {
+    await tx.beginTransaction();
+
+    const answer = await moderationRepository.findAnswerForDeleteForUpdate(
+      tx,
+      answerId,
+    );
+
+    if (!answer) {
+      throw createError(404, "답변을 찾을 수 없습니다.");
+    }
+
+    const wasAccepted = Number(answer.isAccepted) === 1;
+
+    const affectedRows = await moderationRepository.softDeleteAnswer(
+      tx,
+      answerId,
+    );
+
+    if (affectedRows !== 1) {
+      throw createError(409, "답변 상태가 변경되었습니다. 다시 확인해 주세요.");
+    }
+    if (wasAccepted) {
+      await moderationRepository.reopenQuestion(tx, answer.questionId);
+    }
+
+    await tx.commit();
+
+    return { id: answerId, questionReopened: wasAccepted };
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    tx.release();
   }
-
-  if (Number(answer.isAccepted) === 1) {
-    throw createError(409, "채택된 답변은 삭제할 수 없습니다.");
-  }
-
-  // 조회 후 채택되거나 삭제된 경우도 409
-  const affectedRows = await moderationRepository.softDeleteAnswer(answerId);
-
-  if (affectedRows !== 1) {
-    throw createError(409, "답변 상태가 변경되었습니다. 다시 확인해 주세요.");
-  }
-
-  return { id: answerId };
 };
 
 module.exports = {
