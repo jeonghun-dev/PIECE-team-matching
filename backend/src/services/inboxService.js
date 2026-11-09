@@ -1,3 +1,4 @@
+const inboxRepository = require("../repositories/inboxRepository");
 const recruitmentRepository = require("../repositories/recruitmentRepository");
 const { getPagination, toPageResponse } = require("../utils/pagination");
 const { REQUEST_STATUS, REQUEST_TYPE } = require("../constants");
@@ -28,21 +29,27 @@ const list = async (actor, query = {}) => {
   }
   const filters = validateFilters(query);
   const paging = getPagination(query);
+  const findPage = direction === "received"
+    ? inboxRepository.findReceived
+    : inboxRepository.findSent;
+  const countPage = direction === "received"
+    ? inboxRepository.countReceived
+    : inboxRepository.countSent;
   const [items, totalCount] = await Promise.all([
-    recruitmentRepository.findRequests(actor.id, direction, { ...filters, limit: paging.limit, offset: paging.offset }),
-    recruitmentRepository.countRequests(actor.id, direction, filters),
+    findPage(actor.id, { ...filters, limit: paging.limit, offset: paging.offset }),
+    countPage(actor.id, filters),
   ]);
   return toPageResponse(items, totalCount, paging);
 };
 
 const pendingCount = async (actor) => {
   validateActor(actor);
-  return { count: await recruitmentRepository.countPendingReceived(actor.id) };
+  return { count: await inboxRepository.countPendingReceived(actor.id) };
 };
 
 const notifications = async (actor) => {
   validateActor(actor);
-  return recruitmentRepository.findNotifications(actor.id, 20);
+  return inboxRepository.findReceived(actor.id, { limit: 20, offset: 0 });
 };
 
 const ownedOpenProjects = async (actor) => {
