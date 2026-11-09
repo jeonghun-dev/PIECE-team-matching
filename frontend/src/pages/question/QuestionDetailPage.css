@@ -1,8 +1,4 @@
 .question-detail-page {
-  --question-detail-starter: #2f9e8a;
-  --question-detail-achiever: #d9482b;
-  --question-detail-unsolved-bg: #fff8db;
-  --question-detail-unsolved-text: #946200;
   box-sizing: border-box;
   width: 100%;
   max-width: var(--detail-max-width);
@@ -73,8 +69,8 @@
 }
 
 .question-detail-status {
-  background: var(--question-detail-unsolved-bg);
-  color: var(--question-detail-unsolved-text);
+  background: var(--color-unsolved-soft);
+  color: var(--color-unsolved);
 }
 
 .question-detail-status--solved {
@@ -108,16 +104,16 @@
 }
 
 .question-detail-level {
-  background: var(--color-primary);
+  background: var(--color-level-builder);
   color: var(--color-text-on-solid);
 }
 
 .question-detail-level--starter {
-  background: var(--question-detail-starter);
+  background: var(--color-level-starter);
 }
 
 .question-detail-level--achiever {
-  background: var(--question-detail-achiever);
+  background: var(--color-level-achiever);
 }
 
 .question-detail-body {

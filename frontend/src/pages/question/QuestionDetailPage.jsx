@@ -140,7 +140,16 @@ function QuestionDetailContent({ id }) {
   }
 
   if (!question) {
-    return <p>질문 정보가 없습니다.</p>;
+    return (
+      <div className="question-detail-page">
+        <div className="question-detail-card">
+          <p>질문 정보가 없습니다.</p>
+          <div className="question-detail-actions">
+            <Link to="/questions">질문 목록으로</Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const createdTime = formatRelativeTime(question.createdAt);

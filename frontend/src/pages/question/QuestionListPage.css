@@ -1,11 +1,5 @@
 ﻿/* Page layout uses the shared layout tokens. */
 .question-list-page {
-  /* 기존 모집 글 폼의 레벨 배지 색상과 동일하게 적용 */
-  --question-level-starter: #2f9e8a;
-  --question-level-builder: var(--color-primary);
-  --question-level-achiever: #d9482b;
-  --question-unsolved-bg: #fff8db;
-  --question-unsolved-text: #946200;
   box-sizing: border-box;
   width: 100%;
   max-width: var(--content-max-width);
@@ -255,8 +249,8 @@
 .question-list-status {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-badge);
-  background: var(--question-unsolved-bg);
-  color: var(--question-unsolved-text);
+  background: var(--color-unsolved-soft);
+  color: var(--color-unsolved);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-heading);
@@ -282,7 +276,7 @@
 .question-list-level {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-badge);
-  background: var(--question-level-builder);
+  background: var(--color-level-builder);
   color: var(--color-text-on-solid);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
@@ -290,15 +284,15 @@
 }
 
 .question-list-level--starter {
-  background: var(--question-level-starter);
+  background: var(--color-level-starter);
 }
 
 .question-list-level--builder {
-  background: var(--question-level-builder);
+  background: var(--color-level-builder);
 }
 
 .question-list-level--achiever {
-  background: var(--question-level-achiever);
+  background: var(--color-level-achiever);
 }
 
 .question-list-preview {
