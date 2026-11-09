@@ -316,7 +316,11 @@ const findProjects = async (filters, limit, offset) => {
 
 // 질문 목록 검색 조건 만들기 (삭제된 질문 제외)
 const buildQuestionCondition = (filters) => {
-  const conditions = ["q.deleted_at IS NULL"];
+  // 모집 글에 달린 질문이면 모집 글도 삭제되지 않아야 함 (NFR-043)
+  const conditions = [
+    "q.deleted_at IS NULL",
+    "(q.project_id IS NULL OR p.deleted_at IS NULL)",
+  ];
   const params = [];
 
   if (filters.keyword) {
@@ -334,6 +338,8 @@ const countQuestions = async (filters) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) AS totalCount
             FROM questions q
+            LEFT JOIN projects p
+                ON p.id = q.project_id
             WHERE ${where}`,
     params,
   );
@@ -370,6 +376,8 @@ const findQuestions = async (filters, limit, offset) => {
         FROM questions q
         JOIN users u
             ON u.id = q.author_id
+        LEFT JOIN projects p
+            ON p.id = q.project_id
         WHERE ${where}
         ORDER BY q.id DESC
         LIMIT ? OFFSET ?`,
@@ -382,7 +390,12 @@ const findQuestions = async (filters, limit, offset) => {
 // 답변 목록 검색 조건 만들기
 // 삭제된 답변과 삭제된 질문에 달린 답변 제위 (NFR-043)
 const buildAnswerCondition = (filters) => {
-  const conditions = ["a.deleted_at IS NULL", "q.deleted_at IS NULL"];
+  // 삭제된 질문, 삭제된 모집 글에 달린 질문의 답변도 제외 (NFR-043)
+  const conditions = [
+    "a.deleted_at IS NULL",
+    "q.deleted_at IS NULL",
+    "(q.project_id IS NULL OR p.deleted_at IS NULL)",
+  ];
   const params = [];
 
   if (filters.keyword) {
@@ -400,8 +413,10 @@ const countAnswers = async (filters) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) AS totalCount
             FROM answers a
-            join questions q
+            JOIN questions q
                 ON q.id = a.question_id
+            LEFT JOIN projects p
+                ON p.id = q.project_id
             WHERE ${where}`,
     params,
   );
@@ -433,6 +448,8 @@ const findAnswers = async (filters, limit, offset) => {
         FROM answers a
         JOIN questions q
             ON q.id = a.question_id
+        LEFT JOIN projects p
+            ON p.id = q.project_id
         JOIN users u
             ON u.id = a.author_id
         WHERE ${where}
