@@ -11,6 +11,7 @@ const recruitmentRouter = require("./routes/recruitmentRouter");
 const questionRouter = require("./routes/questionRouter");
 const createAnswerRouter = require("./routes/answerRouter");
 const moderationRouter = require("./routes/moderationRouter");
+const inboxRouter = require("./routes/inboxRouter");
 const { requireAuth } = require("./middlewares/auth");
 const { startDeadlineJob } = require("./jobs/deadlineJob");
 
@@ -29,10 +30,11 @@ app.get("/", (req, res) => {
   res.send("Express 서버 실행 중");
 });
 
-app.use("/api/members", discoveryRouter);
+app.use("/api/members", requireAuth, discoveryRouter);
 app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api", recruitmentRouter);
+app.use("/api", inboxRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api", createAnswerRouter(requireAuth));
 app.use("/api", moderationRouter);

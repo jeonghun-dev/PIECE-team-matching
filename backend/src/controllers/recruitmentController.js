@@ -12,6 +12,16 @@ const apply = async (req, resp, next) => {
   }
 };
 
+// 프로젝트 초대 요청 생성
+const invite = async (req, resp, next) => {
+  try {
+    const result = await recruitmentService.invite(req.user, req.params.id, req.body);
+    return sendSuccess(resp, result, "초대 요청을 보냈습니다.", 201);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 모집 글 작성자 전용 대기 지원자 목록 조회
 const listApplicants = async (req, resp, next) => {
   try {
@@ -48,6 +58,16 @@ const reject = async (req, resp, next) => {
   }
 };
 
+// 보낸 요청 취소
+const cancel = async (req, resp, next) => {
+  try {
+    const result = await recruitmentService.cancel(req.user, req.params.id);
+    return sendSuccess(resp, result, "요청을 취소했습니다.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 현재 팀원 목록 조회
 const listMembers = async (req, resp, next) => {
   try {
@@ -79,9 +99,11 @@ const removeMember = async (req, resp, next) => {
 
 module.exports = {
   apply,
+  invite,
   listApplicants,
   accept,
   reject,
+  cancel,
   listMembers,
   removeMember,
 };

@@ -1,19 +1,16 @@
-const { getPagination, toPageResponse } = require("../utils/pagination");
-const discoveryRepository = require("../repositories/discoveryRepository");
+const { toPageResponse } = require("../utils/pagination");
+const { sendSuccess } = require("../utils/response");
+const discoveryService = require("../services/discoveryService");
 
 async function membersFor(req, res, next) {
   try {
-    const pagination = getPagination(req.query);
-    const { items, totalCount } = await discoveryRepository.findMembers(
-      req.query,
-      pagination,
-    );
+    const { items, totalCount, pagination } =
+      await discoveryService.membersFor(req.user, req.query);
 
-    return res.status(200).json({
-      success: true,
-      data: toPageResponse(items, totalCount, pagination),
-      message: null,
-    });
+    return sendSuccess(
+      res,
+      toPageResponse(items, totalCount, pagination),
+    );
   } catch (error) {
     next(error);
   }

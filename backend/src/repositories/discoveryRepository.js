@@ -1,35 +1,20 @@
 const pool = require("../config/db");
 
-const LEVELS = new Set(["STARTER", "BUILDER", "ACHIEVER"]);
-const COLLABORATION_MODES = new Set(["ONLINE", "OFFLINE", "ANY"]);
-const ACTIVE_TIMES = new Set([
-  "WEEKDAY_DAY",
-  "WEEKDAY_NIGHT",
-  "WEEKEND_AM",
-  "WEEKEND_PM",
-]);
-
-function invalidFilter(name) {
-  const error = new Error(`${name} 필터 값이 올바르지 않습니다.`);
-  error.status = 400;
-  return error;
-}
-
-function getStringFilter(query, name) {
-  const value = query[name];
-  if (value === undefined || value === "") return undefined;
-  if (typeof value !== "string") throw invalidFilter(name);
-  return value;
-}
-
-async function findMembers(filters, { limit, offset }) {
-  const conditions = ["u.status = 'ACTIVE'", "u.role = 'USER'"];
+async function findMembers(filters) {
+  const conditions = [
+    "u.status = 'ACTIVE'",
+    "u.role = 'USER'",
+    "u.looking_for_team = 1",
+  ];
   const values = [];
-  const search = getStringFilter(filters, "search")?.trim();
-  const level = getStringFilter(filters, "level");
-  const collaborationMode = getStringFilter(filters, "collaborationMode");
-  const activeTime = getStringFilter(filters, "activeTime");
-  const lookingForTeam = getStringFilter(filters, "lookingForTeam");
+  const {
+    search,
+    levels,
+    collaborationMode,
+    activeTime,
+    limit,
+    offset,
+  } = filters;
 
   if (search) {
     conditions.push("(u.nickname LIKE ? OR u.intro LIKE ?)");
@@ -37,41 +22,22 @@ async function findMembers(filters, { limit, offset }) {
     values.push(searchTerm, searchTerm);
   }
 
-  if (level) {
-    if (!LEVELS.has(level)) throw invalidFilter("level");
-    conditions.push("u.level = ?");
-    values.push(level);
+  if (levels?.length) {
+    conditions.push(`u.level IN (${levels.map(() => "?").join(", ")})`);
+    values.push(...levels);
   }
 
   if (collaborationMode) {
-    if (!COLLABORATION_MODES.has(collaborationMode)) {
-      throw invalidFilter("collaborationMode");
-    }
     conditions.push("u.collaboration_mode = ?");
     values.push(collaborationMode);
   }
 
   if (activeTime) {
     const activeTimes = activeTime.split(",");
-    if (
-      activeTimes.some(
-        (time) => !time || !ACTIVE_TIMES.has(time),
-      )
-    ) {
-      throw invalidFilter("activeTime");
-    }
     conditions.push(
       `(${activeTimes.map(() => "FIND_IN_SET(?, u.active_times) > 0").join(" OR ")})`,
     );
     values.push(...activeTimes);
-  }
-
-  if (lookingForTeam !== undefined) {
-    if (lookingForTeam !== "true" && lookingForTeam !== "false") {
-      throw invalidFilter("lookingForTeam");
-    }
-    conditions.push("u.looking_for_team = ?");
-    values.push(lookingForTeam === "true" ? 1 : 0);
   }
 
   const whereClause = conditions.join(" AND ");
