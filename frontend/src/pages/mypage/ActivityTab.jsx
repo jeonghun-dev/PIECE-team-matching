@@ -1,10 +1,11 @@
-// SCR-18·19 마이페이지 활동 (김성진) - REQ-USR-004, REQ-REC-005
+// 마이페이지 
 // 참여 중인 팀 / 내 모집 글 관리 / 최근 작성한 질문 / 최근 작성한 답변
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getMyTeams, getMyProjects, getMyQuestions, getMyAnswers } from "../../api/mypage";
 import { deleteProject } from "../../api/projects";
 import { PROJECT_STATUS, PROJECT_STATUS_LABEL, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS } from "../../constants";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 // 최근 질문·답변은 5개만
 const RECENT_SIZE = 5;
@@ -44,26 +45,7 @@ const getPendingText = (project) => {
     return project.pendingCount;
 };
 
-// 상대 시간: 방금 전 / 10분 전 / 2시간 전 / 1일 전 / 2026.11.05
-const getTimeAgo = (value) => {
-    const diff = Date.now() - new Date(value).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) {
-        return "방금 전";
-    }
-    if (minutes < 60) {
-        return `${minutes}분 전`;
-    }
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-        return `${hours}시간 전`;
-    }
-    const days = Math.floor(hours / 24);
-    if (days < 7) {
-        return `${days}일 전`;
-    }
-    return new Date(value).toLocaleDateString("ko-KR");
-};
+
 
 // 질문 링크: 모집 글에 단 질문이면 모집 글 상세로
 const getQuestionLink = (projectId, questionId) => {
@@ -78,7 +60,7 @@ function ActivityTab() {
     const teamsRef = useRef(null);
     const projectsRef = useRef(null);
 
-    // 1. 상태: 네 구역 데이터, 불러오기 중/실패, 다시 시도, 삭제 중인 글
+    // 상태: 네 구역 데이터, 불러오기 중/실패, 다시 시도, 삭제 중인 글
     const [activity, setActivity] = useState({ teams: [], projects: [], questions: [], answers: [] });
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
@@ -86,7 +68,7 @@ function ActivityTab() {
     const [deletingId, setDeletingId] = useState(null);
     const [actionError, setActionError] = useState("");
 
-    // 2. 네 구역을 한 번에 불러오기
+    // 네 구역을 한 번에 불러오기
     useEffect(() => {
         let ignore = false;
 
@@ -130,7 +112,7 @@ function ActivityTab() {
         };
     }, [reloadKey]);
 
-    // 3. 메뉴(참여 중인 팀 / 내 모집 글 관리)를 누르면 그 구역으로 스크롤
+    // 메뉴(참여 중인 팀 / 내 모집 글 관리)를 누르면 그 구역으로 스크롤
     useEffect(() => {
         if (isLoading) {
             return;
@@ -143,14 +125,14 @@ function ActivityTab() {
         }
     }, [location.pathname, isLoading]);
 
-    // 4. 다시 시도
+    // 다시 시도
     const handleReload = () => {
         setLoadError("");
         setIsLoading(true);
         setReloadKey(reloadKey + 1);
     };
 
-    // 5. 모집 글 삭제 (REQ-REC-005)
+    // 모집 글 삭제 
     const handleDelete = async (project) => {
         if (deletingId) {
             return;
@@ -205,7 +187,7 @@ function ActivityTab() {
             <section className="activity-card" ref={teamsRef} aria-labelledby="my-teams-title">
                 <div className="activity-card__header">
                     <h2 id="my-teams-title" className="activity-card__title">참여 중인 팀</h2>
-                    <span className="activity-card__hint">중복 팀 참여는 불가해요</span>
+                    <span className="activity-card__hint">같은 팀에는 한 번만 참여할 수 있어요</span>
                 </div>
 
                 {teams.length === 0 && (
@@ -333,17 +315,23 @@ function ActivityTab() {
                     <h2 id="my-answers-title" className="activity-card__title">최근 작성한 답변</h2>
                     {answers.length === 0 && <p className="activity-card__empty">작성한 답변이 없어요.</p>}
                     <ul className="recent-list">
-                        {answers.map((answer) => (
-                            <li key={answer.id} className="recent-list__item">
-                                <Link to={getQuestionLink(answer.projectId, answer.questionId)} className="recent-list__title">
-                                    {answer.questionTitle}
-                                </Link>
-                                {answer.isAccepted && <span className="recent-list__badge recent-list__badge--accepted">채택</span>}
-                                {!answer.isAccepted && (
-                                    <time className="recent-list__time" dateTime={answer.createdAt}>{getTimeAgo(answer.createdAt)}</time>
-                                )}
-                            </li>
-                        ))}
+                        {answers.map((answer) => {
+                            const time = formatRelativeTime(answer.createdAt);
+
+                            return (
+                                <li key={answer.id} className="recent-list__item">
+                                    <Link to={getQuestionLink(answer.projectId, answer.questionId)} className="recent-list__title">
+                                        {answer.questionTitle}
+                                    </Link>
+                                    {answer.isAccepted && <span className="recent-list__badge recent-list__badge--accepted">채택</span>}
+                                    {!answer.isAccepted && time && (
+                                        <time className="recent-list__time" dateTime={time.dateTime} title={time.exact}>
+                                            {time.label}
+                                        </time>
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </section>
             </div>
