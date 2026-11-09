@@ -147,15 +147,26 @@ async function listForProject(actor, projectId) {
   return questions;
 }
 
-
-
-
-
-
-
-
-
 async function list(query) {
+  // 빈 해결 상태는 조건 생략과 동일하게 전체 조회로 처리한다.
+  // 정렬 기준이 없거나 빈 문자열이면 최신순으로 조회한다.
+  const sort =
+    query.sort === "" || query.sort === undefined
+      ? "latest"
+      : query.sort;
+  const status = query.status === "" ? undefined : query.status;
+
+  if (
+    status !== undefined &&
+    !["solved", "unsolved"].includes(status)
+  ) {
+    badRequest("해결 상태가 올바르지 않습니다.");
+  }
+
+  // 정렬 기준 검사
+  if (!["latest", "views", "answers"].includes(sort)) {
+    badRequest("정렬 기준이 올바르지 않습니다.");
+  }
   if (query.keyword !== undefined && typeof query.keyword !== "string") {
     badRequest("검색어는 문자열이어야 합니다.");
   }
@@ -168,11 +179,17 @@ async function list(query) {
     badRequest("페이지 범위가 너무 큽니다.");
   }
 
-  const total = await questionRepository.count(keyword);
+  const total = await questionRepository.count(
+    keyword,
+    status
+  );
+
   const items = await questionRepository.findPage(
     keyword,
     paging.limit,
-    paging.offset
+    paging.offset,
+    status,
+    sort
   );
   return toPageResponse(
     items,

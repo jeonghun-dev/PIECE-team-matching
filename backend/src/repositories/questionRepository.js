@@ -1,41 +1,82 @@
 ﻿const pool = require("../config/db");
 
-// 목록과 전체 개수 조회에서 공통으로 사용하는 검색 조건이다.
-const searchCondition = `q.project_id IS NULL AND q.deleted_at IS NULL
-  AND (q.title LIKE ? ESCAPE '!' OR q.content LIKE ? ESCAPE '!')`;
+// 목록과 전체 개수에 같은 검색·해결 상태 조건을 적용한다.
+function buildSearchCondition(keyword, status) {
+  const conditions = [
+    "q.project_id IS NULL",
+    "q.deleted_at IS NULL"
+  ];
 
-function getSearchPattern(keyword) {
-  // %, _를 와일드카드가 아닌 문자 그대로 찾기 위한 처리이다.
-  return `%${keyword.replace(/[!%_]/g, "!$&")}%`;
+  const params = [];
+
+  // 검색어가 있을 때만 제목·내용 검색 조건을 추가한다.
+  if (keyword !== "") {
+    const pattern = getSearchPattern(keyword);
+
+    conditions.push(
+      "(q.title LIKE ? ESCAPE '!' OR q.content LIKE ? ESCAPE '!')"
+    );
+    params.push(pattern, pattern);
+  }
+
+  if (status !== undefined) {
+    conditions.push("q.is_solved = ?");
+    params.push(status === "solved" ? 1 : 0);
+  }
+
+  return {
+    condition: conditions.join(" AND "),
+    params
+  };
 }
 
-async function findPage(keyword, size, offset) {
-  const pattern = getSearchPattern(keyword);
+function getSearchPattern(keyword) {
+ // %, _를 와일드카드가 아닌 문자 그대로 찾기 위한 처리이다.
+ return `%${keyword.replace(/[!%_]/g, "!$&")}%`;
+}
+
+async function findPage(keyword, size, offset, status, sort = "latest") {
+  const { condition, params } = buildSearchCondition(keyword, status);
+
+  const sortOrders = {
+    latest: "q.created_at DESC, q.id DESC",
+    views: "q.view_count DESC, q.created_at DESC, q.id DESC",
+    answers: "answerCount DESC, q.created_at DESC, q.id DESC"
+  };
+
+  const orderBy = sortOrders[sort];
+
   const [rows] = await pool.execute(
     `SELECT q.id, q.author_id AS authorId, u.nickname AS authorNickname,
       q.title, LEFT(q.content, 200) AS contentPreview,
       q.view_count AS viewCount, q.is_solved AS isSolved,
       q.created_at AS createdAt,
       (SELECT COUNT(*) FROM answers a
-        WHERE a.question_id = q.id AND a.deleted_at IS NULL) AS answerCount
-     FROM questions q JOIN users u ON u.id = q.author_id
-     WHERE ${searchCondition}
-     ORDER BY q.created_at DESC, q.id DESC
+       WHERE a.question_id = q.id AND a.deleted_at IS NULL) AS answerCount
+    FROM questions q JOIN users u ON u.id = q.author_id
+    WHERE ${condition}
+    ORDER BY ${orderBy}
      LIMIT ? OFFSET ?`,
-    [pattern, pattern, size, offset]
+    [...params, size, offset]
   );
+
   return rows.map((row) => ({
-    ...row, isSolved: Boolean(row.isSolved), answerCount: Number(row.answerCount)
+    ...row,
+    isSolved: Boolean(row.isSolved),
+    answerCount: Number(row.answerCount)
   }));
 }
 
-async function count(keyword) {
-  const pattern = getSearchPattern(keyword);
+async function count(keyword, status) {
+  const { condition, params } = buildSearchCondition(keyword, status);
+
   const [rows] = await pool.execute(
     `SELECT COUNT(*) AS total FROM questions q
-     JOIN users u ON u.id = q.author_id WHERE ${searchCondition}`,
-    [pattern, pattern]
+     JOIN users u ON u.id = q.author_id
+    WHERE ${condition}`,
+    params
   );
+
   return Number(rows[0].total);
 }
 
