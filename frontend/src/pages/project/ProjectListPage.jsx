@@ -104,8 +104,7 @@ function ProjectListContent({ defaultLevel }) {
           ))}
         </div>
         <p className="project-list-filter-help">
-          {defaultLevel ? `내 레벨(${defaultLevel})이 기본으로 켜져 있어요. ` : "비로그인 상태에서는 전체 레벨을 보여드려요. "}
-          켜진 필터를 다시 누르면 전체 레벨을 볼 수 있어요.
+          {defaultLevel ? `내 레벨(${defaultLevel})이 기본으로 켜져 있어요` : "비로그인 상태에서는 전체 레벨을 보여드려요"}
         </p>
       </aside>
 
@@ -127,7 +126,11 @@ function ProjectListContent({ defaultLevel }) {
         setPage(1);
       }}>
         <div className="project-list-search-field">
-          <label htmlFor="project-search">모집 글 검색</label>
+          <label className="project-list-visually-hidden" htmlFor="project-search">모집 글 검색</label>
+          <svg className="project-list-icon project-list-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 5 5" />
+          </svg>
           <input
             id="project-search"
             type="search"
@@ -136,10 +139,10 @@ function ProjectListContent({ defaultLevel }) {
             value={keywordInput}
             onChange={(event) => { setKeywordInput(event.target.value); setKeywordError(""); }}
             aria-invalid={Boolean(keywordError)}
-            aria-describedby={keywordError ? "project-search-error" : undefined}
+            aria-describedby={keywordError ? "project-search-hint project-search-error" : "project-search-hint"}
           />
+          <span className="project-list-search-hint" id="project-search-hint">제목 · 내용 검색</span>
         </div>
-        <button type="submit">검색</button>
         {keywordError && <p className="project-list-search-error" id="project-search-error" role="alert">{keywordError}</p>}
       </form>
 
@@ -156,8 +159,8 @@ function ProjectListContent({ defaultLevel }) {
           ))}
         </div>
         <div className="project-list-sort">
-          {level && <span className={`project-list-level project-list-level--${level.toLowerCase()}`}>{level}</span>}
-          <label htmlFor="project-sort">정렬</label>
+          {level && <span className="project-list-applied-filter">적용 필터 <span className={`project-list-level project-list-level--${level.toLowerCase()}`}>{level}</span></span>}
+          <label className="project-list-visually-hidden" htmlFor="project-sort">정렬</label>
           <select id="project-sort" value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}>
             <option value="latest">최신순</option>
             <option value="views">조회수순</option>
@@ -177,7 +180,6 @@ function ProjectListContent({ defaultLevel }) {
         <p className="project-list-state">{keyword || level || status ? "선택한 검색·필터 조건에 맞는 모집 글이 없습니다." : "등록된 모집 글이 없습니다."}</p>
       ) : (
         <>
-          <p className="project-list-total">조회 결과 {totalCount}개</p>
           <ul className="project-list-grid">
             {projects.map((project) => {
               const memberCount = Number(project.memberCount);
@@ -197,7 +199,6 @@ function ProjectListContent({ defaultLevel }) {
                     </span>
                   </div>
                   <h2><Link to={`/projects/${project.id}`}>{project.title}</Link></h2>
-                  <p className="project-list-preview">{project.contentPreview}</p>
                   <div className="project-list-card-meta">
                     <span className="project-list-members">
                       <svg className="project-list-person-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -215,10 +216,25 @@ function ProjectListContent({ defaultLevel }) {
                     aria-label={`모집 인원 ${capacity}명 중 ${memberCount}명 참여`}
                   />
                   <div className="project-list-card-meta">
-                    <span>{mode ?? "진행 방식 미정"} · {times.map((time) => ACTIVE_TIME_OPTIONS.find((option) => option.code === time)?.label ?? time).join(" · ")}</span>
-                    <span>질문 {project.questionCount} · 조회 {project.viewCount}</span>
+                    <span className="project-list-conditions">
+                      <span className="project-list-condition">
+                        <svg className="project-list-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        {mode ?? "진행 방식 미정"}
+                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span className="project-list-condition">
+                        <svg className="project-list-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v5l3 2" />
+                        </svg>
+                        {times.map((time) => ACTIVE_TIME_OPTIONS.find((option) => option.code === time)?.label ?? time).join(" · ")}
+                      </span>
+                    </span>
+                    <span>조회 {project.viewCount} · 질문 {project.questionCount}</span>
                   </div>
-                  <p className="project-list-meeting">회의·모임: {project.meetingMethod}</p>
                 </li>
               );
             })}
