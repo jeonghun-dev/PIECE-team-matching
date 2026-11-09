@@ -116,7 +116,13 @@ function Header() {
             <div className="header__inner">
 
                 {/* 로고 → 메인 */}
-                <Link to="/" className="header__logo">PIECE</Link>
+                <Link to="/" className="header__logo">
+                    <img
+                        src="/piece-logo.png"
+                        alt="PIECE"
+                        className="header__logo-img"
+                    />
+                </Link>
 
                 {/* 공통 메뉴 */}
                 <nav className="header__nav" aria-label="주요 메뉴">
@@ -132,7 +138,7 @@ function Header() {
                 </nav>
 
                 <div className="header__right">
-                    
+
                     {/* 로그인 상태 */}
                     {!loading && isLoggedIn && (
                         <>

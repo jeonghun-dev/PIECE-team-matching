@@ -36,21 +36,17 @@
   gap: var(--space-2);
 }
 
-.login-card__logo {
-  width: var(--icon-size-md);
-  height: var(--icon-size-md);
-  border-radius: var(--radius-badge);
-  background-color: var(--color-primary);
+/* 로고 이미지 크기 지정 (상황에 맞게 height 조절 가능) */
+.login-card__logo-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+#login-title {
+  margin: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-}
-
-.login-card__logo-dot {
-  width: var(--space-2);
-  height: var(--space-2);
-  border-radius: var(--radius-circle);
-  background-color: var(--color-surface);
 }
 
 .login-card__title {
