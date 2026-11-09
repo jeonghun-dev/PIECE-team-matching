@@ -163,7 +163,7 @@ const REPORT_TARGET_FROM = `
   LEFT JOIN users author
     ON author.id = COALESCE(p.author_id, q.author_id, a.author_id)`;
 
-// 신고 목록 검색 조건 만들기 (대상 글 기준으로 묶은 뒤 처리 생태로 거름)
+// 신고 목록 검색 조건 만들기 (대상 글 기준으로 묶은 뒤 처리 상태로 거름)
 // where: 묶기 전 조건, having: 묶은 뒤 조건
 const buildReportCondition = (filters) => {
   const conditions = ["1 = 1"];
