@@ -105,8 +105,7 @@
 
 .header__notification-button {
     position: relative;
-    min-height: var(--control-height-sm);
-    padding: 0 6px;
+    padding: 0 var(--space-1);
     border-color: transparent;
     background: transparent;
     color: var(--color-text-muted);
