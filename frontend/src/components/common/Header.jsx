@@ -116,7 +116,13 @@ function Header() {
             <div className="header__inner">
 
                 {/* 로고 → 메인 */}
-                <Link to="/" className="header__logo">PIECE</Link>
+                <Link to="/" className="header__logo">
+                    <img
+                        src="/piece-logo.png"
+                        alt="PIECE"
+                        className="header__logo-img"
+                    />
+                </Link>
 
                 {/* 공통 메뉴 */}
                 <nav className="header__nav" aria-label="주요 메뉴">
@@ -132,7 +138,7 @@ function Header() {
                 </nav>
 
                 <div className="header__right">
-                    
+
                     {/* 로그인 상태 */}
                     {!loading && isLoggedIn && (
                         <>
@@ -158,7 +164,6 @@ function Header() {
                                     <svg aria-hidden="true" className="header__bell-icon" viewBox="0 0 24 24">
                                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
                                     </svg>
-                                    <span>알림</span>
                                     {pendingCount > 0 && <span className="header__notification-dot" />}
                                 </button>
                                 {notificationOpen && (

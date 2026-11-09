@@ -203,10 +203,11 @@ function SignupPage() {
         {/* 상단 제목 영역 */}
         <header className="signup-card__header">
           <div className="signup-card__brand">
-            <span className="signup-card__logo" aria-hidden="true">
-              <span className="signup-card__logo-dot" />
-            </span>
-            <span className="signup-card__brand-name">PIECE</span>
+            <img
+              src="/piece-logo.png"
+              alt="PIECE"
+              className="signup-card__logo-img"
+            />
           </div>
           <h1 className="signup-card__title">회원가입</h1>
           <p className="signup-card__subtitle">
@@ -226,9 +227,8 @@ function SignupPage() {
               <input
                 id="nickname"
                 type="text"
-                className={`signup-input ${
-                  nicknameError ? 'signup-input--error' : ''
-                }`}
+                className={`signup-input ${nicknameError ? 'signup-input--error' : ''
+                  }`}
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="닉네임 입력"
@@ -251,9 +251,8 @@ function SignupPage() {
               <input
                 id="email"
                 type="email"
-                className={`signup-input ${
-                  emailError ? 'signup-input--error' : ''
-                }`}
+                className={`signup-input ${emailError ? 'signup-input--error' : ''
+                  }`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@devmates.kr"
@@ -290,11 +289,10 @@ function SignupPage() {
                 <input
                   id="passwordConfirm"
                   type="password"
-                  className={`signup-input ${
-                    passwordConfirm.length > 0 && !isPasswordMatch
+                  className={`signup-input ${passwordConfirm.length > 0 && !isPasswordMatch
                       ? 'signup-input--error'
                       : ''
-                  }`}
+                    }`}
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   placeholder="비밀번호 확인 입력"
@@ -333,9 +331,8 @@ function SignupPage() {
                   return (
                     <label
                       key={cert.code}
-                      className={`signup-cert-item ${
-                        checked ? 'signup-cert-item--checked' : ''
-                      }`}
+                      className={`signup-cert-item ${checked ? 'signup-cert-item--checked' : ''
+                        }`}
                     >
                       <span className="signup-cert-item__left">
                         <input
@@ -438,9 +435,8 @@ function SignupPage() {
                       <button
                         key={option.code}
                         type="button"
-                        className={`signup-chip ${
-                          selected ? 'signup-chip--active' : ''
-                        }`}
+                        className={`signup-chip ${selected ? 'signup-chip--active' : ''
+                          }`}
                         onClick={() => setCollaborationMode(option.code)}
                       >
                         {option.label}
@@ -461,9 +457,8 @@ function SignupPage() {
                       <button
                         key={option.code}
                         type="button"
-                        className={`signup-chip ${
-                          selected ? 'signup-chip--active' : ''
-                        }`}
+                        className={`signup-chip ${selected ? 'signup-chip--active' : ''
+                          }`}
                         onClick={() => handleToggleActiveTime(option.code)}
                       >
                         {option.label}
@@ -500,9 +495,8 @@ function SignupPage() {
               <input
                 id="portfolioUrl"
                 type="url"
-                className={`signup-input ${
-                  urlError ? 'signup-input--error' : ''
-                }`}
+                className={`signup-input ${urlError ? 'signup-input--error' : ''
+                  }`}
                 value={portfolioUrl}
                 onChange={(e) => setPortfolioUrl(e.target.value)}
                 placeholder="https://github.com/username 주소"
