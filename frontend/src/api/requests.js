@@ -1,5 +1,10 @@
 import client from "./client";
 
+export const REQUESTS_UPDATED_EVENT = "piece:requests-updated";
+export const notifyRequestsUpdated = () => {
+  window.dispatchEvent(new Event(REQUESTS_UPDATED_EVENT));
+};
+
 export const inviteToProject = (projectId, data) =>
   client.post(`/projects/${projectId}/invitations`, data);
 export const getRequests = (params = {}) => client.get("/requests", { params });
