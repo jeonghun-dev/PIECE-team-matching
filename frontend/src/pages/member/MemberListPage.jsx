@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   InviteModal,
@@ -7,18 +7,19 @@ import {
 import {
   ACTIVE_TIME,
   ACTIVE_TIME_OPTIONS,
+  CERTIFICATE_OPTIONS,
   COLLABORATION_MODE,
   COLLABORATION_OPTIONS,
   LEVEL,
   LEVEL_OPTIONS,
 } from "../../constants";
-import {
-  certificateLabels,
-  activeTimeLabels,
-  collaborationLabels,
-  members,
-} from "./memberData";
+import { getMembers } from "../../api/members";
+import { inviteToProject } from "../../api/requests";
 import "./MemberPages.css";
+
+const certificateLabels = Object.fromEntries(CERTIFICATE_OPTIONS.map(({ code, label }) => [code, label]));
+const activeTimeLabels = Object.fromEntries(ACTIVE_TIME_OPTIONS.map(({ code, label }) => [code, label]));
+const collaborationLabels = Object.fromEntries(COLLABORATION_OPTIONS.map(({ code, label }) => [code, label]));
 
 function MemberCard({ member }) {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -38,7 +39,7 @@ function MemberCard({ member }) {
               {member.level} · {member.totalScore}점
             </span>
           </div>
-          <span className="member-card__looking-badge">팀 구하는 중</span>
+            {member.lookingForTeam && <span className="member-card__looking-badge">팀 구하는 중</span>}
         </div>
 
         <p className="member-card__intro">{member.intro}</p>
@@ -57,9 +58,9 @@ function MemberCard({ member }) {
           <Link className="member-page__button member-page__button--outline" to={`/members/${member.id}`}>
             프로필 보기
           </Link>
-          <button
+            <button
             className="member-page__button member-page__button--primary"
-            onClick={() => setIsInviteOpen(true)}
+              onClick={() => setIsInviteOpen(true)}
             type="button"
           >
             프로젝트에 초대
@@ -67,7 +68,7 @@ function MemberCard({ member }) {
         </div>
       </article>
       {isInviteOpen && (
-        <InviteModal member={member} onClose={() => setIsInviteOpen(false)} />
+        <InviteModal member={member} onClose={() => setIsInviteOpen(false)} onInvite={inviteToProject} />
       )}
     </>
   );
@@ -79,30 +80,37 @@ export default function MemberList() {
   const [activeTime, setActiveTime] = useState(ACTIVE_TIME.WEEKDAY_NIGHT);
   const [sortOrder, setSortOrder] = useState("recent");
   const [appliedFilters, setAppliedFilters] = useState({
-    levels: [],
-    collaborationMode: "",
-    activeTime: "",
+    levels: [LEVEL.BUILDER],
+    collaborationMode: COLLABORATION_MODE.ONLINE,
+    activeTime: ACTIVE_TIME.WEEKDAY_NIGHT,
   });
+  const [members, setMembers] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    getMembers({
+      ...(appliedFilters.levels.length ? { level: appliedFilters.levels.join(",") } : {}),
+      ...(appliedFilters.collaborationMode ? { collaborationMode: appliedFilters.collaborationMode } : {}),
+      ...(appliedFilters.activeTime ? { activeTime: appliedFilters.activeTime } : {}),
+      page: 1,
+      size: 50,
+    }).then(({ data }) => {
+      if (active) {
+        setMembers((data.data?.items ?? []).map(normalizeMember));
+        setTotalCount(Number(data.data?.totalCount ?? 0));
+      }
+    }).catch(() => {
+      if (active) setError("팀원 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [appliedFilters]);
 
   const filteredMembers = useMemo(() => {
-    const result = members.filter((member) => {
-      const matchesLevel =
-        appliedFilters.levels.length === 0 ||
-        appliedFilters.levels.includes(member.level);
-      const matchesMode =
-        !appliedFilters.collaborationMode ||
-        member.collaborationMode === appliedFilters.collaborationMode ||
-        member.collaborationMode === "ANY";
-      const matchesTime =
-        !appliedFilters.activeTime ||
-        member.activeTimes.includes(appliedFilters.activeTime);
-      return member.lookingForTeam && matchesLevel && matchesMode && matchesTime;
-    });
-
-    return sortOrder === "score"
-      ? [...result].sort((a, b) => b.totalScore - a.totalScore)
-      : result;
-  }, [appliedFilters, sortOrder]);
+    return sortOrder === "score" ? [...members].sort((a, b) => b.totalScore - a.totalScore) : members;
+  }, [members, sortOrder]);
 
   function toggleLevel(level) {
     setLevels((selected) =>
@@ -114,6 +122,8 @@ export default function MemberList() {
 
   function submitSearch(event) {
     event.preventDefault();
+    setLoading(true);
+    setError("");
     setAppliedFilters({ levels, collaborationMode, activeTime });
   }
 
@@ -176,7 +186,7 @@ export default function MemberList() {
         </form>
 
         <div className="member-list__results-heading">
-          <p>검색 결과 <strong>{filteredMembers.length}명</strong></p>
+          <p>검색 결과 <strong>{totalCount}명</strong></p>
           <label>
             <span className="member-page__visually-hidden">정렬 기준</span>
             <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
@@ -186,7 +196,9 @@ export default function MemberList() {
           </label>
         </div>
 
-        {filteredMembers.length ? (
+        {loading ? <div className="member-page__empty-state" role="status">팀원 목록을 불러오는 중입니다.</div> : error ? (
+          <div className="member-page__empty-state" role="alert">{error}</div>
+        ) : filteredMembers.length ? (
           <section aria-label="팀원 검색 결과" className="member-list__grid">
             {filteredMembers.map((member) => <MemberCard key={member.id} member={member} />)}
           </section>
@@ -199,4 +211,18 @@ export default function MemberList() {
       </div>
     </main>
   );
+}
+
+function normalizeMember(member) {
+  const split = (value) => Array.isArray(value) ? value : String(value ?? "").split(",").filter(Boolean);
+  return {
+    ...member,
+    id: Number(member.id),
+    activeTimes: split(member.activeTimes),
+    certificates: split(member.certificates),
+    lookingForTeam: Boolean(member.lookingForTeam),
+    totalScore: Number(member.totalScore ?? 0),
+    awardCount: Number(member.awardCount ?? 0),
+    projectCount: Number(member.projectCount ?? 0),
+  };
 }

@@ -9,7 +9,7 @@ async function findMembers(filters) {
   const values = [];
   const {
     search,
-    level,
+    levels,
     collaborationMode,
     activeTime,
     limit,
@@ -22,9 +22,9 @@ async function findMembers(filters) {
     values.push(searchTerm, searchTerm);
   }
 
-  if (level) {
-    conditions.push("u.level = ?");
-    values.push(level);
+  if (levels?.length) {
+    conditions.push(`u.level IN (${levels.map(() => "?").join(", ")})`);
+    values.push(...levels);
   }
 
   if (collaborationMode) {

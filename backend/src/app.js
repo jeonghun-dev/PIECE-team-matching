@@ -4,19 +4,18 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { notFound, errorHandler } = require("./middlewares/errorHandler");
-const { register: registerDiscoveryRouter } = require("./routes/discoveryRouter");
+const discoveryRouter = require("./routes/discoveryRouter");
 const accountRouter = require("./routes/accountRouter");
 const projectRouter = require("./routes/projectRouter");
 const recruitmentRouter = require("./routes/recruitmentRouter");
 const questionRouter = require("./routes/questionRouter");
 const createAnswerRouter = require("./routes/answerRouter");
 const moderationRouter = require("./routes/moderationRouter");
+const inboxRouter = require("./routes/inboxRouter");
 const { requireAuth } = require("./middlewares/auth");
 
 //2.웹 앱 초기화
 const app = express();
-const discoveryRouter = express.Router();
-registerDiscoveryRouter(discoveryRouter);
 
 const HOST = "localhost";
 const PORT = process.env.PORT || 3000;
@@ -34,6 +33,7 @@ app.use("/api/members", requireAuth, discoveryRouter);
 app.use("/api", accountRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api", recruitmentRouter);
+app.use("/api", inboxRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api", createAnswerRouter(requireAuth));
 app.use("/api", moderationRouter);

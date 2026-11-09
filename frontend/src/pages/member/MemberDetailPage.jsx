@@ -1,27 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   InviteModal,
   MemberMark,
 } from "./MemberUI";
 import {
-  activeTimeLabels,
-  certificateLabels,
-  collaborationLabels,
-  members,
-} from "./memberData";
+  ACTIVE_TIME_OPTIONS,
+  CERTIFICATE_OPTIONS,
+  COLLABORATION_OPTIONS,
+} from "../../constants";
+import { getMember } from "../../api/members";
+import { inviteToProject } from "../../api/requests";
 import "./MemberPages.css";
+
+const activeTimeLabels = Object.fromEntries(ACTIVE_TIME_OPTIONS.map(({ code, label }) => [code, label]));
+const certificateLabels = Object.fromEntries(CERTIFICATE_OPTIONS.map(({ code, label }) => [code, label]));
+const collaborationLabels = Object.fromEntries(COLLABORATION_OPTIONS.map(({ code, label }) => [code, label]));
 
 export default function MemberDetail() {
   const { id } = useParams();
-  const member = members.find((item) => item.id === Number(id));
-  const [isInviteOpen, setIsInviteOpen] = useState(false); 
+  const [loadState, setLoadState] = useState({ id: null, member: null, error: "" });
+  const loading = loadState.id !== id;
+  const member = loading ? null : loadState.member;
+  const error = loading ? "" : loadState.error;
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-  if (!member) {
+  useEffect(() => {
+    let active = true;
+    getMember(id).then(({ data }) => {
+      if (active) setLoadState({ id, member: normalizeProfile(data.data), error: "" });
+    }).catch(() => {
+      if (active) setLoadState({ id, member: null, error: "회원 정보를 불러오지 못했습니다." });
+    });
+    return () => { active = false; };
+  }, [id]);
+
+  if (loading || error || !member) {
     return (
       <main className="member-page">
         <div className="member-content member-page__empty-state">
-          <strong>팀원 정보를 찾을 수 없습니다.</strong>
+          <strong role={error ? "alert" : "status"}>{loading ? "회원 정보를 불러오는 중입니다." : error || "팀원 정보를 찾을 수 없습니다."}</strong>
           <Link className="member-page__button member-page__button--primary" to="/members">팀원 목록으로</Link>
         </div>
       </main>
@@ -52,12 +70,13 @@ export default function MemberDetail() {
               </div>
               <div>
                 <dt aria-hidden="true">♙</dt>
-                <dd>팀 구인 여부: <strong className="member-profile-card__available">팀 구하는 중</strong></dd>
+                <dd>팀 구인 여부: <strong className="member-profile-card__available">{member.lookingForTeam ? "팀 구하는 중" : "팀 구인 중 아님"}</strong></dd>
               </div>
             </dl>
             <button
               className="member-page__button member-page__button--primary member-profile-card__invite"
               onClick={() => setIsInviteOpen(true)}
+              disabled={!member.lookingForTeam}
               type="button"
             >
               내 프로젝트에 초대
@@ -137,8 +156,28 @@ export default function MemberDetail() {
         </div>
       </div>
       {isInviteOpen && (
-        <InviteModal member={member} onClose={() => setIsInviteOpen(false)} />
+        <InviteModal member={member} onClose={() => setIsInviteOpen(false)} onInvite={inviteToProject} />
       )}
     </main>
   );
+}
+
+function normalizeProfile(data = {}) {
+  const profile = data.profile ?? {};
+  const learning = data.learning ?? {};
+  const split = (value) => Array.isArray(value) ? value : String(value ?? "").split(",").filter(Boolean);
+  return {
+    id: Number(data.id),
+    nickname: data.nickname,
+    level: data.level ?? learning.level ?? "STARTER",
+    totalScore: Number(data.totalScore ?? learning.totalScore ?? 0),
+    intro: profile.intro ?? "소개가 등록되지 않았습니다.",
+    collaborationMode: profile.collaborationMode ?? "ANY",
+    activeTimes: split(profile.activeTimes),
+    lookingForTeam: Boolean(profile.lookingForTeam),
+    portfolioUrl: profile.portfolioUrl,
+    certificates: split(learning.certificates),
+    awardCount: Number(learning.awardCount ?? 0),
+    projectCount: Number(learning.projectCount ?? 0),
+  };
 }

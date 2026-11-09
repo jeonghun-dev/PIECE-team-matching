@@ -29,11 +29,12 @@ async function membersFor(actor, filters) {
   const pagination = getPagination(filters);
   const search = getStringFilter(filters, "search")?.trim();
   const level = getStringFilter(filters, "level");
+  const levels = level?.split(",").filter(Boolean);
   const collaborationMode = getStringFilter(filters, "collaborationMode");
   const activeTime = getStringFilter(filters, "activeTime");
   const lookingForTeam = getStringFilter(filters, "lookingForTeam");
 
-  if (level && !LEVELS.has(level)) throw invalidFilter("level");
+  if (levels?.some((item) => !LEVELS.has(item))) throw invalidFilter("level");
   if (
     collaborationMode &&
     !COLLABORATION_MODES.has(collaborationMode)
@@ -56,7 +57,7 @@ async function membersFor(actor, filters) {
 
   const { items, totalCount } = await discoveryRepository.findMembers({
     search,
-    level,
+    levels,
     collaborationMode,
     activeTime,
     limit: pagination.limit,

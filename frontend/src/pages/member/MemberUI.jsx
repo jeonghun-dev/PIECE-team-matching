@@ -1,25 +1,5 @@
 import { useEffect, useState } from "react";
-
-const projects = [
-  {
-    id: 1,
-    title: "스터디 일정 공유 웹 서비스 - REST API 연습",
-    memberCount: 2,
-    capacity: 4,
-    deadline: "11.15",
-    targetLevel: "BUILDER",
-    status: "OPEN",
-  },
-  {
-    id: 2,
-    title: "JSON 기반 맞춤 지도 API 서버",
-    memberCount: 1,
-    capacity: 3,
-    deadline: "11.20",
-    targetLevel: "BUILDER",
-    status: "OPEN",
-  },
-];
+import { getMyOpenProjects } from "../../api/requests";
 
 function MemberMark({ name, large = false }) {
   return (
@@ -32,12 +12,29 @@ function MemberMark({ name, large = false }) {
   );
 }
 
-function InviteModal({ member, onClose }) {
-  const [selectedProjectId, setSelectedProjectId] = useState(String(projects[0].id));
+function InviteModal({ member, onClose, onInvite }) {
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [message, setMessage] = useState(
     `${member.nickname}님 프로필 보고 연락드려요! 같은 ${member.level} 레벨이라 함께하면 좋을 것 같습니다.`,
   );
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getMyOpenProjects().then(({ data }) => {
+      const items = data.data ?? [];
+      if (active) {
+        setProjects(items);
+        setSelectedProjectId(items.length ? String(items[0].id) : "");
+      }
+    }).catch(() => {
+      if (active) setNotice("내 모집 중인 프로젝트를 불러오지 못했습니다.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -47,6 +44,20 @@ function InviteModal({ member, onClose }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  async function submitInvite() {
+    if (!selectedProjectId || submitting) return;
+    setSubmitting(true);
+    setNotice("");
+    try {
+      await onInvite(selectedProjectId, { userId: member.id, message: message.trim() || undefined });
+      setNotice("초대 요청을 보냈습니다.");
+    } catch (error) {
+      setNotice(error.response?.data?.message || "초대 요청을 보내지 못했습니다. 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div
@@ -71,7 +82,6 @@ function InviteModal({ member, onClose }) {
 
         <div aria-label="초대할 프로젝트" className="member-invite__projects">
           {projects
-            .filter((project) => project.status === "OPEN")
             .map((project) => (
             <label
               className={`member-invite__project${selectedProjectId === String(project.id) ? " member-invite__project--selected" : ""}`}
@@ -87,7 +97,7 @@ function InviteModal({ member, onClose }) {
               <span className="member-invite__project-copy">
                 <strong>{project.title}</strong>
                 <small>
-                  {project.memberCount} / {project.capacity}명 · 마감 {project.deadline}
+                  {project.memberCount} / {project.capacity}명 · 마감 {String(project.deadline).slice(0, 10)}
                 </small>
               </span>
               <span className="member-level">{project.targetLevel}</span>
@@ -100,20 +110,23 @@ function InviteModal({ member, onClose }) {
         </label>
         <textarea
           id="invite-message"
-          maxLength={300}
+          maxLength={500}
           onChange={(event) => setMessage(event.target.value)}
           rows={3}
           value={message}
         />
+        {loading && <p className="member-invite__notice" role="status">프로젝트 목록을 불러오는 중입니다.</p>}
+        {!loading && !projects.length && <p className="member-invite__notice" role="status">초대할 수 있는 모집 중 프로젝트가 없습니다.</p>}
         {notice && <p className="member-invite__notice" role="status">{notice}</p>}
         <div className="member-invite__actions">
           <button className="member-page__button member-page__button--muted" onClick={onClose} type="button">취소</button>
           <button
             className="member-page__button member-page__button--primary"
-            onClick={() => setNotice("화면 시안입니다. 초대 요청은 아직 전송되지 않았어요.")}
+            disabled={loading || submitting || !selectedProjectId}
+            onClick={submitInvite}
             type="button"
           >
-            초대 요청 보내기
+            {submitting ? "보내는 중..." : "초대 요청 보내기"}
           </button>
         </div>
       </section>
