@@ -36,6 +36,19 @@
   gap: var(--space-2);
 }
 
+/* 로고 이미지 크기 지정 (상황에 맞게 height 조절 가능) */
+.login-card__logo-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+#login-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
 .login-card__logo {
   width: var(--icon-size-md);
   height: var(--icon-size-md);

@@ -72,11 +72,12 @@ function LoginPage() {
         {/* 상단 로고 및 인사말 */}
         <header className="login-card__header">
           <div className="login-card__brand">
-            <span className="login-card__logo" aria-hidden="true">
-              <span className="login-card__logo-dot" />
-            </span>
-            <h1 id="login-title" className="login-card__title">
-              PIECE
+            <h1 id="login-title">
+              <img
+                src="/PIECE_rogo.png"
+                alt="PIECE"
+                className="login-card__logo-img"
+              />
             </h1>
           </div>
           <p className="login-card__subtitle">다시 오신 걸 환영해요</p>
@@ -91,9 +92,8 @@ function LoginPage() {
             <input
               id="email"
               type="email"
-              className={`login-form__input ${
-                emailError ? 'login-form__input--error' : ''
-              }`}
+              className={`login-form__input ${emailError ? 'login-form__input--error' : ''
+                }`}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -116,9 +116,8 @@ function LoginPage() {
             <input
               id="password"
               type="password"
-              className={`login-form__input ${
-                passwordError ? 'login-form__input--error' : ''
-              }`}
+              className={`login-form__input ${passwordError ? 'login-form__input--error' : ''
+                }`}
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
