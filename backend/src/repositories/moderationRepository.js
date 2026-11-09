@@ -247,6 +247,248 @@ const updateReportStatus = async (reportId, status) => {
   return result.affectedRows;
 };
 
+// ---------------- 관리자: 모집 글 ----------------'
+const buildProjectCondition = (filters) => {
+  const conditions = ["p.deleted_at IS NULL"];
+  const params = [];
+
+  if (filters.status) {
+    conditions.push("p.status = ?");
+    params.push(filters.status);
+  }
+
+  if (filters.keyword) {
+    conditions.push("p.title LIKE ?");
+    params.push(`%${filters.keyword}%`);
+  }
+
+  return { where: conditions.join(" AND "), params };
+};
+
+// 모집 글 목록 전체 개수
+const countProjects = async (filters) => {
+  const { where, params } = buildProjectCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) AS totalCount
+        FROM projects p
+        WHERE ${where}`,
+    params,
+  );
+
+  return Number(rows[0].totalCount);
+};
+
+// 모집 글 목록 조회 (대기 중인 신고 수 포함)
+const findProjects = async (filters, limit, offset) => {
+  const { where, params } = buildProjectCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT
+            p.id,
+            p.title,
+            p.status,
+            p.capacity,
+            DATE_FORMAT(p.deadline, '%Y-%m-%d') AS deadline,
+            p.created_at AS createdAt,
+            p.author_id AS authorId,
+            u.nickname AS authorNickname,
+            (
+                SELECT COUNT(*)
+                FROM reports r
+                WHERE r.target_type = 'PROJECT'
+                    AND r.target_id = p.id
+                    AND r.status = 'PENDING'
+                ) AS pendingReportCount
+            FROM projects p
+            JOIN users u
+                ON u.id = p.author_id
+            WHERE ${where}
+            ORDER BY p.id DESC
+            LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  );
+
+  return rows;
+};
+
+// ---------------- 관리자: 질문·답변 ----------------
+
+// 질문 목록 검색 조건 만들기 (삭제된 질문 제외)
+const buildQuestionCondition = (filters) => {
+  const conditions = ["q.deleted_at IS NULL"];
+  const params = [];
+
+  if (filters.keyword) {
+    conditions.push("(q.title LIKE ? OR q.content LIKE ?)");
+    params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
+  }
+
+  return { where: conditions.join(" AND "), params };
+};
+
+// 질문 목록 전체 개수
+const countQuestions = async (filters) => {
+  const { where, params } = buildQuestionCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) AS totalCount
+            FROM questions q
+            WHERE ${where}`,
+    params,
+  );
+
+  return Number(rows[0].totalCount);
+};
+
+// 질문 목록 조회 (답변 수, 대기 중인 신고 수 포함)
+const findQuestions = async (filters, limit, offset) => {
+  const { where, params } = buildQuestionCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT
+            q.id,
+            q.title,
+            q.project_id AS projectId,
+            q.is_solved AS isSolved,
+            q.created_at AS createdAt,
+            q.author_id AS authorId,
+            u.nickname AS authorNickname,
+            (
+                SELECT COUNT(*)
+                FROM answers a
+                WHERE a.question_id = q.id
+                    AND a.deleted_at IS NULL
+            ) AS answerCount,
+            (
+                SELECT COUNT(*)
+                FROM reports r
+                WHERE r.target_type = 'QUESTION'
+                    AND r.target_id = q.id
+                    AND r.status = 'PENDING'
+            ) AS pendingReportCount
+        FROM questions q
+        JOIN users u
+            ON u.id = q.author_id
+        WHERE ${where}
+        ORDER BY q.id DESC
+        LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  );
+
+  return rows;
+};
+
+// 답변 목록 검색 조건 만들기
+// 삭제된 답변과 삭제된 질문에 달린 답변 제위 (NFR-043)
+const buildAnswerCondition = (filters) => {
+  const conditions = ["a.deleted_at IS NULL", "q.deleted_at IS NULL"];
+  const params = [];
+
+  if (filters.keyword) {
+    conditions.push("a.content LIKE ?");
+    params.push(`%${filters.keyword}%`);
+  }
+
+  return { where: conditions.join(" AND "), params };
+};
+
+// 답변 목록 전체 개수
+const countAnswers = async (filters) => {
+  const { where, params } = buildAnswerCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT COUNT(*) AS totalCount
+            FROM answers a
+            join questions q
+                ON q.id = a.question_id
+            WHERE ${where}`,
+    params,
+  );
+
+  return Number(rows[0].totalCount);
+};
+
+// 답변 목록 조회 (질문 제목, 대기 중인 신고 수 포함)
+const findAnswers = async (filters, limit, offset) => {
+  const { where, params } = buildAnswerCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT
+            a.id,
+            a.question_id AS questionId,
+            q.title AS questionTitle,
+            LEFT(a.content, 100) AS contentPreview,
+            a.is_accepted AS isAccepted,
+            a.created_at AS createdAt,
+            a.author_id AS authorId,
+            u.nickname AS authorNickname,
+            (
+                SELECT COUNT(*)
+                FROM reports r
+                WHERE r.target_type = 'ANSWER'
+                    AND r.target_id = a.id
+                    AND r.status = 'PENDING'
+            ) AS pendingReportCount
+        FROM answers a
+        JOIN questions q
+            ON q.id = a.question_id
+        JOIN users u
+            ON u.id = a.author_id
+        WHERE ${where}
+        ORDER BY a.id DESC
+        LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  );
+
+  return rows;
+};
+
+// 질문 소프트 삭제 (이미 삭제된 질문은 변경 없음)
+const softDeleteQuestion = async (questionId) => {
+  const [result] = await pool.query(
+    `UPDATE questions
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+                AND deleted_at IS NULL`,
+    [questionId],
+  );
+
+  return result.affectedRows;
+};
+
+// 삭제 전 답변 조회 (삭제된 답변, 삭제된 질문의 답변 제외)
+const findAnswerForDelete = async (answerId) => {
+  const [rows] = await pool.query(
+    `SELECT
+            a.id,
+            a.is_accepted AS isAccepted
+        FROM answers a
+        JOIN questions q
+            ON q.id = a.question_id
+        WHERE a.id = ?
+            AND a.deleted_at IS NULL
+            AND q.deleted_at IS NULL`,
+    [answerId],
+  );
+
+  return rows[0] ?? null;
+};
+
+// 답변 솦므트 삭제 (채택된 답변은 삭제하지 않음, NFR-039)
+const softDeleteAnswer = async (answerId) => {
+  const [result] = await pool.query(
+    `UPDATE answers
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+                AND deleted_at IS NULL
+                AND is_accepted = 0`,
+    [answerId],
+  );
+
+  return result.affectedRows;
+};
+
 module.exports = {
   findTarget,
   saveReport,
@@ -258,4 +500,13 @@ module.exports = {
   findReports,
   findReport,
   updateReportStatus,
+  countProjects,
+  findProjects,
+  countQuestions,
+  findQuestions,
+  countAnswers,
+  findAnswers,
+  softDeleteQuestion,
+  findAnswerForDelete,
+  softDeleteAnswer,
 };

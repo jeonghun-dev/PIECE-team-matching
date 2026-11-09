@@ -37,4 +37,25 @@ router.patch(
   moderationController.resolveReport,
 );
 
+// 관리자: 모집 글 목록 / 삭제
+router.get("/admin/projects", adminOnly, moderationController.listProjects);
+router.delete(
+  "/admin/projects/:id",
+  adminOnly,
+  moderationController.removeProject,
+);
+
+// 관리자: 질문 답변 목록 / 질문 삭제 / 답변 삭제
+router.get("/admin/qna", adminOnly, moderationController.listQna);
+router.delete(
+  "/admin/questions/:id",
+  adminOnly,
+  moderationController.removeQuestion,
+);
+router.delete(
+  "/admin/answers/:id",
+  adminOnly,
+  moderationController.removeAnswer,
+);
+
 module.exports = router;
