@@ -11,6 +11,13 @@ router.post(
   moderationController.report,
 );
 
+// 내가 신고한 대상 번호 목록 (신고 버튼 "신고됨" 표시용)
+router.get(
+  "/reports/mine",
+  AuthMiddleware.requireAuth,
+  moderationController.myReports,
+);
+
 // 관리자 전용: requireAuth로 로그인 확인 후 requireAdmin으로 권한 확인
 const adminOnly = [AuthMiddleware.requireAuth, AuthMiddleware.requireAdmin];
 
@@ -31,6 +38,16 @@ router.patch(
 
 // 관리자: 신고 목록 / 신고 처리
 router.get("/admin/reports", adminOnly, moderationController.listReports);
+router.get(
+  "/admin/reports/targets/:targetType/:targetId",
+  adminOnly,
+  moderationController.listReportsByTarget,
+);
+router.patch(
+  "/admin/reports/targets/:targetType/:targetId",
+  adminOnly,
+  moderationController.resolveReportTarget,
+);
 router.patch(
   "/admin/reports/:id",
   adminOnly,
