@@ -6,6 +6,15 @@
   --color-primary-hover: #3042d8;
   --color-primary-soft: #eaedff;
 
+  /* 학습 레벨 */
+  --color-level-starter: #2f9e8a;
+  --color-level-builder: var(--color-primary);
+  --color-level-achiever: #d9482b;
+
+  /* 미해결 상태 */
+  --color-unsolved-soft: #fff8db;
+  --color-unsolved: #946200;
+
   /* 배경 */
   --color-page: #f5f6fa;
   --color-surface: #ffffff;
