@@ -181,7 +181,13 @@ const listUsers = async (admin, query = {}) => {
     paging.offset,
   );
 
-  return toPageResponse(users, totalCount, paging);
+  const items = users.map((user) => ({
+    ...user,
+    score: Number(user.score),
+    reportCount: Number(user.reportCount),
+  }));
+
+  return toPageResponse(items, totalCount, paging);
 };
 
 // 회원 상태 변경 공통 처리 (정지/해제)
@@ -364,13 +370,14 @@ const removeProject = async (admin, id) => {
 
 // ---------------- 관리자: 질문·답변 ----------------
 
-// 질문·답변 목록 종류
+// 질문·답변 목록 종류 (ALL: 질문과 답변을 합친 전체 목록)
 const QNA_TYPE = Object.freeze({
+  ALL: "ALL",
   QUESTION: "QUESTION",
   ANSWER: "ANSWER",
 });
 
-// 질문 답변 목록 (type=QUESTION 기본, type=ANSWER, 검색, 페이지)
+// 질문 답변 목록 (type=All 기본, QUESTION, ANSWER / 제목, 내용, 작성자 검색 / 페이지)
 const listQna = async (admin, query = {}) => {
   assertAdmin(admin);
 
@@ -378,12 +385,36 @@ const listQna = async (admin, query = {}) => {
     parseFilter(
       query.type,
       QNA_TYPE,
-      "목록 종류는 QUESTION 또는 ANSWER만 가능합니다.",
-    ) ?? QNA_TYPE.QUESTION;
+      "목록 종류는 ALL, QUESTION, ANSWER만 가능합니다.",
+    ) ?? QNA_TYPE.ALL;
   const paging = parsePaging(query);
   const filters = {
     keyword: typeof query.keyword === "string" ? query.keyword.trim() : "",
   };
+
+  if (type === QNA_TYPE.ALL) {
+    const [questionCount, answerCount] = await Promise.all([
+      moderationRepository.countQuestions(filters),
+      moderationRepository.countAnswers(filters),
+    ]);
+    const rows = await moderationRepository.findQnaAll(
+      filters,
+      paging.limit,
+      paging.offset,
+    );
+
+    const items = rows.map((row) => ({
+      ...row,
+      isSolved: Number(row.isSolved) === 1,
+      isAccepted: Number(row.isAccepted) === 1,
+      pendingReportCount: Number(row.pendingReportCount),
+    }));
+
+    return {
+      type,
+      ...toPageResponse(items, questionCount + answerCount, paging),
+    };
+  }
 
   if (type === QNA_TYPE.ANSWER) {
     const totalCount = await moderationRepository.countAnswers(filters);

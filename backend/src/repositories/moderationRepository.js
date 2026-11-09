@@ -59,12 +59,12 @@ const buildUserCondition = (filters) => {
   const params = [];
 
   if (filters.status) {
-    conditions.push("status = ?");
+    conditions.push("u.status = ?");
     params.push(filters.status);
   }
 
   if (filters.keyword) {
-    conditions.push("(email LIKE ? OR nickname LIKE ?)");
+    conditions.push("(u.email LIKE ? OR u.nickname LIKE ?)");
     params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
   }
 
@@ -77,7 +77,7 @@ const countUsers = async (filters) => {
 
   const [rows] = await pool.query(
     `SELECT COUNT(*) AS totalCount
-            FROM users
+            FROM users u
             WHERE ${where}`,
     params,
   );
@@ -86,21 +86,34 @@ const countUsers = async (filters) => {
 };
 
 // 회원 목록 조회 (비밀번호 해쉬 제외)
+// reportCount: 이 회원이 쓴 모집 글, 질문, 답변이 받은 신고 수 (처리 상태 무관)
 const findUsers = async (filters, limit, offset) => {
   const { where, params } = buildUserCondition(filters);
 
   const [rows] = await pool.query(
     `SELECT
-            id,
-            email,
-            nickname,
-            role,
-            status,
-            level,
-            created_at AS createdAt
-        FROM users
+            u.id,
+            u.email,
+            u.nickname,
+            u.role,
+            u.status,
+            u.level,
+            u.total_score AS score,
+            u.created_at AS createdAt,
+            (
+              SELECT COUNT(*)
+              FROM reports r
+              LEFT JOIN projects tp
+                ON r.target_type = 'PROJECT' AND tp.id = r.target_id
+              LEFT JOIN questions tq
+                ON r.target_type = 'QUESTION' AND tq.id = r.target_id
+              LEFT JOIN answers ta
+                ON r.target_type = 'ANSWER' AND ta.id = r.target_id
+              WHERE COALESCE(tp.author_id, tq.author_id, ta.author_id) = u.id
+            ) AS reportCount
+        FROM users u
         WHERE ${where}
-        ORDER BY id DESC
+        ORDER BY u.id DESC
         LIMIT ? OFFSET ?`,
     [...params, limit, offset],
   );
@@ -247,7 +260,9 @@ const updateReportStatus = async (reportId, status) => {
   return result.affectedRows;
 };
 
-// ---------------- 관리자: 모집 글 ----------------'
+// ---------------- 관리자: 모집 글 ----------------
+
+// 모집 글 목록 검색 조건 만들기 (삭제된 글 제외, 제목/작성자 검색)
 const buildProjectCondition = (filters) => {
   const conditions = ["p.deleted_at IS NULL"];
   const params = [];
@@ -258,8 +273,8 @@ const buildProjectCondition = (filters) => {
   }
 
   if (filters.keyword) {
-    conditions.push("p.title LIKE ?");
-    params.push(`%${filters.keyword}%`);
+    conditions.push("(p.title LIKE ? OR u.nickname LIKE ?)");
+    params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
   }
 
   return { where: conditions.join(" AND "), params };
@@ -272,6 +287,8 @@ const countProjects = async (filters) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) AS totalCount
         FROM projects p
+        JOIN users u
+          ON u.id = p.author_id
         WHERE ${where}`,
     params,
   );
@@ -279,7 +296,7 @@ const countProjects = async (filters) => {
   return Number(rows[0].totalCount);
 };
 
-// 모집 글 목록 조회 (대기 중인 신고 수 포함)
+// 모집 글 목록 조회 (대상 레벨, 대기 중인 신고 수 포함)
 const findProjects = async (filters, limit, offset) => {
   const { where, params } = buildProjectCondition(filters);
 
@@ -288,6 +305,7 @@ const findProjects = async (filters, limit, offset) => {
             p.id,
             p.title,
             p.status,
+            p.target_level AS targetLevel,
             p.capacity,
             DATE_FORMAT(p.deadline, '%Y-%m-%d') AS deadline,
             p.created_at AS createdAt,
@@ -314,7 +332,7 @@ const findProjects = async (filters, limit, offset) => {
 
 // ---------------- 관리자: 질문·답변 ----------------
 
-// 질문 목록 검색 조건 만들기 (삭제된 질문 제외)
+// 질문 목록 검색 조건 만들기 (삭제된 질문, 삭제된 모집 글의 질문 제외)
 const buildQuestionCondition = (filters) => {
   // 모집 글에 달린 질문이면 모집 글도 삭제되지 않아야 함 (NFR-043)
   const conditions = [
@@ -324,8 +342,14 @@ const buildQuestionCondition = (filters) => {
   const params = [];
 
   if (filters.keyword) {
-    conditions.push("(q.title LIKE ? OR q.content LIKE ?)");
-    params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
+    conditions.push(
+      "(q.title LIKE ? OR q.content LIKE ? OR u.nickname LIKE ?)",
+    );
+    params.push(
+      `%${filters.keyword}%`,
+      `%${filters.keyword}%`,
+      `%${filters.keyword}%`,
+    );
   }
 
   return { where: conditions.join(" AND "), params };
@@ -338,6 +362,8 @@ const countQuestions = async (filters) => {
   const [rows] = await pool.query(
     `SELECT COUNT(*) AS totalCount
             FROM questions q
+            JOIN users u
+              ON u.id = q.author_id
             LEFT JOIN projects p
                 ON p.id = q.project_id
             WHERE ${where}`,
@@ -388,9 +414,8 @@ const findQuestions = async (filters, limit, offset) => {
 };
 
 // 답변 목록 검색 조건 만들기
-// 삭제된 답변과 삭제된 질문에 달린 답변 제위 (NFR-043)
+// 삭제된 질문, 삭제된 모집 글에 달린 질문의 답변도 제외 (NFR-043)
 const buildAnswerCondition = (filters) => {
-  // 삭제된 질문, 삭제된 모집 글에 달린 질문의 답변도 제외 (NFR-043)
   const conditions = [
     "a.deleted_at IS NULL",
     "q.deleted_at IS NULL",
@@ -399,8 +424,8 @@ const buildAnswerCondition = (filters) => {
   const params = [];
 
   if (filters.keyword) {
-    conditions.push("a.content LIKE ?");
-    params.push(`%${filters.keyword}%`);
+    conditions.push("(a.content LIKE ? OR u.nickname LIKE ?)");
+    params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
   }
 
   return { where: conditions.join(" AND "), params };
@@ -417,6 +442,8 @@ const countAnswers = async (filters) => {
                 ON q.id = a.question_id
             LEFT JOIN projects p
                 ON p.id = q.project_id
+            JOIN users u
+                ON u.id = a.author_id
             WHERE ${where}`,
     params,
   );
@@ -456,6 +483,75 @@ const findAnswers = async (filters, limit, offset) => {
         ORDER BY a.id DESC
         LIMIT ? OFFSET ?`,
     [...params, limit, offset],
+  );
+
+  return rows;
+};
+
+// 질문/답변 전체 목록 (질문과 답변을 합쳐 최신순)
+// 검색 조건은 질문/답변 목록과 같은 함수를 그대로 사용
+const findQnaAll = async (filters, limit, offset) => {
+  const question = buildQuestionCondition(filters);
+  const answer = buildAnswerCondition(filters);
+
+  const [rows] = await pool.query(
+    `SELECT *
+      FROM (
+        SELECT
+          'QUESTION' AS type,
+          q.id,
+          q.id AS questionId,
+          q.title AS title,
+          q.author_id AS authorId,
+          u.nickname AS authorNickname,
+          q.created_at AS createdAt,
+          q.is_solved AS isSolved,
+          0 AS isAccepted,
+          (
+            SELECT COUNT(*)
+            FROM reports r
+            WHERE r.target_type = 'QUESTION'
+              AND r.target_id = q.id
+              AND r.status = 'PENDING'
+          ) AS pendingReportCount
+        FROM questions q
+        JOIN users u
+          ON u.id = q.author_id
+        LEFT JOIN projects p
+          ON p.id = q.project_id
+        WHERE ${question.where}
+        
+        UNION ALL
+        
+        SELECT
+          'ANSWER' AS type,
+          a.id,
+          a.question_id AS questionId,
+          LEFT(a.content, 100) AS title,
+          a.author_id AS authorId,
+          u.nickname AS authorNickname,
+          a.created_at AS createdAt,
+          0 AS isSolved,
+          a.is_accepted AS isAccepted,
+          (
+            SELECT COUNT(*)
+            FROM reports r
+            WHERE r.target_type = 'ANSWER'
+              AND r.target_id = a.id
+              AND r.status = 'PENDING'
+          ) AS pendingReportCount
+        FROM answers a
+        JOIN questions q
+          ON q.id = a.question_id
+        LEFT JOIN projects p
+          ON p.id = q.project_id
+        JOIN users u
+          ON u.id = a.author_id
+        WHERE ${answer.where}
+      ) qna
+       ORDER BY qna.createdAt DESC, qna.type, qna.id DESC
+       LIMIT ? OFFSET ?`,
+    [...question.params, ...answer.params, limit, offset],
   );
 
   return rows;
@@ -542,6 +638,7 @@ module.exports = {
   findQuestions,
   countAnswers,
   findAnswers,
+  findQnaAll,
   softDeleteQuestion,
   findAnswerForDeleteForUpdate,
   softDeleteAnswer,
