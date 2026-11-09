@@ -23,7 +23,7 @@ export default function AnswerList({
   const [actionAnswerId, setActionAnswerId] = useState(null);
   // 신고 폼을 연 답변 번호, 이번 화면에서 신고를 마친 답변 번호 목록
   const [reportingAnswerId, setReportingAnswerId] = useState(null);
-  const [reportedAnswerIds, setReportedAnswersIds] = useState([]);
+  const [reportedAnswerIds, setReportedAnswerIds] = useState([]);
   const isBusy = isSaving || isDeleting || isAccepting || isMutating;
 
   // 답변 수정 시작
@@ -134,7 +134,7 @@ export default function AnswerList({
     }
 
     await onReportAnswer(answerId, input);
-    setReportedAnswersIds((ids) => [...ids, answerId]);
+    setReportedAnswerIds((ids) => [...ids, answerId]);
     setReportingAnswerId(null);
   }
   return (
