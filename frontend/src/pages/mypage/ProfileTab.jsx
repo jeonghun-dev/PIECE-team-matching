@@ -181,6 +181,8 @@ function ProfileTab() {
 
   // 마운트 시 내 프로필 및 학습 이력 조회 (GET /api/users/me)
   const fetchMyProfile = useCallback(async () => {
+    setLoading(true);
+    setFetchError('');
     try {
       const resp = await getMeApi();
       applyUserData(resp.data.data);
@@ -194,8 +196,8 @@ function ProfileTab() {
   }, [applyUserData]);
 
   useEffect(() => {
-    const initialFetchId = window.setTimeout(fetchMyProfile, 0);
-    return () => window.clearTimeout(initialFetchId);
+    const timer = setTimeout(fetchMyProfile, 0);  // lint error 경고 해소
+    return () => clearTimeout(timer);
   }, [fetchMyProfile]);
 
   // 자격증 체크 토글
