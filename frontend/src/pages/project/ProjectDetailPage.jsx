@@ -85,7 +85,7 @@ function ProjectDetailContent({ id, user }) {
       if (active.current)
         setActionError(
           requestError.response?.data?.message ||
-            "참여 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
+          "참여 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
         );
     } finally {
       actionLock.current = false;
@@ -107,7 +107,7 @@ function ProjectDetailContent({ id, user }) {
       if (active.current)
         setActionError(
           requestError.response?.data?.message ||
-            "모집 글을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요."
+          "모집 글을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요."
         );
     } finally {
       actionLock.current = false;
@@ -188,25 +188,25 @@ function ProjectDetailContent({ id, user }) {
   const createdTime = formatRelativeTime(project.createdAt);
   const createdDate = createdTime
     ? new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      })
-        .formatToParts(new Date(createdTime.dateTime))
-        .filter((part) => ["year", "month", "day"].includes(part.type))
-        .map((part) => part.value)
-        .join(".")
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    })
+      .formatToParts(new Date(createdTime.dateTime))
+      .filter((part) => ["year", "month", "day"].includes(part.type))
+      .map((part) => part.value)
+      .join(".")
     : "";
   const deadline = project.deadline ? new Date(project.deadline) : null;
   const deadlineText =
     deadline && !Number.isNaN(deadline.getTime())
       ? new Intl.DateTimeFormat("ko-KR", {
-          timeZone: "Asia/Seoul",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit"
-        }).format(deadline)
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(deadline)
       : "미정";
   const dDay =
     project.dDay == null
@@ -349,10 +349,11 @@ function ProjectDetailContent({ id, user }) {
                   <ProjectApplyButton status={applyStatus} onApply={handleApply} />
                 </fieldset>
                 {action === "apply" && <p role="status">참여 요청을 보내는 중입니다.</p>}
-                <p className="project-detail-note">
-                  여러 프로젝트에 참여 요청을 보낼 수 있습니다. 요청 상태는 요청함에서 확인해
-                  주세요.
-                </p>
+                {actionSuccess && (
+                  <p className="project-detail-note" role="status">
+                    {actionSuccess}
+                  </p>
+                )}
               </>
             )}
           </section>
@@ -376,11 +377,6 @@ function ProjectDetailContent({ id, user }) {
                 {action === "delete" ? "삭제 중…" : "모집 글 삭제"}
               </button>
             </section>
-          )}
-          {actionSuccess && (
-            <p className="project-detail-note" role="status">
-              {actionSuccess}
-            </p>
           )}
           {actionError && (
             <div className="project-detail-panel">
