@@ -103,9 +103,6 @@ function ProjectListContent({ defaultLevel }) {
             </label>
           ))}
         </div>
-        <p className="project-list-filter-help">
-          {defaultLevel ? `내 레벨(${defaultLevel})이 기본으로 켜져 있어요` : "비로그인 상태에서는 전체 레벨을 보여드려요"}
-        </p>
       </aside>
 
       <section className="project-list-content" aria-label="모집 게시판">
