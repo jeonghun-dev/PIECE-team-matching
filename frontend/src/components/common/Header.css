@@ -49,8 +49,8 @@
 }
 
 /* 관리자 페이지 메뉴: 빨간 글자 */
-.header__menu--admin,
-.header__menu--admin:hover {
+.header__menu.header__menu--admin,
+.header__menu.header__menu--admin:hover {
     color: var(--color-danger);
 }
 
