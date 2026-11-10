@@ -152,6 +152,8 @@ function RecommendationState({ status, error, onRetry, emptyMessage }) {
 export default function HomePage() {
   const { user, isLoggedIn, loading: authLoading } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const [projectState, setProjectState] = useState({ status: "loading", items: [], error: "" });
   const [memberState, setMemberState] = useState({ status: "loading", items: [], error: "" });
   const isBlind = !authLoading && !isLoggedIn;
@@ -161,8 +163,14 @@ export default function HomePage() {
 
     let active = true;
     const ownerId = user?.id;
+    setLoading(true);
+    setFetchError("");
     Promise.allSettled([getRecommendedProjects(), getRecommendedMembers()]).then(([projectsResult, membersResult]) => {
       if (!active) return;
+      const firstFailure = [projectsResult, membersResult].find((result) => result.status === "rejected");
+      if (firstFailure) {
+        setFetchError(firstFailure.reason?.response?.data?.message ?? "추천 정보를 불러오지 못했습니다.");
+      }
       if (projectsResult.status === "fulfilled") {
         const items = responseItems(projectsResult.value);
         setProjectState({ status: items.length ? "success" : "empty", items, error: "", ownerId });
@@ -185,19 +193,23 @@ export default function HomePage() {
           ownerId,
         });
       }
+    }).finally(() => {
+      if (active) setLoading(false);
     });
 
     return () => { active = false; };
   }, [authLoading, isLoggedIn, refreshKey, user?.id]);
 
   const retry = () => {
+    setLoading(true);
+    setFetchError("");
     setProjectState((current) => ({ ...current, status: "loading", error: "" }));
     setMemberState((current) => ({ ...current, status: "loading", error: "" }));
     setRefreshKey((key) => key + 1);
   };
 
-  const projectStatus = projectState.ownerId === user?.id ? projectState.status : "loading";
-  const memberStatus = memberState.ownerId === user?.id ? memberState.status : "loading";
+  const projectStatus = loading || projectState.ownerId !== user?.id ? "loading" : projectState.status;
+  const memberStatus = loading || memberState.ownerId !== user?.id ? "loading" : memberState.status;
   const projectTitle = isLoggedIn && user?.level
     ? `${levelLabels[user.level] ?? user.level} ${user.nickname} 님 수준에 맞는 프로젝트`
     : "내 수준에 맞는 추천 프로젝트";
@@ -230,7 +242,7 @@ export default function HomePage() {
               ) : (
                 <RecommendationState
                   status={projectStatus}
-                  error={projectState.error}
+                  error={projectState.error || fetchError}
                   onRetry={retry}
                   emptyMessage="지금은 추천할 프로젝트가 없어요. 모집 게시판에서 더 찾아보세요."
                 />
@@ -255,7 +267,7 @@ export default function HomePage() {
               ) : (
                 <RecommendationState
                   status={memberStatus}
-                  error={memberState.error}
+                  error={memberState.error || fetchError}
                   onRetry={retry}
                   emptyMessage="지금은 추천할 팀원이 없어요. 팀원 찾기에서 둘러보세요."
                 />
