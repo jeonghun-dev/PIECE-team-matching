@@ -1,5 +1,5 @@
-﻿const questionRepository = require("../repositories/questionRepository")
-const pool = require("../config/db")
+﻿const questionRepository = require("../repositories/questionRepository");
+const pool = require("../config/db");
 
 const { getPagination, toPageResponse } = require("../utils/pagination");
 
@@ -97,8 +97,8 @@ async function createForProject(actor, projectId, input) {
     await connection.beginTransaction();
 
     const project = await questionRepository.findProjectForUpdate(
-        connection,
-        numericProjectId
+      connection,
+      numericProjectId
     );
 
     if (!project) {
@@ -108,13 +108,13 @@ async function createForProject(actor, projectId, input) {
     }
 
     const questionId = await questionRepository.saveForProject(
-        connection,
-        {
-          authorId: actor.id,
-          projectId: numericProjectId,
-          title: questionInput.title,
-          content: questionInput.content
-        }
+      connection,
+      {
+        authorId: actor.id,
+        projectId: numericProjectId,
+        title: questionInput.title,
+        content: questionInput.content
+      }
     );
 
     await connection.commit();
