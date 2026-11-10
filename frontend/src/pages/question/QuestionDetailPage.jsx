@@ -219,6 +219,7 @@ function QuestionDetailContent({ id }) {
               {user?.id != null && String(user.id) !== String(question.authorId) && (
                 <span ref={reportTriggerRef}>
                   <ReportButton
+                      reported={reported}
                       disabled={
                           reportOpen ||
                           reportSuccess ||
