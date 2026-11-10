@@ -7,9 +7,25 @@
 
 .home-shell { width: min(100%, var(--content-max-width)); margin: 0 auto; }
 .home-hero {
+  position: relative;
+  isolation: isolate;
   min-height: 190px;
   padding: var(--space-7) 8.5%;
-  background: linear-gradient(108deg, #f0efff 0%, #f7f1f6 57%, #fff0ed 100%);
+  background: transparent;
+}
+.home-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 50%;
+  width: 100vw;
+  content: "";
+  transform: translateX(-50%);
+  background: linear-gradient(
+    108deg,
+    color-mix(in srgb, var(--color-primary-soft) 65%, var(--color-surface)) 0%,
+    var(--color-page) 57%,
+    color-mix(in srgb, var(--color-danger-soft) 65%, var(--color-surface)) 100%
+  );
 }
 .home-hero__kicker { margin: 0 0 var(--space-3); color: var(--color-primary); font-size: var(--font-size-caption); font-weight: var(--font-weight-bold); }
 .home-hero h1 { margin: 0; font-size: clamp(var(--font-size-page-title), 3vw, 36px); font-weight: var(--font-weight-bold); letter-spacing: -.045em; line-height: var(--line-height-title); }
@@ -34,14 +50,19 @@
 .home-open-tag { padding: var(--space-1) var(--space-2); border-radius: var(--radius-badge); color: var(--color-success); background: var(--color-success-soft); font-size: var(--font-size-caption); font-weight: var(--font-weight-bold); }
 .home-project-card__title { display: block; overflow: hidden; margin: var(--space-3) 0; color: var(--color-text); font-size: var(--font-size-card-title); font-weight: var(--font-weight-bold); line-height: var(--line-height-heading); text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
 .home-project-card__title:hover { color: var(--color-primary); }
-.home-project-card__meta { display: flex; justify-content: space-between; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--font-size-body); }
+.home-project-card__meta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--font-size-body); }
+.home-project-card__members { display: inline-flex; align-items: center; gap: var(--space-1); }
+.home-project-card__icon { width: var(--icon-size-sm); height: var(--icon-size-sm); flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
 .home-project-card__progress { height: var(--space-1); overflow: hidden; margin: var(--space-3) 0; border-radius: var(--radius-panel); background: var(--color-disabled-bg); }
 .home-project-card__progress span { display: block; height: 100%; border-radius: inherit; background: var(--color-primary); }
-.home-project-card__tags { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--font-size-caption); white-space: nowrap; }
-.home-project-card__tags span { overflow: hidden; text-overflow: ellipsis; }
+.home-project-card__tags { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--color-text-muted); font-size: var(--font-size-caption); }
+.home-project-card__conditions { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.home-project-card__condition { display: inline-flex; min-width: 0; align-items: center; gap: var(--space-1); }
+.home-project-card__condition:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-project-card__question { flex: 0 0 auto; white-space: nowrap; }
 .home-member-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
 .home-member-card { display: flex; min-height: 230px; flex-direction: column; align-items: center; padding: var(--space-4); text-align: center; }
-.home-member-card__avatar { display: grid; width: 64px; height: 64px; place-items: center; border-radius: var(--radius-circle); color: var(--color-primary); background: linear-gradient(135deg, var(--color-primary-soft), #f6d9db); font-size: var(--font-size-card-title); font-weight: var(--font-weight-bold); }
+.home-member-card__avatar { display: grid; width: 64px; height: 64px; place-items: center; border-radius: var(--radius-circle); color: var(--color-primary); background: linear-gradient(135deg, var(--color-primary-soft), color-mix(in srgb, var(--color-danger-soft) 75%, var(--color-surface))); font-size: var(--font-size-card-title); font-weight: var(--font-weight-bold); }
 .home-member-card__name { max-width: 100%; overflow: hidden; margin-top: var(--space-2); font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .home-member-card .home-level-tag { margin-top: var(--space-2); }
 .home-member-card__details { display: flex; justify-content: center; gap: var(--space-2); max-width: 100%; overflow: hidden; margin-top: var(--space-2); color: var(--color-text-muted); font-size: var(--font-size-caption); white-space: nowrap; }
@@ -53,7 +74,7 @@
 .home-state__retry { padding: var(--space-2) var(--space-3); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); cursor: pointer; }
 .home-footer { padding: var(--space-7) 0 0; color: var(--color-text-muted); font-size: var(--font-size-caption); text-align: center; }
 .home-skeleton-card { pointer-events: none; }
-.home-skeleton-card i { display: block; border-radius: 99px; background: #e4e7f0; }
+.home-skeleton-card i { display: block; border-radius: var(--radius-panel); background: color-mix(in srgb, var(--color-disabled-bg) 82%, var(--color-border)); }
 .home-skeleton-card__top, .home-skeleton-card__bottom { display: flex; justify-content: space-between; gap: 8px; }
 .home-skeleton-card__top i:first-child { width: 60px; height: var(--control-height-sm); background: var(--color-primary-soft); }
 .home-skeleton-card__top i:last-child { width: 48px; height: var(--control-height-sm); background: var(--color-success-soft); }
@@ -73,7 +94,7 @@
 
 @media (max-width: 700px) {
   .home-page { padding: 0 var(--space-3) var(--space-4); }
-  .home-hero { min-height: 180px; padding: 30px 7%; }
+  .home-hero { min-height: 180px; padding: var(--space-6) 7%; }
   .home-recommendations { gap: var(--space-5); padding: var(--space-4) 0 0; }
   .home-project-grid { grid-template-columns: 1fr; }
   .home-member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

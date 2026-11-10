@@ -16,9 +16,26 @@ const notifications = async (req, res, next) => {
   catch (error) { return next(error); }
 };
 
+const unreadNotificationCount = async (req, res, next) => {
+  try { return sendSuccess(res, await inboxService.unreadNotificationCount(req.user)); }
+  catch (error) { return next(error); }
+};
+
+const markNotificationRead = async (req, res, next) => {
+  try { return sendSuccess(res, await inboxService.markNotificationRead(req.user, req.params.id)); }
+  catch (error) { return next(error); }
+};
+
 const ownedOpenProjects = async (req, res, next) => {
   try { return sendSuccess(res, await inboxService.ownedOpenProjects(req.user)); }
   catch (error) { return next(error); }
 };
 
-module.exports = { list, pendingCount, notifications, ownedOpenProjects };
+module.exports = {
+  list,
+  pendingCount,
+  notifications,
+  unreadNotificationCount,
+  markNotificationRead,
+  ownedOpenProjects,
+};

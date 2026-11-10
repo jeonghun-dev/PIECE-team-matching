@@ -39,6 +39,21 @@ const responseItems = (response) => {
   return Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
 };
 
+function formatDeadline(value) {
+  if (!value) return "마감일 확인";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.slice(5).replace("-", ".");
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "마감일 확인";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date)
+    .filter((part) => part.type === "month" || part.type === "day")
+    .map((part) => part.value)
+    .join(".");
+}
+
 function SectionHeading({ id, title, to, linkLabel }) {
   return (
     <div className="home-section__heading">
@@ -78,10 +93,6 @@ function BlindMemberCard() {
 
 function ProjectCard({ project }) {
   const activeTimes = splitSet(project.activeTimes);
-  const dDay = Number(project.dDay);
-  const dDayLabel = project.dDay === null || !Number.isFinite(dDay)
-    ? "마감일 확인"
-    : dDay === 0 ? "오늘 마감" : `D-${dDay}`;
   const memberCount = Number(project.memberCount ?? 0);
   const capacity = Number(project.capacity ?? 0);
   const progress = capacity ? Math.min((memberCount / capacity) * 100, 100) : 0;
@@ -98,16 +109,36 @@ function ProjectCard({ project }) {
         {project.title}
       </Link>
       <div className="home-project-card__meta">
-        <span>{memberCount}/{capacity}명 모집</span>
-        <span>{dDayLabel}</span>
+        <span className="home-project-card__members">
+          <svg aria-hidden="true" className="home-project-card__icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="7" r="3" />
+            <path d="M3 21v-2a6 6 0 0 1 12 0v2M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v2" />
+          </svg>
+          <span>{memberCount} / {capacity}명</span>
+        </span>
+        <span>마감 {formatDeadline(project.deadline)}</span>
       </div>
       <div className="home-project-card__progress" aria-label={`${memberCount}명 지원, 정원 ${capacity}명`}>
         <span style={{ width: `${progress}%` }} />
       </div>
       <div className="home-project-card__tags">
-        <span>{progressModeLabels[project.progressMode] ?? project.progressMode}</span>
-        <span>{activeTimes.map((time) => activeTimeLabels[time] ?? time).join(" · ") || "활동 시간 미정"}</span>
-        <span>질문 {Number(project.questionCount ?? 0)}</span>
+        <div className="home-project-card__conditions">
+          <span className="home-project-card__condition">
+            <svg aria-hidden="true" className="home-project-card__icon" viewBox="0 0 24 24">
+              <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            {progressModeLabels[project.progressMode] ?? project.progressMode ?? "진행 방식 미정"}
+          </span>
+          <span className="home-project-card__condition">
+            <svg aria-hidden="true" className="home-project-card__icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            {activeTimes.map((time) => activeTimeLabels[time] ?? time).join(" · ") || "활동 시간 미정"}
+          </span>
+        </div>
+        <span className="home-project-card__question">질문 {Number(project.questionCount ?? 0)}</span>
       </div>
     </article>
   );
@@ -126,6 +157,7 @@ function MemberCard({ member }) {
       </span>
       <div className="home-member-card__details">
         <span>{collaborationLabels[member.collaborationMode] ?? member.collaborationMode}</span>
+        {activeTimes.length > 0 && <span aria-hidden="true">·</span>}
         {activeTimes.map((time) => <span key={time}>{activeTimeLabels[time] ?? time}</span>)}
       </div>
       <Link className="home-member-card__link" to={`/members/${member.id}`}>프로필 보기</Link>
@@ -152,8 +184,6 @@ function RecommendationState({ status, error, onRetry, emptyMessage }) {
 export default function HomePage() {
   const { user, isLoggedIn, loading: authLoading } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState("");
   const [projectState, setProjectState] = useState({ status: "loading", items: [], error: "" });
   const [memberState, setMemberState] = useState({ status: "loading", items: [], error: "" });
   const isBlind = !authLoading && !isLoggedIn;
@@ -163,14 +193,8 @@ export default function HomePage() {
 
     let active = true;
     const ownerId = user?.id;
-    setLoading(true);
-    setFetchError("");
     Promise.allSettled([getRecommendedProjects(), getRecommendedMembers()]).then(([projectsResult, membersResult]) => {
       if (!active) return;
-      const firstFailure = [projectsResult, membersResult].find((result) => result.status === "rejected");
-      if (firstFailure) {
-        setFetchError(firstFailure.reason?.response?.data?.message ?? "추천 정보를 불러오지 못했습니다.");
-      }
       if (projectsResult.status === "fulfilled") {
         const items = responseItems(projectsResult.value);
         setProjectState({ status: items.length ? "success" : "empty", items, error: "", ownerId });
@@ -193,23 +217,19 @@ export default function HomePage() {
           ownerId,
         });
       }
-    }).finally(() => {
-      if (active) setLoading(false);
     });
 
     return () => { active = false; };
   }, [authLoading, isLoggedIn, refreshKey, user?.id]);
 
   const retry = () => {
-    setLoading(true);
-    setFetchError("");
     setProjectState((current) => ({ ...current, status: "loading", error: "" }));
     setMemberState((current) => ({ ...current, status: "loading", error: "" }));
     setRefreshKey((key) => key + 1);
   };
 
-  const projectStatus = loading || projectState.ownerId !== user?.id ? "loading" : projectState.status;
-  const memberStatus = loading || memberState.ownerId !== user?.id ? "loading" : memberState.status;
+  const projectStatus = projectState.ownerId === user?.id ? projectState.status : "loading";
+  const memberStatus = memberState.ownerId === user?.id ? memberState.status : "loading";
   const projectTitle = isLoggedIn && user?.level
     ? `${levelLabels[user.level] ?? user.level} ${user.nickname} 님 수준에 맞는 프로젝트`
     : "내 수준에 맞는 추천 프로젝트";
@@ -234,7 +254,7 @@ export default function HomePage() {
             <div className="home-section__content">
               <SectionHeading id="home-projects-title" title={projectTitle} to="/projects" linkLabel="모집 게시판 전체보기" />
               {isBlind || authLoading ? (
-                <div className="home-project-grid home-project-grid--blind" aria-hidden="true">{[1, 2, 3].map((item) => <BlindProjectCard key={item} />)}</div>
+                <div className="home-project-grid home-project-grid--blind" aria-hidden="true">{[1, 2, 3, 4, 5, 6].map((item) => <BlindProjectCard key={item} />)}</div>
               ) : projectStatus === "success" ? (
                 <div className="home-project-grid">
                   {projectState.items.map((project) => <ProjectCard key={project.id} project={project} />)}
@@ -242,7 +262,7 @@ export default function HomePage() {
               ) : (
                 <RecommendationState
                   status={projectStatus}
-                  error={projectState.error || fetchError}
+                  error={projectState.error}
                   onRetry={retry}
                   emptyMessage="지금은 추천할 프로젝트가 없어요. 모집 게시판에서 더 찾아보세요."
                 />
@@ -267,7 +287,7 @@ export default function HomePage() {
               ) : (
                 <RecommendationState
                   status={memberStatus}
-                  error={memberState.error || fetchError}
+                  error={memberState.error}
                   onRetry={retry}
                   emptyMessage="지금은 추천할 팀원이 없어요. 팀원 찾기에서 둘러보세요."
                 />
@@ -277,7 +297,7 @@ export default function HomePage() {
           </section>
         </div>
 
-        <footer className="home-footer">PIECE · 6th DevMates</footer>
+        <footer className="home-footer">PIECE · 6팀 DevMates</footer>
       </div>
     </main>
   );
