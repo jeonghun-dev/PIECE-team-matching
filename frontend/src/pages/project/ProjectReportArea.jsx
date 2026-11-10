@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import client from "../../api/client";
+import { getMyProjectReports, reportProject } from "../../api/projectDetail";
 import ReportButton from "../../components/report/ReportButton";
 import ReportForm from "../../components/report/ReportForm";
 
@@ -18,18 +18,29 @@ export default function ProjectReportArea({ projectId, formTarget }) {
 
   useEffect(() => {
     active.current = true;
-    return () => { active.current = false; };
+    return () => {
+      active.current = false;
+    };
   }, []);
 
   useEffect(() => {
     let ignore = false;
-    client.get("/reports/mine", { params: { targetType: "PROJECT", targetIds: String(projectId) } })
+    getMyProjectReports(projectId)
       .then((response) => {
-        if (!ignore) setReported(response.data.data.reportedIds.some((id) => String(id) === String(projectId)));
+        if (!ignore)
+          setReported(
+            response.data.data.reportedIds.some((id) => String(id) === String(projectId))
+          );
       })
-      .catch(() => { if (!ignore) setError("신고 여부를 확인하지 못했습니다. 다시 시도해 주세요."); })
-      .finally(() => { if (!ignore) setChecking(false); });
-    return () => { ignore = true; };
+      .catch(() => {
+        if (!ignore) setError("신고 여부를 확인하지 못했습니다. 다시 시도해 주세요.");
+      })
+      .finally(() => {
+        if (!ignore) setChecking(false);
+      });
+    return () => {
+      ignore = true;
+    };
   }, [projectId, retryCount]);
 
   useEffect(() => {
@@ -39,7 +50,7 @@ export default function ProjectReportArea({ projectId, formTarget }) {
 
   async function handleReport(input) {
     try {
-      await client.post("/reports", { targetType: "PROJECT", targetId: Number(projectId), reason: input.reason, detail: input.detail });
+      await reportProject(projectId, input);
     } catch (requestError) {
       if (active.current && requestError.response?.status === 409) {
         setReported(true);
@@ -48,18 +59,67 @@ export default function ProjectReportArea({ projectId, formTarget }) {
       }
       throw requestError;
     }
-    if (active.current) { setReported(true); setOpen(false); }
+    if (active.current) {
+      setReported(true);
+      setOpen(false);
+    }
   }
 
   return (
     <>
-      <span className="project-detail-report-trigger" ref={trigger}><ReportButton disabled={checking || Boolean(error) || open || reported} onClick={() => setOpen(true)} /></span>
-      {formTarget && createPortal(<div className={checking || error || reported || open ? "project-detail-report" : undefined}>
-      {checking && <p className="project-detail-muted" role="status">신고 여부를 확인하고 있습니다.</p>}
-      {error && <div><p className="project-detail-error" role="alert">{error}</p><button type="button" className="project-question-button" onClick={() => { setChecking(true); setError(""); setRetryCount((prev) => prev + 1); }}>다시 시도</button></div>}
-      {reported && <p ref={success} tabIndex={-1} role="status">신고가 접수되었습니다.</p>}
-      {open && <div ref={formArea}><ReportForm onSubmit={handleReport} onCancel={() => { setOpen(false); trigger.current?.querySelector("button")?.focus(); }} /></div>}
-      </div>, formTarget)}
+      <span className="project-detail-report-trigger" ref={trigger}>
+        <ReportButton
+          disabled={checking || Boolean(error) || open || reported}
+          onClick={() => setOpen(true)}
+        />
+      </span>
+      {formTarget &&
+        createPortal(
+          <div
+            className={checking || error || reported || open ? "project-detail-report" : undefined}
+          >
+            {checking && (
+              <p className="project-detail-muted" role="status">
+                신고 여부를 확인하고 있습니다.
+              </p>
+            )}
+            {error && (
+              <div>
+                <p className="project-detail-error" role="alert">
+                  {error}
+                </p>
+                <button
+                  type="button"
+                  className="project-question-button"
+                  onClick={() => {
+                    setChecking(true);
+                    setError("");
+                    setRetryCount((prev) => prev + 1);
+                  }}
+                >
+                  다시 시도
+                </button>
+              </div>
+            )}
+            {reported && (
+              <p ref={success} tabIndex={-1} role="status">
+                신고가 접수되었습니다.
+              </p>
+            )}
+            {open && (
+              <div ref={formArea}>
+                <ReportForm
+                  onSubmit={handleReport}
+                  onCancel={() => {
+                    setOpen(false);
+                    trigger.current?.querySelector("button")?.focus();
+                  }}
+                />
+              </div>
+            )}
+          </div>,
+          formTarget
+        )}
     </>
   );
 }
