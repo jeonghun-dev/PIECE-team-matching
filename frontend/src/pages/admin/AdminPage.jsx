@@ -4,6 +4,7 @@ import { Link, Navigate, useLocation } from "react-router-dom";
 import { getAdminReports } from "../../api/admin";
 import AdminProjectsPage from "./AdminProjectsPage";
 import AdminQnaPage from "./AdminQnaPage";
+import AdminReportsPage from "./AdminReportsPage";
 import AdminUsersPage from "./AdminUsersPage";
 import "./AdminPage.css";
 
@@ -12,14 +13,15 @@ const MENUS = [
   { path: "/admin/users", label: "회원 관리", page: AdminUsersPage },
   { path: "/admin/projects", label: "모집 글 관리", page: AdminProjectsPage },
   { path: "/admin/qna", label: "질문 · 답변 관리", page: AdminQnaPage },
-  { path: "/admin/reports", label: "신고된 게시물", page: null },
+  { path: "/admin/reports", label: "신고된 게시물", page: AdminReportsPage },
 ];
 
 function AdminPage() {
   const location = useLocation();
   const [pendingReportCount, setPendingReportCount] = useState(0);
+  const [badgeKey, setBadgeKey] = useState(0);
 
-  // 신고된 게시물 메뉴 배지: 처리 대기 대상 수 (메뉴를 옮길 때마다 새로 확인)
+  // 신고된 게시물 메뉴 배지: 처리 대기 대상 수 (메뉴를 옮기거나 신고를 처리하면 새로 확인)
   useEffect(() => {
     let ignore = false;
 
@@ -36,7 +38,7 @@ function AdminPage() {
     return () => {
       ignore = true;
     };
-  }, [location.pathname]);
+  }, [location.pathname, badgeKey]);
 
   // /admin 으로 들어오면 회원 관리로
   if (location.pathname === "/admin") {
@@ -76,7 +78,7 @@ function AdminPage() {
         </aside>
 
         {CurrentPage ? (
-          <CurrentPage />
+          <CurrentPage onReportsChange={() => setBadgeKey((key) => key + 1)} />
         ) : (
           <section className="admin-content">
             <p className="admin-content__desc">준비 중인 화면입니다.</p>

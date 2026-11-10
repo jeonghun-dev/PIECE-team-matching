@@ -72,13 +72,13 @@ function LoginPage() {
         {/* 상단 로고 및 인사말 */}
         <header className="login-card__header">
           <div className="login-card__brand">
-            <h1 id="login-title">
+            <Link to="/" id="login-title">
               <img
                 src="/piece-logo.png"
                 alt="PIECE"
                 className="login-card__logo-img"
               />
-            </h1>
+            </Link>
           </div>
           <p className="login-card__subtitle">다시 오신 걸 환영해요</p>
         </header>

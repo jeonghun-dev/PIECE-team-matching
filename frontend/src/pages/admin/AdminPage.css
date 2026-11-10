@@ -403,3 +403,75 @@
   outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: var(--focus-ring-offset);
 }
+
+/* ===== 신고된 게시물: 펼친 신고 내역 ===== */
+.admin-report__row > td {
+  background-color: var(--color-page);
+}
+
+.admin-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.admin-report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-report__link {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-report__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-report__item {
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  background-color: var(--color-surface);
+}
+
+.admin-report__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.admin-report__meta strong {
+  color: var(--color-text);
+}
+
+.admin-report__detail {
+  margin: var(--space-2) 0 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.admin-report__message {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.admin-report__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.admin-report__suspended {
+  margin-left: var(--space-2);
+}
