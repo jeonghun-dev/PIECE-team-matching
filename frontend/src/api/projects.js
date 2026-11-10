@@ -11,7 +11,10 @@ export const getProject = (id) => {
     return client.get(`/projects/${id}`);
 };
 
-// 모집 글 작성
+// 현재 로그인한 사용자의 학습 레벨에 맞는 모집 중 프로젝트 추천
+export const getRecommendedProjects = () => client.get("/projects/recommended");
+
+// 모집 글 등록
 export const createProject = (data) => {
     return client.post("/projects", data);
 };
