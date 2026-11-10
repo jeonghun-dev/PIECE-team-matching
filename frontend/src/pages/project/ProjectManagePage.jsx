@@ -1,5 +1,5 @@
 // SCR-10 지원자·팀원 관리 (김정훈)
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { deleteProject, getProject } from "../../api/projects";
 import { getProjectMembers } from "../../api/projectDetail";
@@ -81,10 +81,17 @@ function Avatar({ name }) {
   );
 }
 
+// 주소의 모집 글 번호가 바뀌면 key로 화면을 새로 만들어 이전 글의 상태·응답이 섞이지 않게 함
 export default function ProjectManagePage() {
   const { id } = useParams();
+  return <ProjectManageContent key={id} id={id} />;
+}
+
+function ProjectManageContent({ id }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  // 화면이 아직 떠 있는지 (응답이 늦게 와도 떠난 화면에서는 이동·상태 변경 안 함)
+  const active = useRef(true);
 
   const [project, setProject] = useState(null);
   const [applicants, setApplicants] = useState([]);
@@ -94,6 +101,13 @@ export default function ProjectManagePage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [actionKey, setActionKey] = useState(null);
   const [actionError, setActionError] = useState("");
+
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
 
   // 모집 글 → (모집자면) 지원자·팀원 함께 불러오기
   useEffect(() => {
@@ -159,12 +173,14 @@ export default function ProjectManagePage() {
     try {
       await request();
       notifyRequestsUpdated();
-      reload();
+      if (active.current) reload();
     } catch (requestError) {
-      setActionError(getErrorMessage(requestError, fallback));
-      reload();
+      if (active.current) {
+        setActionError(getErrorMessage(requestError, fallback));
+        reload();
+      }
     } finally {
-      setActionKey(null);
+      if (active.current) setActionKey(null);
     }
   };
 
@@ -206,12 +222,15 @@ export default function ProjectManagePage() {
 
     try {
       await deleteProject(id);
-      navigate("/projects", { replace: true });
+      // 응답을 기다리는 동안 다른 화면으로 떠났으면 이동하지 않음
+      if (active.current) navigate("/projects", { replace: true });
     } catch (requestError) {
-      setActionError(
-        getErrorMessage(requestError, "모집 글을 삭제하지 못했습니다."),
-      );
-      setActionKey(null);
+      if (active.current) {
+        setActionError(
+          getErrorMessage(requestError, "모집 글을 삭제하지 못했습니다."),
+        );
+        setActionKey(null);
+      }
     }
   };
 
