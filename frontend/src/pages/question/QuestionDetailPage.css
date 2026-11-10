@@ -167,7 +167,24 @@
 }
 
 .question-detail-actions a {
-  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height-md);
+  padding: var(--space-2) var(--button-padding-x-md);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+  text-decoration: none;
+}
+
+.question-detail-actions a:hover {
+  background: var(--color-page);
+  border-color: var(--color-input-border);
 }
 
 .question-detail-actions .question-detail-delete {

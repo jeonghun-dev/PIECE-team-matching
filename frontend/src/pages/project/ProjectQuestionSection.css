@@ -1,0 +1,16 @@
+.project-question-form { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-3); margin: var(--space-4) 0 var(--space-5); }
+.project-question-form textarea { box-sizing: border-box; width: 100%; min-height: var(--textarea-min-height); padding: var(--input-padding-y) var(--input-padding-x); resize: vertical; border: var(--border-width) solid var(--color-input-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font: inherit; line-height: var(--line-height-body); }
+.project-question-form textarea::placeholder { color: var(--color-text-muted); opacity: 1; }
+.project-question-form textarea[aria-invalid="true"] { border-color: var(--color-danger); }
+.project-question-form textarea:focus-visible { outline: var(--focus-ring-width) solid var(--color-primary); outline-offset: var(--focus-ring-offset); }
+.project-question-button { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-height-sm); padding: var(--space-1) var(--button-padding-x-sm); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font: inherit; font-weight: var(--font-weight-semibold); cursor: pointer; }
+.project-question-form > .project-question-button { align-self: flex-end; min-height: var(--control-height-md); }
+.project-question-button--primary { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-on-solid); }
+.project-question-button--primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.project-question-button:disabled { background: var(--color-disabled-bg); color: var(--color-disabled-text); cursor: not-allowed; }
+.project-question { padding: var(--space-5) 0; border-top: var(--border-width) solid var(--color-border); }
+.project-question:last-child { padding-bottom: 0; }
+.project-question-author { color: var(--color-text); }
+.project-question-body { margin: var(--space-3) 0 var(--space-4); white-space: pre-wrap; overflow-wrap: anywhere; }
+.project-question-answers { margin-left: var(--space-5); }
+@media (max-width: 760px) { .project-question-answers { margin-left: 0; } }
