@@ -21,13 +21,14 @@ function Header() {
     const [notificationVersion, setNotificationVersion] = useState(0);
     const notificationRef = useRef(null);
 
-    const refreshPendingCount = useCallback(async () => {
-        try {
-            const response = await getPendingRequestCount();
-            setPendingCount(Number(response.data?.data?.count ?? 0));
-        } catch {
-            // 서버를 사용할 수 없어도 공통 헤더 탐색은 계속 가능하게 둔다.
-        }
+    const refreshPendingCount = useCallback(() => {
+        getPendingRequestCount()
+            .then((response) => {
+                setPendingCount(Number(response.data?.data?.count ?? 0));
+            })
+            .catch(() => {
+                // 서버를 사용할 수 없어도 공통 헤더 탐색은 계속 가능하게 둔다.
+            });
     }, []);
 
     useEffect(() => {
@@ -105,6 +106,9 @@ function Header() {
         return location.pathname.startsWith(path) ? "header__menu header__menu--active" : "header__menu";
     };
 
+    // 관리자 로그인일 때만 ADMIN 배지와 관리자 페이지 메뉴 표시
+    const isAdmin = !loading && isLoggedIn && user?.role === "ADMIN";
+
     // 로그아웃: 토큰 삭제 후 메인으로 이동
     const handleLogout = () => {
         logout();
@@ -115,14 +119,17 @@ function Header() {
         <header className="header">
             <div className="header__inner">
 
-                {/* 로고 → 메인 */}
-                <Link to="/" className="header__logo">
-                    <img
-                        src="/piece-logo.png"
-                        alt="PIECE"
-                        className="header__logo-img"
-                    />
-                </Link>
+                {/* 로고 → 메인, 관리자면 ADMIN 배지 */}
+                <div className="header__brand">
+                    <Link to="/" className="header__logo">
+                        <img
+                            src="/piece-logo.png"
+                            alt="PIECE"
+                            className="header__logo-img"
+                        />
+                    </Link>
+                    {isAdmin && <span className="header__admin-badge">ADMIN</span>}
+                </div>
 
                 {/* 공통 메뉴 */}
                 <nav className="header__nav" aria-label="주요 메뉴">
@@ -135,6 +142,11 @@ function Header() {
                             <span className="header__request-count">{pendingCount}</span>
                         )}
                     </Link>
+                    {isAdmin && (
+                        <Link to="/admin" className={`${menuClass("/admin")} header__menu--admin`}>
+                            관리자 페이지
+                        </Link>
+                    )}
                 </nav>
 
                 <div className="header__right">
