@@ -202,13 +202,13 @@ function SignupPage() {
       <div className="signup-card">
         {/* 상단 제목 영역 */}
         <header className="signup-card__header">
-          <div className="signup-card__brand">
+          <Link to="/" className="signup-card__brand">
             <img
               src="/piece-logo.png"
               alt="PIECE"
               className="signup-card__logo-img"
             />
-          </div>
+          </Link>
           <h1 className="signup-card__title">회원가입</h1>
           <p className="signup-card__subtitle">
             PIECE에서 함께할 팀원을 찾아보세요
