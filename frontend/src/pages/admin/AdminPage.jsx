@@ -2,14 +2,16 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { getAdminReports } from "../../api/admin";
+import AdminProjectsPage from "./AdminProjectsPage";
+import AdminQnaPage from "./AdminQnaPage";
 import AdminUsersPage from "./AdminUsersPage";
 import "./AdminPage.css";
 
 // 메뉴와 화면 (아직 만들지 않은 화면은 page: null → 준비 중 표시)
 const MENUS = [
   { path: "/admin/users", label: "회원 관리", page: AdminUsersPage },
-  { path: "/admin/projects", label: "모집 글 관리", page: null },
-  { path: "/admin/qna", label: "질문 · 답변 관리", page: null },
+  { path: "/admin/projects", label: "모집 글 관리", page: AdminProjectsPage },
+  { path: "/admin/qna", label: "질문 · 답변 관리", page: AdminQnaPage },
   { path: "/admin/reports", label: "신고된 게시물", page: null },
 ];
 

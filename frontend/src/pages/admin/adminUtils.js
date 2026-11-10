@@ -100,6 +100,15 @@ export function useAdminList(load, initialTab) {
     setReloadKey((key) => key + 1);
   };
 
+  // 삭제 후 다시 불러오기: 현재 페이지의 마지막 한 건을 지웠으면 앞 페이지로
+  const reloadAfterDelete = () => {
+    if (result.items.length === 1 && page > 1) {
+      setPage(page - 1);
+      return;
+    }
+    reload();
+  };
+
   const totalPages = Math.max(
     1,
     Math.ceil(result.totalCount / (result.size || ADMIN_PAGE_SIZE)),
@@ -119,5 +128,6 @@ export function useAdminList(load, initialTab) {
     loading,
     error,
     reload,
+    reloadAfterDelete,
   };
 }
