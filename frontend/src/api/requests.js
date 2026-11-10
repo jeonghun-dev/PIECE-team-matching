@@ -13,4 +13,6 @@ export const acceptRequest = (id) => client.patch(`/requests/${id}/accept`);
 export const rejectRequest = (id) => client.patch(`/requests/${id}/reject`);
 export const cancelRequest = (id) => client.patch(`/requests/${id}/cancel`);
 export const getNotifications = () => client.get("/notifications");
+export const getUnreadNotificationCount = () => client.get("/notifications/count");
+export const markNotificationRead = (id) => client.patch(`/notifications/${id}/read`);
 export const getMyOpenProjects = () => client.get("/projects/mine/open");

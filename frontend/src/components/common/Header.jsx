@@ -2,7 +2,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { getNotifications, getPendingRequestCount, REQUESTS_UPDATED_EVENT } from "../../api/requests";
+import {
+    getNotifications,
+    getPendingRequestCount,
+    getUnreadNotificationCount,
+    markNotificationRead,
+    REQUESTS_UPDATED_EVENT,
+} from "../../api/requests";
 import { REQUEST_STATUS_LABEL, REQUEST_TYPE_LABEL } from "../../constants";
 import "./Header.css";
 
@@ -15,6 +21,7 @@ function Header() {
     const location = useLocation();
     const navigate = useNavigate();
     const [pendingCount, setPendingCount] = useState(0);
+    const [notificationCount, setNotificationCount] = useState(0);
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [notificationItems, setNotificationItems] = useState(null);
     const [notificationError, setNotificationError] = useState("");
@@ -31,24 +38,39 @@ function Header() {
             });
     }, []);
 
+    const refreshNotificationCount = useCallback(() => {
+        getUnreadNotificationCount()
+            .then((response) => {
+                setNotificationCount(Number(response.data?.data?.count ?? 0));
+            })
+            .catch(() => {
+                // 알림 수 조회가 실패해도 헤더 탐색은 계속 가능하게 둔다.
+            });
+    }, []);
+
     useEffect(() => {
         if (!isLoggedIn) return undefined;
 
         refreshPendingCount();
-        const intervalId = window.setInterval(refreshPendingCount, 60_000);
+        refreshNotificationCount();
+        const intervalId = window.setInterval(() => {
+            refreshPendingCount();
+            refreshNotificationCount();
+        }, 60_000);
         return () => window.clearInterval(intervalId);
-    }, [isLoggedIn, location.pathname, location.search, refreshPendingCount]);
+    }, [isLoggedIn, location.pathname, location.search, refreshPendingCount, refreshNotificationCount]);
 
     useEffect(() => {
         const handleRequestsUpdated = () => {
             refreshPendingCount();
+            refreshNotificationCount();
             setNotificationItems(null);
             setNotificationError("");
             setNotificationVersion((version) => version + 1);
         };
         window.addEventListener(REQUESTS_UPDATED_EVENT, handleRequestsUpdated);
         return () => window.removeEventListener(REQUESTS_UPDATED_EVENT, handleRequestsUpdated);
-    }, [refreshPendingCount]);
+    }, [refreshPendingCount, refreshNotificationCount]);
 
     useEffect(() => {
         if (!notificationOpen || !isLoggedIn) return undefined;
@@ -115,6 +137,21 @@ function Header() {
         navigate("/");
     };
 
+    const handleNotificationRead = async (event, item) => {
+        event.preventDefault();
+        try {
+            await markNotificationRead(item.id);
+            setNotificationItems((current) => current?.filter((row) => row.id !== item.id));
+            setNotificationCount((count) => Math.max(0, count - 1));
+            setNotificationOpen(false);
+            navigate("/requests?tab=received");
+        } catch (error) {
+            setNotificationError(
+                error.response?.data?.message ?? "요청을 확인 처리하지 못했습니다. 다시 시도해 주세요.",
+            );
+        }
+    };
+
     return (
         <header className="header">
             <div className="header__inner">
@@ -176,7 +213,7 @@ function Header() {
                                     <svg aria-hidden="true" className="header__bell-icon" viewBox="0 0 24 24">
                                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
                                     </svg>
-                                    {pendingCount > 0 && <span className="header__notification-dot" />}
+                                    {notificationCount > 0 && <span className="header__notification-dot" />}
                                 </button>
                                 {notificationOpen && (
                                     <section
@@ -186,7 +223,7 @@ function Header() {
                                     >
                                         <div className="header__notification-heading">
                                             <strong>알림</strong>
-                                            <span>{notificationItems?.length ?? 0}개</span>
+                                            <span>{notificationCount}개</span>
                                         </div>
                                         {notificationError && (
                                             <p className="header__notification-message" role="alert">{notificationError}</p>
@@ -201,7 +238,7 @@ function Header() {
                                                     <li key={item.id}>
                                                         <Link
                                                             className="header__notification-item"
-                                                            onClick={() => setNotificationOpen(false)}
+                                                            onClick={(event) => handleNotificationRead(event, item)}
                                                             to="/requests?tab=received"
                                                         >
                                                             <span className="header__notification-item-title">
