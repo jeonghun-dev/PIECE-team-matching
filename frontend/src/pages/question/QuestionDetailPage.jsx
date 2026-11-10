@@ -1,6 +1,12 @@
+import {
+  deleteQuestion,
+  getQuestion,
+  getQuestionReportStatus,
+  reportQuestion
+} from "../../api/questions";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteQuestion, getQuestion, reportQuestion } from "../../api/questions";
+
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import { LEVEL } from "../../constants";
 import AnswerSection from "../../components/answer/AnswerSection";
@@ -28,6 +34,10 @@ function QuestionDetailContent({ id }) {
   const [deleteError, setDeleteError] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
+  const [reported, setReported] = useState(false);
+  const [reportChecking, setReportChecking] = useState(true);
+  const [reportCheckError, setReportCheckError] = useState("");
+  const [reportRetryCount, setReportRetryCount] = useState(0);
   const reportAreaRef = useRef(null);
   const reportTriggerRef = useRef(null);
   const reportSuccessRef = useRef(null);
@@ -48,6 +58,7 @@ function QuestionDetailContent({ id }) {
   async function handleReport(input) {
     await reportQuestion(id, input);
     if (activeRef.current) {
+      setReported(true);
       setReportSuccess(true);
       setReportOpen(false);
     }
@@ -117,6 +128,42 @@ function QuestionDetailContent({ id }) {
     };
   }, [id, retryCount]);
 
+  useEffect(() => {
+    if (user?.id == null) return;
+
+    let ignore = false;
+
+    async function checkReportStatus() {
+      setReportChecking(true);
+      setReportCheckError("");
+      setReported(false);
+
+      try {
+        const alreadyReported = await getQuestionReportStatus(id);
+
+        if (!ignore) {
+          setReported(alreadyReported);
+        }
+      } catch {
+        if (!ignore) {
+          setReportCheckError(
+              "신고 여부를 확인하지 못했습니다. 다시 시도해 주세요."
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setReportChecking(false);
+        }
+      }
+    }
+
+    checkReportStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [id, user?.id, reportRetryCount]);
+
   if (loading) {
     return <div className="question-detail-page"><p role="status">질문을 불러오는 중입니다.</p></div>;
   }
@@ -172,7 +219,14 @@ function QuestionDetailContent({ id }) {
               {user?.id != null && String(user.id) !== String(question.authorId) && (
                 <span ref={reportTriggerRef}>
                   <ReportButton
-                    disabled={reportOpen || reportSuccess}
+                      disabled={
+                          reportOpen ||
+                          reportSuccess ||
+                          reported ||
+                          reportChecking ||
+                          Boolean(reportCheckError)
+                      }
+
                     onClick={() => setReportOpen(true)}
                   />
                 </span>
@@ -219,6 +273,29 @@ function QuestionDetailContent({ id }) {
           <div className="question-detail-body">
             {question.content}
           </div>
+          {user?.id != null &&
+              String(user.id) !== String(question.authorId) &&
+              reportCheckError && (
+                  <div>
+                    <p className="question-detail-delete-error" role="alert">
+                      {reportCheckError}
+                    </p>
+                    <div className="question-detail-actions">
+                      <button
+                          type="button"
+                          disabled={reportChecking}
+                          onClick={() => {
+                            setReportChecking(true);
+                            setReportCheckError("");
+                            setReportRetryCount((prev) => prev + 1);
+                          }}
+                      >
+                        신고 여부 다시 확인
+                      </button>
+                    </div>
+                  </div>
+              )}
+
           {reportSuccess && <p ref={reportSuccessRef} className="question-detail-report-success" role="status" tabIndex={-1}>신고가 접수되었습니다.</p>}
         </article>
         {reportOpen && user?.id != null && String(user.id) !== String(question.authorId) && (
