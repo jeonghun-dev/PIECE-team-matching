@@ -140,7 +140,13 @@ const findApplicants = async (projectId, status) => {
        r.created_at AS createdAt,
        u.nickname,
        u.level,
-       u.intro
+       u.total_score AS totalScore,
+       u.intro,
+       u.certificates,
+       u.award_count AS awardCount,
+       u.project_count AS projectCount,
+       u.collaboration_mode AS collaborationMode,
+       u.active_times AS activeTimes
      FROM project_requests r
      JOIN users u ON u.id = r.sender_id
      JOIN projects p ON p.id = r.project_id

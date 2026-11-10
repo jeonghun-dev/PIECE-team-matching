@@ -246,6 +246,7 @@ const invite = async (actor, id, input = {}) => {
 };
 
 // 모집 글 작성자 전용 대기 지원자 목록 조회
+// 모집 글 작성자 전용 대기 지원자 목록 조회
 const listApplicants = async (actor, id) => {
   if (!actor) {
     throw createError(401, "로그인이 필요합니다.");
@@ -262,10 +263,22 @@ const listApplicants = async (actor, id) => {
     throw createError(403, "작성자만 지원자 목록을 조회할 수 있습니다.");
   }
 
-  return recruitmentRepository.findApplicants(
+  const applicants = await recruitmentRepository.findApplicants(
     projectId,
     REQUEST_STATUS.PENDING,
   );
+
+  // 화면에서 바로 쓰도록 숫자·목록 형태로 변환 (SET 컬럼은 "A,B" 문자열로 옴)
+  return applicants.map((applicant) => ({
+    ...applicant,
+    totalScore: Number(applicant.totalScore),
+    certificates: applicant.certificates
+      ? applicant.certificates.split(",")
+      : [],
+    awardCount: Number(applicant.awardCount),
+    projectCount: Number(applicant.projectCount),
+    activeTimes: applicant.activeTimes ? applicant.activeTimes.split(",") : [],
+  }));
 };
 
 // 요청을 받은 사람이 수락 (참여 요청: 모집 글 작성자, 초대 요청: 초대받은 회원)
