@@ -30,7 +30,7 @@ const parseProjectId = (id) => {
 
 // 모집 글 입력값 검사
 const validateProjectInput = (input) => {
-    const { title, content, meetingMethod, targetLevel, capacity, progressMode, activeTimes, deadline } = input;
+    const { title, content, meetingMethod, targetLevel, capacity, progressMode, activeTimes, deadline } = input || {};
 
     // 프로젝트 명 필수, 최대 100자
     if (!title || title.trim() === "") {
