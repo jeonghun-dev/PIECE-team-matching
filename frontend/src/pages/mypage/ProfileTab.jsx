@@ -196,7 +196,8 @@ function ProfileTab() {
   }, [applyUserData]);
 
   useEffect(() => {
-    fetchMyProfile();
+    const timer = setTimeout(fetchMyProfile, 0);  // lint error 경고 해소
+    return () => clearTimeout(timer);
   }, [fetchMyProfile]);
 
   // 자격증 체크 토글
