@@ -17,6 +17,10 @@ async function findOpenByLevel(level) {
        p.target_level AS targetLevel,
        p.capacity,
        (SELECT COUNT(*) FROM project_members pm WHERE pm.project_id = p.id) AS memberCount,
+       (SELECT COUNT(*)
+          FROM questions q
+         WHERE q.project_id = p.id
+           AND q.deleted_at IS NULL) AS questionCount,
        p.progress_mode AS progressMode,
        p.active_times AS activeTimes,
        p.status,
@@ -88,6 +92,9 @@ async function findMembers(filters) {
     conditions.push(`NOT EXISTS (
       SELECT 1
       FROM project_members own_member
+      JOIN projects shared_project
+        ON shared_project.id = own_member.project_id
+        AND shared_project.deleted_at IS NULL
       JOIN project_members teammate
         ON teammate.project_id = own_member.project_id
       WHERE own_member.user_id = ?
