@@ -1,4 +1,5 @@
 ﻿const questionRepository = require("../repositories/questionRepository");
+const pool = require("../config/db");
 
 const { getPagination, toPageResponse } = require("../utils/pagination");
 
@@ -90,26 +91,43 @@ async function createForProject(actor, projectId, input) {
   const numericProjectId = Number(projectId);
   const questionInput = validateQuestionInput(input);
 
-  const projectExists = await questionRepository.existsProject(
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const project = await questionRepository.findProjectForUpdate(
+      connection,
       numericProjectId
-  );
+    );
 
-  if (!projectExists) {
-    const error = new Error("모집 글을 찾을 수 없습니다.");
-    error.status = 404;
+    if (!project) {
+      const error = new Error("모집 글을 찾을 수 없습니다.");
+      error.status = 404;
+      throw error;
+    }
+
+    const questionId = await questionRepository.saveForProject(
+      connection,
+      {
+        authorId: actor.id,
+        projectId: numericProjectId,
+        title: questionInput.title,
+        content: questionInput.content
+      }
+    );
+
+    await connection.commit();
+
+    return {
+      id: questionId
+    };
+  } catch (error) {
+    await connection.rollback();
     throw error;
+  } finally {
+    connection.release();
   }
-
-  const questionId = await questionRepository.saveForProject({
-    authorId: actor.id,
-    projectId: numericProjectId,
-    title: questionInput.title,
-    content: questionInput.content
-  });
-
-  return {
-    id: questionId
-  };
 }
 
 // 모집 글에 달린 질문 목록을 조회한다.

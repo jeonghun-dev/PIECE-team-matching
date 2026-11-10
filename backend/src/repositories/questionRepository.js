@@ -105,25 +105,23 @@ async function save(question) {
 
 //모집 글 질문을 저장하는 함수
 
-async function saveForProject(question) {
-  const [result] = await pool.execute(
-   `  
+async function saveForProject(connection, question) {
+  const [result] = await connection.execute(
+    `
       INSERT INTO questions (
-          author_id,
-          project_id,
-          title,
-          content
+        author_id,
+        project_id,
+        title,
+        content
       )
-      VALUES(?,?,?,?)
-      `,
-  [
+      VALUES (?, ?, ?, ?)
+    `,
+    [
       question.authorId,
       question.projectId,
       question.title,
       question.content
-
-  ]
-
+    ]
   );
   return result.insertId;
 }
@@ -141,6 +139,22 @@ async function existsProject(projectId){
       [projectId]
   );
   return rows.length >0;
+}
+
+// 질문 등록 중에는 모집 글 삭제가 기다리도록 잠금 조회한다.
+async function findProjectForUpdate(connection, projectId) {
+  const [rows] = await connection.execute(
+    `
+      SELECT id
+      FROM projects
+      WHERE id = ?
+        AND deleted_at IS NULL
+      FOR UPDATE
+    `,
+    [projectId]
+  );
+
+  return rows.length === 0 ? null : rows[0];
 }
 
 // 해당 모집 글의 삭제되지 않은 질문을 최신순으로 조회한다.
@@ -306,6 +320,7 @@ async function softDelete(id, authorId) {
 }
 
 module.exports = {
+    findProjectForUpdate,
     findForModification,
     findByProjectId,
   existsProject,
