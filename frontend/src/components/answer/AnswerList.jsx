@@ -14,6 +14,7 @@ export default function AnswerList({
   onDeleteAnswer,
   onAcceptAnswer,
   onReportAnswer,
+  reportedAnswerIds: loadedReportedIds = [],
 }) {
   const [editingAnswerId, setEditingAnswerId] = useState(null);
   const [editContent, setEditContent] = useState("");
@@ -133,7 +134,15 @@ export default function AnswerList({
       return;
     }
 
-    await onReportAnswer(answerId, input);
+    try {
+      await onReportAnswer(answerId, input);
+    } catch (error) {
+      // 이미 신고한 답변(409)이면 오류 대신 신고됨으로 표시
+      if (error.response?.status !== 409) {
+        throw error;
+      }
+    }
+
     setReportedAnswerIds((ids) => [...ids, answerId]);
     setReportingAnswerId(null);
   }
@@ -167,7 +176,9 @@ export default function AnswerList({
               !answer.isAccepted;
             const createdTime = formatRelativeTime(answer.createdAt);
             const canReport = currentUserId != null && !isAuthor;
-            const isReported = reportedAnswerIds.includes(answer.id);
+            const isReported =
+              reportedAnswerIds.includes(answer.id) ||
+              loadedReportedIds.includes(Number(answer.id));
 
             return (
               <article
@@ -205,7 +216,8 @@ export default function AnswerList({
                   {canReport && (
                     <span className="answer-card__report">
                       <ReportButton
-                        disabled={isReported || reportingAnswerId === answer.id}
+                        reported={isReported}
+                        disabled={reportingAnswerId === answer.id}
                         onClick={() => setReportingAnswerId(answer.id)}
                       />
                     </span>
@@ -303,7 +315,8 @@ export default function AnswerList({
                   </div>
                 )}
 
-                {isReported && (
+                {/* 이번 화면에서 방금 신고한 답변에만 접수 안내 (예전에 신고한 답변은 버튼만 "신고됨") */}
+                {reportedAnswerIds.includes(answer.id) && (
                   <p className="answer-card__report-success" role="status">
                     신고가 접수되었습니다.
                   </p>
