@@ -34,9 +34,12 @@ function Header() {
     useEffect(() => {
         if (!isLoggedIn) return undefined;
 
-        refreshPendingCount();
+        const initialRefreshId = window.setTimeout(refreshPendingCount, 0);
         const intervalId = window.setInterval(refreshPendingCount, 60_000);
-        return () => window.clearInterval(intervalId);
+        return () => {
+            window.clearTimeout(initialRefreshId);
+            window.clearInterval(intervalId);
+        };
     }, [isLoggedIn, location.pathname, location.search, refreshPendingCount]);
 
     useEffect(() => {
