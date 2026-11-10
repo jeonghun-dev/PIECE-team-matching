@@ -1,9 +1,6 @@
 /* 모집 글 작성/수정 폼 */
 
 .project-form-page {
-    --level-starter: #2f9e8a;
-    --level-builder: var(--color-primary);
-    --level-achiever: #d9482b;
 
     max-width: var(--detail-max-width);
     margin: 0 auto;
@@ -249,15 +246,15 @@ textarea.project-form__input {
 }
 
 .project-form__level-badge--starter {
-    background-color: var(--level-starter);
+    background-color: var(--color-level-starter);
 }
 
 .project-form__level-badge--builder {
-    background-color: var(--level-builder);
+    background-color: var(--color-level-builder);
 }
 
 .project-form__level-badge--achiever {
-    background-color: var(--level-achiever);
+    background-color: var(--color-level-achiever);
 }
 
 .project-form__level-score {

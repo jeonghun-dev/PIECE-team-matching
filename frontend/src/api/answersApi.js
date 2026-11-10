@@ -42,3 +42,24 @@ export async function reportAnswer(answerId, input) {
 
   return response.data.data;
 }
+
+// 내가 신고한 답변 번호 목록 (서버가 한 번에 100개까지 받아서 나눠서 요청)
+export async function getMyReportedAnswerIds(answerIds) {
+  const chunks = [];
+
+  for (let index = 0; index < answerIds.length; index += 100) {
+    chunks.push(answerIds.slice(index, index + 100));
+  }
+
+  const responses = await Promise.all(
+    chunks.map((ids) =>
+      client.get("/reports/mine", {
+        params: { targetType: "ANSWER", targetIds: ids.join(",") },
+      }),
+    ),
+  );
+
+  return responses.flatMap((response) =>
+    response.data.data.reportedIds.map(Number),
+  );
+}
