@@ -1,7 +1,12 @@
 const pool = require("../config/db");
-const { PROJECT_STATUS, USER_ROLE, USER_STATUS } = require("../constants");
+const {
+  PROJECT_STATUS,
+  USER_ROLE,
+  USER_STATUS,
+  RECOMMENDATION_LIMIT,
+} = require("../constants");
 
-async function findOpenByLevel(level, limit) {
+async function findOpenByLevel(level) {
   const [rows] = await pool.execute(
     `SELECT
        p.id,
@@ -26,7 +31,7 @@ async function findOpenByLevel(level, limit) {
        AND p.deleted_at IS NULL
      ORDER BY p.created_at DESC, p.id DESC
      LIMIT ?`,
-    [level, PROJECT_STATUS.OPEN, limit],
+    [level, PROJECT_STATUS.OPEN, RECOMMENDATION_LIMIT],
   );
   return rows;
 }

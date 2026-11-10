@@ -100,6 +100,9 @@ const REPORT_STATUS = Object.freeze({
   REJECTED: "REJECTED", // 반려
 });
 
+// 추천 목록에서 한 번에 노출할 항목 수
+const RECOMMENDATION_LIMIT = 4;
+
 module.exports = {
   USER_ROLE,
   USER_STATUS,
@@ -115,4 +118,5 @@ module.exports = {
   REPORT_TARGET_TYPE,
   REPORT_REASON,
   REPORT_STATUS,
+  RECOMMENDATION_LIMIT,
 };

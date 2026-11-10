@@ -4,23 +4,17 @@ const discoveryService = require("../services/discoveryService");
 
 async function membersFor(req, res, next) {
   try {
-    const { items, totalCount, pagination } =
-      await discoveryService.membersFor(req.user, req.query);
+    const recommended = req.path === "/members/recommended";
+    const result = await discoveryService.membersFor(req.user, {
+      ...req.query,
+      recommended,
+    });
+
+    if (recommended) return sendSuccess(res, result.items);
 
     return sendSuccess(
       res,
-      toPageResponse(items, totalCount, pagination),
-    );
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function membersRecommended(req, res, next) {
-  try {
-    return sendSuccess(
-      res,
-      await discoveryService.membersRecommended(req.user),
+      toPageResponse(result.items, result.totalCount, result.pagination),
     );
   } catch (error) {
     next(error);
@@ -38,4 +32,4 @@ async function projectsFor(req, res, next) {
   }
 }
 
-module.exports = { membersFor, membersRecommended, projectsFor };
+module.exports = { membersFor, projectsFor };

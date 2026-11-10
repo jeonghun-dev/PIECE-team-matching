@@ -1,12 +1,15 @@
-const { LEVEL, COLLABORATION_MODE, ACTIVE_TIME } = require("../constants");
+const {
+  LEVEL,
+  COLLABORATION_MODE,
+  ACTIVE_TIME,
+  RECOMMENDATION_LIMIT,
+} = require("../constants");
 const discoveryRepository = require("../repositories/discoveryRepository");
 const { getPagination } = require("../utils/pagination");
 
 const LEVELS = new Set(Object.values(LEVEL));
 const COLLABORATION_MODES = new Set(Object.values(COLLABORATION_MODE));
 const ACTIVE_TIMES = new Set(Object.values(ACTIVE_TIME));
-const RECOMMENDATION_LIMIT = 4;
-
 function requireActor(actor) {
   if (!actor || !actor.id) {
     const error = new Error("로그인이 필요합니다.");
@@ -39,6 +42,18 @@ function getStringFilter(filters, name) {
 
 async function membersFor(actor, filters) {
   requireActor(actor);
+  if (filters.recommended) {
+    const { items } = await discoveryRepository.findMembers({
+      levels: [getActorLevel(actor)],
+      excludeUserId: actor.id,
+      excludeSharedTeamMembers: true,
+      limit: RECOMMENDATION_LIMIT,
+      offset: 0,
+      includeTotalCount: false,
+    });
+    return { items, recommended: true };
+  }
+
   const pagination = getPagination(filters);
   const search = getStringFilter(filters, "search")?.trim();
   const level = getStringFilter(filters, "level");
@@ -71,26 +86,9 @@ async function membersFor(actor, filters) {
   return { items, totalCount, pagination };
 }
 
-async function membersRecommended(actor) {
-  requireActor(actor);
-  const level = getActorLevel(actor);
-  const { items } = await discoveryRepository.findMembers({
-    levels: [level],
-    excludeUserId: actor.id,
-    excludeSharedTeamMembers: true,
-    limit: RECOMMENDATION_LIMIT,
-    offset: 0,
-    includeTotalCount: false,
-  });
-  return items;
-}
-
 async function projectsFor(actor) {
   requireActor(actor);
-  return discoveryRepository.findOpenByLevel(
-    getActorLevel(actor),
-    RECOMMENDATION_LIMIT,
-  );
+  return discoveryRepository.findOpenByLevel(getActorLevel(actor));
 }
 
-module.exports = { membersFor, membersRecommended, projectsFor };
+module.exports = { membersFor, projectsFor };
