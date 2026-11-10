@@ -102,6 +102,7 @@ const REPORT_STATUS = Object.freeze({
 
 // 추천 목록에서 한 번에 노출할 항목 수
 const RECOMMENDATION_LIMIT = 4;
+const PROJECT_RECOMMENDATION_LIMIT = 6;
 
 module.exports = {
   USER_ROLE,
@@ -119,4 +120,5 @@ module.exports = {
   REPORT_REASON,
   REPORT_STATUS,
   RECOMMENDATION_LIMIT,
+  PROJECT_RECOMMENDATION_LIMIT,
 };

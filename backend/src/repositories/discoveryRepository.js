@@ -3,7 +3,7 @@ const {
   PROJECT_STATUS,
   USER_ROLE,
   USER_STATUS,
-  RECOMMENDATION_LIMIT,
+  PROJECT_RECOMMENDATION_LIMIT,
 } = require("../constants");
 
 async function findOpenByLevel(level) {
@@ -35,7 +35,7 @@ async function findOpenByLevel(level) {
        AND p.deleted_at IS NULL
      ORDER BY p.created_at DESC, p.id DESC
      LIMIT ?`,
-    [level, PROJECT_STATUS.OPEN, RECOMMENDATION_LIMIT],
+    [level, PROJECT_STATUS.OPEN, PROJECT_RECOMMENDATION_LIMIT],
   );
   return rows;
 }
