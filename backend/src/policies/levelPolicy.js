@@ -29,6 +29,7 @@ const SCORE_RULES = Object.freeze({
     ADSP: 0.5,          // ADsP
   }),
   AWARD_UNIT_SCORE: 3.0,
+  MAX_AWARD_COUNT_FOR_SCORE: 10,
   PROJECT_UNIT_SCORE: 1.5,
   MAX_PROJECT_COUNT_FOR_SCORE: 3,
   LEVEL_THRESHOLDS: Object.freeze({
@@ -53,7 +54,10 @@ const calculate = (history = {}) => {
     return sum + point;
   }, 0);
 
-  const awardCount = Math.max(0, Number.parseInt(history.awardCount ?? 0, 10) || 0);
+  const awardCount = Math.min(
+    SCORE_RULES.MAX_AWARD_COUNT_FOR_SCORE,
+    Math.max(0, Number.parseInt(history.awardCount ?? 0, 10) || 0)
+  );
   const projectCount = Math.max(0, Number.parseInt(history.projectCount ?? 0, 10) || 0);
 
   const awardScore = awardCount * SCORE_RULES.AWARD_UNIT_SCORE;

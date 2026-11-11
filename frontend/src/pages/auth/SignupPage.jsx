@@ -373,13 +373,13 @@ function SignupPage() {
                   <button
                     type="button"
                     className="signup-counter__btn"
-                    onClick={() => setAwardCount((prev) => prev + 1)}
+                    onClick={() => setAwardCount((prev) => Math.min(10, prev + 1))}
                   >
                     +
                   </button>
                   <span className="signup-counter__badge">+{awardScore}점</span>
                 </div>
-                <p className="signup-helper">1회당 3점 (중복 가능)</p>
+                <p className="signup-helper">1회당 3점 (최대 10회)</p>
               </div>
 
               <div className="signup-field">
