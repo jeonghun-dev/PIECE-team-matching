@@ -521,17 +521,17 @@
 
 .preview-gauge__seg--starter {
   width: 25%;
-  background-color:  rgb(183, 235, 216);
+  background-color: var(--color-level-starter-soft);
 }
 
 .preview-gauge__seg--builder {
   width: 50%;
-  background-color: rgb(197, 208, 255);
+  background-color: var(--color-level-builder-soft);
 }
 
 .preview-gauge__seg--achiever {
   width: 25%;
-  background-color:  rgb(255, 208, 194);
+  background-color: var(--color-level-achiever-soft);
 }
 
 .preview-gauge__pin {

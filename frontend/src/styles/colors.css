@@ -8,8 +8,11 @@
 
   /* 학습 레벨 */
   --color-level-starter: #2f9e8a;
+  --color-level-starter-soft: #b7ebd8;
   --color-level-builder: var(--color-primary);
+  --color-level-builder-soft: #c5d0ff;
   --color-level-achiever: #d9482b;
+  --color-level-achiever-soft: #ffd0c2;
 
   /* 미해결 상태 */
   --color-unsolved-soft: #fff8db;
