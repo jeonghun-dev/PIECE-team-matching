@@ -2,14 +2,19 @@
 const pool = require("../config/db");
 const { REQUEST_STATUS } = require("../constants");
 
-const buildRequestCondition = (userId, direction, { type, status, unreadOnly = false }) => {
+const buildRequestCondition = (userId, direction, {
+  type,
+  status,
+  unreadOnly = false,
+  includeCanceled = false,
+}) => {
   const ownerColumn = direction === "received" ? "r.receiver_id" : "r.sender_id";
   const conditions = [`${ownerColumn} = ?`, "p.deleted_at IS NULL"];
   const values = [userId];
 
   // 취소한 요청은 상대방의 받은 요청 목록에서 제외한다.
   // 조회와 totalCount가 같은 조건 빌더를 사용해 페이지 수가 일치한다.
-  if (direction === "received") {
+  if (direction === "received" && !includeCanceled) {
     conditions.push("r.status <> ?");
     values.push(REQUEST_STATUS.CANCELED);
   }
@@ -27,10 +32,22 @@ const buildRequestCondition = (userId, direction, { type, status, unreadOnly = f
   return { conditions, values };
 };
 
-const findByDirection = async (userId, direction, { type, status, limit, offset, unreadOnly }) => {
+const findByDirection = async (userId, direction, {
+  type,
+  status,
+  limit,
+  offset,
+  unreadOnly,
+  includeCanceled,
+}) => {
   const ownerColumn = direction === "received" ? "r.receiver_id" : "r.sender_id";
   const otherColumn = direction === "received" ? "r.sender_id" : "r.receiver_id";
-  const { conditions, values } = buildRequestCondition(userId, direction, { type, status, unreadOnly });
+  const { conditions, values } = buildRequestCondition(userId, direction, {
+    type,
+    status,
+    unreadOnly,
+    includeCanceled,
+  });
 
   const [rows] = await pool.execute(
     `SELECT r.id, r.project_id AS projectId, p.title AS projectTitle,
@@ -75,6 +92,8 @@ const countPendingReceived = (userId) =>
 
 const findNotifications = (userId, options) => findByDirection(userId, "received", {
   ...options,
+  // 요청 알림은 처리 가능한 대기 요청만 표시한다.
+  // 취소/수락/거절된 요청은 더 이상 상대방이 처리할 알림이 아니다.
   status: REQUEST_STATUS.PENDING,
   unreadOnly: true,
 });

@@ -1,38 +1,33 @@
 const answerRepository = require("../repositories/answerRepository");
-
-function createError(status, message) {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-}
+const { createError } = require("../utils/createError");
+const { parseId } = require("../utils/parseId");
 
 async function list(actor, questionId) {
   if (!actor?.id) {
     throw createError(401, "로그인이 필요합니다.");
   }
-  const id = Number(questionId);
-
-  if (!Number.isSafeInteger(id) || id < 1) {
-    throw createError(400, "올바른 질문 번호가 필요합니다.");
-  }
+  const id = parseId(questionId, "올바른 질문 번호가 필요합니다.");
   const question = await answerRepository.findQuestionById(id);
 
   if (!question) {
     throw createError(404, "질문을 찾을 수 없습니다.");
   }
 
-  return answerRepository.findByQuestionId(id);
+  const answers = await answerRepository.findByQuestionId(id);
+
+  // DB 값을 화면에서 쓰는 형태로 변환 (점수: 숫자, 채택 여부: true/false)
+  return answers.map((answer) => ({
+    ...answer,
+    authorScore: Number(answer.authorScore),
+    isAccepted: Number(answer.isAccepted) === 1,
+  }));
 }
 
 async function create(actor, input) {
   if (!actor?.id) {
     throw createError(401, "로그인이 필요합니다.");
   }
-  const questionId = Number(input?.questionId);
-
-  if (!Number.isSafeInteger(questionId) || questionId < 1) {
-    throw createError(400, "올바른 질문 번호가 필요합니다.");
-  }
+  const questionId = parseId(input?.questionId, "올바른 질문 번호가 필요합니다.");
   if (typeof input?.content !== "string") {
     throw createError(400, "답변 내용을 입력해주세요.");
   }
@@ -64,11 +59,7 @@ async function edit(actor, answerId, input) {
   if (!actor?.id) {
     throw createError(401, "로그인이 필요합니다.");
   }
-  const id = Number(answerId);
-
-  if (!Number.isSafeInteger(id) || id < 1) {
-    throw createError(400, "올바른 답변 번호가 필요합니다.");
-  }
+  const id = parseId(answerId, "올바른 답변 번호가 필요합니다.");
   if (typeof input?.content !== "string") {
     throw createError(400, "답변 내용을 입력해주세요.");
   }
@@ -114,11 +105,7 @@ async function remove(actor, answerId) {
     throw createError(401, "로그인이 필요합니다.");
   }
 
-  const id = Number(answerId);
-
-  if (!Number.isSafeInteger(id) || id < 1) {
-    throw createError(400, "올바른 답변 번호가 필요합니다.");
-  }
+  const id = parseId(answerId, "올바른 답변 번호가 필요합니다.");
 
   return answerRepository.withTransaction(async (connection) => {
     const answer = await answerRepository.findByIdForUpdate(connection, id);
@@ -152,11 +139,7 @@ async function accept(actor, answerId) {
     throw createError(401, "로그인이 필요합니다.");
   }
 
-  const id = Number(answerId);
-
-  if (!Number.isSafeInteger(id) || id < 1) {
-    throw createError(400, "올바른 답변 번호가 필요합니다.");
-  }
+  const id = parseId(answerId, "올바른 답변 번호가 필요합니다.");
 
   const answer = await answerRepository.findById(id);
 

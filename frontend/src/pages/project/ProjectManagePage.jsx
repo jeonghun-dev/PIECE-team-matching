@@ -21,28 +21,17 @@ import {
   PROJECT_STATUS_LABEL,
 } from "../../constants";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import { findLabel, formatDDay } from "../../utils/format";
+import LevelBadge from "../../components/common/LevelBadge";
 import "./ProjectManagePage.css";
-
-// 코드 → 화면 문구
-const labelOf = (options, code) =>
-  options.find((option) => option.code === code)?.label ?? code;
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.message || fallback;
 
-// 마감까지 남은 날 (D-14 / D-Day / 마감)
-const formatDDay = (dDay) => {
-  if (dDay == null) return "-";
-  const days = Number(dDay);
-  if (days > 0) return `D-${days}`;
-  if (days === 0) return "D-Day";
-  return "마감";
-};
-
 // 주요 이력: 자격증 + 수상 + 프로젝트
 const historyText = (applicant) => {
   const items = applicant.certificates.map((code) =>
-    labelOf(CERTIFICATE_OPTIONS, code),
+    findLabel(CERTIFICATE_OPTIONS, code),
   );
   if (applicant.awardCount > 0) items.push(`수상 ${applicant.awardCount}`);
   if (applicant.projectCount > 0)
@@ -52,26 +41,12 @@ const historyText = (applicant) => {
 
 // 협업 방식: 온라인 · 평일 저녁
 const collaborationText = (applicant) => {
-  const mode = labelOf(COLLABORATION_OPTIONS, applicant.collaborationMode);
+  const mode = findLabel(COLLABORATION_OPTIONS, applicant.collaborationMode);
   const times = applicant.activeTimes.map((code) =>
-    labelOf(ACTIVE_TIME_OPTIONS, code),
+    findLabel(ACTIVE_TIME_OPTIONS, code),
   );
   return [mode, ...times].join(" · ");
 };
-
-function LevelBadge({ level, score, soft = false }) {
-  if (!level) return null;
-  const className = soft
-    ? `project-manage-level project-manage-level--soft project-manage-level--${level.toLowerCase()}`
-    : `project-manage-level project-manage-level--${level.toLowerCase()}`;
-
-  return (
-    <span className={className}>
-      {level}
-      {score != null && ` · ${score}점`}
-    </span>
-  );
-}
 
 function Avatar({ name }) {
   return (

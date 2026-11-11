@@ -6,6 +6,7 @@ import {
   CERTIFICATE_OPTIONS,
   LEVEL,
 } from '../../constants';
+import { findLabel, toArray } from '../../utils/format';
 import './SignupCompletePage.css';
 
 const CERTIFICATE_SCORES = {
@@ -16,13 +17,6 @@ const CERTIFICATE_SCORES = {
   [CERTIFICATE.PROGRAMMING]: 0.5,
   [CERTIFICATE.ADSP]: 0.5,
 };
-
-const CERTIFICATE_INFO = Object.fromEntries(
-  CERTIFICATE_OPTIONS.map((item) => [
-    item.code,
-    { label: item.label, score: CERTIFICATE_SCORES[item.code] ?? 0 },
-  ])
-);
 
 const MAX_BAR_SCORE = 10;
 
@@ -62,9 +56,7 @@ function SignupCompletePage() {
   );
 
   // 산정 내역 리스트 구성
-  const certificates = Array.isArray(learning.certificates)
-    ? learning.certificates
-    : [];
+  const certificates = toArray(learning.certificates);
   const awardCount = Number(learning.awardCount ?? 0);
   const projectCount = Number(learning.projectCount ?? 0);
   const awardScore = Number(learning.awardScore ?? awardCount * 3);
@@ -74,10 +66,10 @@ function SignupCompletePage() {
 
   const historyItems = [
     ...certificates
-      .filter((code) => CERTIFICATE_INFO[code])
+      .filter((code) => CERTIFICATE_SCORES[code] != null)
       .map((code) => ({
-        label: CERTIFICATE_INFO[code].label,
-        scoreText: `+${formatScore(CERTIFICATE_INFO[code].score)}점`,
+        label: findLabel(CERTIFICATE_OPTIONS, code),
+        scoreText: `+${formatScore(CERTIFICATE_SCORES[code])}점`,
       })),
     ...(awardCount > 0
       ? [

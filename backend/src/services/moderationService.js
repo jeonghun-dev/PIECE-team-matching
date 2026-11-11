@@ -11,29 +11,24 @@ const {
   PROJECT_STATUS,
 } = require("../constants");
 const { getPagination, toPageResponse } = require("../utils/pagination");
+const { createError } = require("../utils/createError");
+const { parseId: parseIdOrThrow } = require("../utils/parseId");
 
 const DETAIL_MAX_LENGTH = 500;
-
-// 공통 에러 처리 미들웨어에 전달할 오류 생성
-const createError = (status, message) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
 
 // 신고 요청 본문 검사 후 정리된 값 반환
 const parseReportInput = (input) => {
   const targetType = input?.targetType;
   const reason = input?.reason;
-  const targetId = Number(input?.targetId);
 
   if (!Object.values(REPORT_TARGET_TYPE).includes(targetType)) {
     throw createError(400, "신고 대상 종류가 올바르지 않습니다.");
   }
 
-  if (!Number.isSafeInteger(targetId) || targetId < 1) {
-    throw createError(400, "신고 대상 번호가 올바르지 않습니다.");
-  }
+  const targetId = parseIdOrThrow(
+    input?.targetId,
+    "신고 대상 번호가 올바르지 않습니다.",
+  );
 
   if (!Object.values(REPORT_REASON).includes(reason)) {
     throw createError(400, "신고 사유가 올바르지 않습니다.");
@@ -123,16 +118,9 @@ const assertAdmin = (actor) => {
   }
 };
 
-// URL로 받은 번호 검사
-const parseId = (id, name) => {
-  const value = Number(id);
-
-  if (!Number.isSafeInteger(value) || value < 1) {
-    throw createError(400, `${name} 번호가 올바르지 않습니다.`);
-  }
-
-  return value;
-};
+// URL로 받은 번호 검사 (예: name이 "회원"이면 "회원 번호가 올바르지 않습니다.")
+const parseId = (id, name) =>
+  parseIdOrThrow(id, `${name} 번호가 올바르지 않습니다.`);
 
 // 목록 필터 값 검사: 비어 있으면 전체, 있으면 허용 목록 안의 값만
 const parseFilter = (value, allowed, message) => {
@@ -293,6 +281,9 @@ const listReports = async (admin, query = {}) => {
       targetAuthorStatus: row.targetAuthorStatus,
       answerQuestionId:
         row.answerQuestionId == null ? null : Number(row.answerQuestionId),
+      // 모집 글에 달린 질문·답변이면 그 모집 글 번호 (원문 보기 이동용)
+      targetProjectId:
+        row.targetProjectId == null ? null : Number(row.targetProjectId),
       targetDeleted: Number(row.targetDeleted) === 1,
       reportCount: Number(row.reportCount),
       pendingCount,

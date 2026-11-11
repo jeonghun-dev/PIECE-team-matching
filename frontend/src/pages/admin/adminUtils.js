@@ -3,23 +3,8 @@ import { useEffect, useState } from "react";
 
 export const ADMIN_PAGE_SIZE = 10;
 
-export const formatDate = (value) => {
-  if (!value) {
-    return "-";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-  const parts = new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const get = (type) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${get("year")}.${get("month")}.${get("day")}`;
-};
+// 날짜 표시("2026.11.11")는 공통 유틸 사용 (관리자 화면들은 그대로 adminUtils에서 import)
+export { formatDate } from "../../utils/format";
 
 // 점수 표시: 정수면 6점, 소수면 6.5점
 export const formatScore = (score) => {

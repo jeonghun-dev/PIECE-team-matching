@@ -14,6 +14,7 @@ import {
   REQUEST_TYPE,
   REQUEST_TYPE_LABEL,
 } from "../../constants";
+import { formatDate } from "../../utils/format";
 import "./InboxPage.css";
 
 const PAGE_SIZE = 10;
@@ -35,7 +36,7 @@ function getRequestTime(value) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}시간 전`;
   if (hours < 48) return "어제";
-  return date.toLocaleDateString("ko-KR");
+  return formatDate(date);
 }
 
 function formatScore(value) {

@@ -11,11 +11,8 @@ import {
 } from "../../constants";
 import { getMember } from "../../api/members";
 import { inviteToProject } from "../../api/requests";
+import { findLabel, toArray } from "../../utils/format";
 import "./MemberPages.css";
-
-const activeTimeLabels = Object.fromEntries(ACTIVE_TIME_OPTIONS.map(({ code, label }) => [code, label]));
-const certificateLabels = Object.fromEntries(CERTIFICATE_OPTIONS.map(({ code, label }) => [code, label]));
-const collaborationLabels = Object.fromEntries(COLLABORATION_OPTIONS.map(({ code, label }) => [code, label]));
 
 export default function MemberDetail() {
   const { id } = useParams();
@@ -62,11 +59,11 @@ export default function MemberDetail() {
             <dl className="member-profile-facts">
               <div>
                 <dt aria-hidden="true">♧</dt>
-                <dd>협업 방식: <strong>{collaborationLabels[member.collaborationMode]}</strong></dd>
+                <dd>협업 방식: <strong>{findLabel(COLLABORATION_OPTIONS, member.collaborationMode)}</strong></dd>
               </div>
               <div>
                 <dt aria-hidden="true">◷</dt>
-                <dd>주요 활동 시간: <strong>{member.activeTimes.map((time) => activeTimeLabels[time]).join(", ")}</strong></dd>
+                <dd>주요 활동 시간: <strong>{member.activeTimes.map((time) => findLabel(ACTIVE_TIME_OPTIONS, time)).join(", ")}</strong></dd>
               </div>
               <div>
                 <dt aria-hidden="true">♙</dt>
@@ -96,7 +93,7 @@ export default function MemberDetail() {
                       🏅
                     </span>
                     <span className="learning-history__title">
-                      {certificateLabels[certificate] ?? certificate}
+                      {findLabel(CERTIFICATE_OPTIONS, certificate) ?? certificate}
                     </span>
                     <span className="learning-history__category">자격증</span>
                     <strong>보유</strong>
@@ -129,7 +126,7 @@ export default function MemberDetail() {
               <div className="member-tags">
                 {member.certificates.length ? member.certificates.map((certificate) => (
                   <span className="member-tag" key={certificate}>
-                    {certificateLabels[certificate] ?? certificate}
+                    {findLabel(CERTIFICATE_OPTIONS, certificate) ?? certificate}
                   </span>
                 )) : <p className="member-detail__muted">등록된 자격증이 없습니다.</p>}
               </div>
@@ -165,7 +162,6 @@ export default function MemberDetail() {
 function normalizeProfile(data = {}) {
   const profile = data.profile ?? {};
   const learning = data.learning ?? {};
-  const split = (value) => Array.isArray(value) ? value : String(value ?? "").split(",").filter(Boolean);
   return {
     id: Number(data.id),
     nickname: data.nickname,
@@ -173,10 +169,10 @@ function normalizeProfile(data = {}) {
     totalScore: Number(data.totalScore ?? learning.totalScore ?? 0),
     intro: profile.intro ?? "소개가 등록되지 않았습니다.",
     collaborationMode: profile.collaborationMode ?? "ANY",
-    activeTimes: split(profile.activeTimes),
+    activeTimes: toArray(profile.activeTimes),
     lookingForTeam: Boolean(profile.lookingForTeam),
     portfolioUrl: profile.portfolioUrl,
-    certificates: split(learning.certificates),
+    certificates: toArray(learning.certificates),
     awardCount: Number(learning.awardCount ?? 0),
     projectCount: Number(learning.projectCount ?? 0),
   };

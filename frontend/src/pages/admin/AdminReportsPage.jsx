@@ -47,8 +47,10 @@ const reasonText = (reasons) =>
   reasons.map((reason) => REASON_LABEL[reason] ?? reason).join(", ");
 
 // 신고 대상 원문 주소 (답변은 달린 질문 상세로)
+// 모집 글에 달린 질문·답변은 질문 게시판에 없어서 모집 글 상세로
 const targetPath = (item) => {
   if (item.targetType === "PROJECT") return `/projects/${item.targetId}`;
+  if (item.targetProjectId) return `/projects/${item.targetProjectId}`;
   if (item.targetType === "QUESTION") return `/questions/${item.targetId}`;
   return `/questions/${item.answerQuestionId}`;
 };
