@@ -120,14 +120,14 @@ function validateProfileAndHistoryFields(body, { isSignup = false } = {}) { // �
     }
   }
 
-  // 대회 수상 및 프로젝트 완료 횟수 (0 이상의 정수)
+  // 대회 수상 및 프로젝트 완료 횟수 (0 이상 10 이하의 정수)
   const parsedAwardCount =
     awardCount === undefined || awardCount === '' ? (isSignup ? 0 : undefined) : Number(awardCount);
   if (
     parsedAwardCount !== undefined &&
-    (!Number.isInteger(parsedAwardCount) || parsedAwardCount < 0)
+    (!Number.isInteger(parsedAwardCount) || parsedAwardCount < 0 || parsedAwardCount > 10)
   ) {
-    throw createValidationError('대회 수상 횟수는 0 이상의 정수여야 합니다.');
+    throw createValidationError('대회 수상 횟수는 0 이상 10 이하의 정수여야 합니다.');
   }
 
   const parsedProjectCount =
@@ -138,9 +138,9 @@ function validateProfileAndHistoryFields(body, { isSignup = false } = {}) { // �
       : Number(projectCount);
   if (
     parsedProjectCount !== undefined &&
-    (!Number.isInteger(parsedProjectCount) || parsedProjectCount < 0)
+    (!Number.isInteger(parsedProjectCount) || parsedProjectCount < 0 || parsedProjectCount > 10)
   ) {
-    throw createValidationError('프로젝트 완료 횟수는 0 이상의 정수여야 합니다.');
+    throw createValidationError('프로젝트 완료 횟수는 0 이상 10 이하의 정수여야 합니다.');
   }
 }
 

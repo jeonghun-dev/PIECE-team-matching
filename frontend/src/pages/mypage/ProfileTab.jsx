@@ -42,6 +42,7 @@ const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
 
 const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 const MAX_INTRO_LENGTH = 200;
+const MAX_AWARD_COUNT = 10;
 const MAX_PROJECT_COUNT = 3;
 const MAX_BAR_SCORE = 10;
 
@@ -59,7 +60,10 @@ function calculatePreviewLearning(certificates, awardCount, projectCount) {
     return sum + (found ? found.score : 0);
   }, 0);
 
-  const validAwardCount = Math.max(0, Number(awardCount) || 0);
+  const validAwardCount = Math.min(
+    MAX_AWARD_COUNT,
+    Math.max(0, Number(awardCount) || 0)
+  );
   const validProjectCount = Math.min(
     MAX_PROJECT_COUNT,
     Math.max(0, Number(projectCount) || 0)
@@ -143,7 +147,10 @@ function ProfileTab() {
     const loadedCerts = Array.isArray(learning.certificates)
       ? learning.certificates
       : [];
-    const loadedAwards = Number(learning.awardCount ?? 0);
+    const loadedAwards = Math.min(
+      MAX_AWARD_COUNT,
+      Number(learning.awardCount ?? 0)
+    );
     const loadedProjects = Math.min(
       MAX_PROJECT_COUNT,
       Number(learning.projectCount ?? 0)
@@ -602,7 +609,9 @@ function ProfileTab() {
                     className="counter-box__btn"
                     aria-label="대회 수상 횟수 증가"
                     onClick={() => {
-                      setAwardCount((prev) => prev + 1);
+                      setAwardCount((prev) =>
+                        Math.min(MAX_AWARD_COUNT, prev + 1)
+                      );
                       setSuccessMessage('');
                     }}
                   >
@@ -612,7 +621,7 @@ function ProfileTab() {
                     +{formatScore(preview.awardScore)}점
                   </span>
                 </div>
-                <p className="counter-group__caption">1회당 3점 (중복 가능)</p>
+                <p className="counter-group__caption">1회당 3점 (최대 10회)</p>
               </div>
 
               {/* 해커톤 · 공모전 · 프로젝트 완료 */}
