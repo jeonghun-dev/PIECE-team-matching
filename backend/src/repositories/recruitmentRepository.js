@@ -202,7 +202,8 @@ const updateStatus = async (tx, requestId, status) => {
   const [result] = await tx.query(
     `UPDATE project_requests
      SET status = ?,
-         processed_at = CURRENT_TIMESTAMP
+         processed_at = CURRENT_TIMESTAMP,
+         notification_read_at = COALESCE(notification_read_at, CURRENT_TIMESTAMP)
      WHERE id = ?
        AND status = ?`,
     [status, requestId, REQUEST_STATUS.PENDING],

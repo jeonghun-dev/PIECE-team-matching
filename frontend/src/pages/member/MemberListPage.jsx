@@ -12,17 +12,14 @@ import {
 } from "../../constants";
 import { getMembers } from "../../api/members";
 import { inviteToProject } from "../../api/requests";
+import { findLabel, toArray } from "../../utils/format";
 import "./MemberPages.css";
-
-const certificateLabels = Object.fromEntries(CERTIFICATE_OPTIONS.map(({ code, label }) => [code, label]));
-const activeTimeLabels = Object.fromEntries(ACTIVE_TIME_OPTIONS.map(({ code, label }) => [code, label]));
-const collaborationLabels = Object.fromEntries(COLLABORATION_OPTIONS.map(({ code, label }) => [code, label]));
 
 function MemberCard({ member }) {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const certificateLabel = member.certificates
     .slice(0, 2)
-    .map((certificate) => certificateLabels[certificate] ?? certificate)
+    .map((certificate) => findLabel(CERTIFICATE_OPTIONS, certificate) ?? certificate)
     .join(" · ");
 
   return (
@@ -48,8 +45,8 @@ function MemberCard({ member }) {
           </span>
         </div>
         <div className="member-card__meta">
-          <span><span aria-hidden="true">♧</span> {collaborationLabels[member.collaborationMode]}</span>
-          <span><span aria-hidden="true">◷</span> {activeTimeLabels[member.activeTimes[0]]}</span>
+          <span><span aria-hidden="true">♧</span> {findLabel(COLLABORATION_OPTIONS, member.collaborationMode)}</span>
+          <span><span aria-hidden="true">◷</span> {findLabel(ACTIVE_TIME_OPTIONS, member.activeTimes[0])}</span>
         </div>
         <div className="member-card__actions">
           <Link className="member-page__button member-page__button--outline" to={`/members/${member.id}`}>
@@ -211,12 +208,11 @@ export default function MemberList() {
 }
 
 function normalizeMember(member) {
-  const split = (value) => Array.isArray(value) ? value : String(value ?? "").split(",").filter(Boolean);
   return {
     ...member,
     id: Number(member.id),
-    activeTimes: split(member.activeTimes),
-    certificates: split(member.certificates),
+    activeTimes: toArray(member.activeTimes),
+    certificates: toArray(member.certificates),
     lookingForTeam: Boolean(member.lookingForTeam),
     totalScore: Number(member.totalScore ?? 0),
     awardCount: Number(member.awardCount ?? 0),

@@ -79,6 +79,7 @@ async function membersFor(actor, filters) {
     levels,
     collaborationMode,
     activeTime,
+    excludeUserId: actor.id,
     limit: pagination.limit,
     offset: pagination.offset,
   });
