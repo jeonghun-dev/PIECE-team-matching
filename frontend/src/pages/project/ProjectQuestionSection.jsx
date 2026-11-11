@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { createProjectQuestion, getProjectQuestions } from "../../api/projectDetail";
-import { deleteQuestion, updateQuestion } from "../../api/questions";
+import {
+  deleteQuestion,
+  updateQuestion,
+  reportQuestion,
+  getQuestionReportStatus
+} from "../../api/questions";
 import AnswerSection from "../../components/answer/AnswerSection";
+import ReportButton from "../../components/report/ReportButton";
+import ReportForm from "../../components/report/ReportForm";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import { LEVEL, USER_ROLE } from "../../constants";
 import "./ProjectQuestionSection.css";
@@ -168,6 +175,12 @@ function ProjectQuestion({ question, user, onChanged }) {
   const [content, setContent] = useState(question.content);
   const [action, setAction] = useState("");
   const [error, setError] = useState("");
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reported, setReported] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+  const [reportChecking, setReportChecking] = useState(true);
+  const [reportCheckError, setReportCheckError] = useState("");
+  const [reportRetryCount, setReportRetryCount] = useState(0);
   const lock = useRef(false);
   const active = useRef(true);
   const editInput = useRef(null);
@@ -186,6 +199,62 @@ function ProjectQuestion({ question, user, onChanged }) {
   useEffect(() => {
     if (editing) editInput.current?.focus();
   }, [editing]);
+
+  useEffect(() => {
+    if (!user?.id || isOwner) return;
+
+    let ignore = false;
+
+    async function checkReport() {
+      setReportChecking(true);
+      setReportCheckError("");
+      setReported(false);
+
+      try {
+        const alreadyReported = await getQuestionReportStatus(question.id);
+
+        if (!ignore) {
+          setReported(alreadyReported);
+        }
+      } catch {
+        if (!ignore) {
+          setReportCheckError("신고 여부를 확인하지 못했습니다. 다시 시도해 주세요.");
+        }
+      } finally {
+        if (!ignore) {
+          setReportChecking(false);
+        }
+      }
+    }
+
+    checkReport();
+
+    return () => {
+      ignore = true;
+    };
+  }, [question.id, user?.id, isOwner, reportRetryCount]);
+
+  async function handleReport(input) {
+    try {
+      await reportQuestion(question.id, input);
+
+      if (active.current) {
+        setReported(true);
+        setReportSuccess(true);
+        setReportOpen(false);
+      }
+    } catch (requestError) {
+      if (requestError.response?.status === 409) {
+        if (active.current) {
+          setReported(true);
+          setReportOpen(false);
+        }
+        return;
+      }
+
+      throw requestError;
+    }
+  }
 
   async function mutate(kind) {
     if (lock.current || !isOwner) return;
@@ -272,6 +341,17 @@ function ProjectQuestion({ question, user, onChanged }) {
             </button>
           </div>
         )}
+        {user?.id != null && !isOwner && (
+            <ReportButton
+                reported={reported}
+                disabled={
+                    reportOpen ||
+                    reportChecking ||
+                    Boolean(reportCheckError)
+                }
+                onClick={() => setReportOpen(true)}
+            />
+        )}
       </div>
       {editing ? (
         <form
@@ -305,6 +385,42 @@ function ProjectQuestion({ question, user, onChanged }) {
         <p className="project-detail-error" role="alert">
           {error}
         </p>
+      )}
+      {user?.id != null && !isOwner && (
+          <>
+            {reportCheckError && (
+                <div>
+                  <p className="project-detail-error" role="alert">
+                    {reportCheckError}
+                  </p>
+                  <button
+                      type="button"
+                      className="project-question-button"
+                      disabled={reportChecking}
+                      onClick={() => {
+                        setReportChecking(true);
+                        setReportCheckError("");
+                        setReportRetryCount((prev) => prev + 1);
+                      }}
+                  >
+                    신고 여부 다시 확인
+                  </button>
+                </div>
+            )}
+
+            {reportOpen && !reported && (
+                <ReportForm
+                    onSubmit={handleReport}
+                    onCancel={() => setReportOpen(false)}
+                />
+            )}
+
+            {reportSuccess && (
+                <p className="project-detail-note" role="status">
+                  신고가 접수되었습니다.
+                </p>
+            )}
+          </>
       )}
       <div className="project-question-answers">
         <AnswerSection
