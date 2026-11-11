@@ -18,12 +18,12 @@ import {
   ACTIVE_TIME,
   ACTIVE_TIME_OPTIONS,
   CERTIFICATE,
-  CERTIFICATE_OPTIONS,
+  CERTIFICATE_OPTIONS as BASE_CERTIFICATE_OPTIONS,
   COLLABORATION_MODE,
   COLLABORATION_OPTIONS,
   LEVEL,
 } from '../../constants';
-import { findLabel, toArray } from '../../utils/format';
+import { toArray } from '../../utils/format';
 import './ProfileTab.css';
 
 const CERTIFICATE_META = {
@@ -34,6 +34,12 @@ const CERTIFICATE_META = {
   [CERTIFICATE.PROGRAMMING]: { score: 0.5, pointText: '+0.5점' },
   [CERTIFICATE.ADSP]: { score: 0.5, pointText: '+0.5점' },
 };
+
+const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
+  ...item,
+  score: CERTIFICATE_META[item.code]?.score ?? 0,
+  pointText: CERTIFICATE_META[item.code]?.pointText ?? '',
+}));
 
 const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 const MAX_INTRO_LENGTH = 200;
@@ -51,7 +57,8 @@ function formatScore(score) {
 function calculatePreviewLearning(certificates, awardCount, projectCount) {
   const uniqueCerts = [...new Set(toArray(certificates))];
   const certificateScore = uniqueCerts.reduce((sum, code) => {
-    return sum + (CERTIFICATE_META[code]?.score ?? 0);
+    const found = CERTIFICATE_OPTIONS.find((item) => item.code === code);
+    return sum + (found ? found.score : 0);
   }, 0);
 
   const validAwardCount = Math.min(
@@ -228,8 +235,8 @@ function ProfileTab() {
   const previewBreakdownItems = [
     ...CERTIFICATE_OPTIONS.filter((cert) => certificates.includes(cert.code)).map(
       (cert) => ({
-        label: findLabel(CERTIFICATE_OPTIONS, cert.code),
-        scoreText: `+${formatScore(CERTIFICATE_META[cert.code]?.score ?? 0)}점`,
+        label: cert.label,
+        scoreText: `+${formatScore(cert.score)}점`,
       })
     ),
     ...(awardCount > 0
@@ -571,9 +578,7 @@ function ProfileTab() {
                         />
                         <span className="cert-item__name">{cert.label}</span>
                       </span>
-                      <span className="cert-item__point">
-                        {CERTIFICATE_META[cert.code]?.pointText ?? ''}
-                      </span>
+                      <span className="cert-item__point">{cert.pointText}</span>
                     </label>
                   );
                 })}

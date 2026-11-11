@@ -10,7 +10,7 @@ const { parseId } = require("../utils/parseId");
 const SALT_ROUNDS = 10;
 const TOKEN_EXPIRES_IN = "1h";
 // 회원가입 처리
-const signup = async (input = {}) => {
+const signup = async (input) => {
   const email = input.email.trim().toLowerCase();
   const nickname = input.nickname.trim();
   const existingEmail = await accountRepository.findByEmail(email);
@@ -63,7 +63,7 @@ const signup = async (input = {}) => {
   };
 };
 // 로그인 처리 및 JWT 발급
-const login = async (credentials = {}) => {
+const login = async (credentials) => {
   const email = credentials.email.trim().toLowerCase();
   const row = await accountRepository.findByEmail(email);
   if (!row) {
@@ -181,7 +181,7 @@ const assertActive = async (userId) => {
   }
 
   // 추가 기능: 내 기술 프로필 및 학습 이력 수정 (이력·총점·레벨을 단일 UPDATE로 함께 갱신
-  const updateProfile = async (actor, input = {}) => {
+  const updateProfile = async (actor, input) => {
     const currentRow = await accountRepository.findById(actor.id);
     if (!currentRow) {
       throw createError(404, '회원 정보를 찾을 수 없습니다.');
