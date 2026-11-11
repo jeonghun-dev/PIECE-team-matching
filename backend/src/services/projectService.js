@@ -3,7 +3,7 @@
 const{getPagination, toPageResponse} = require("../utils/pagination");
 const pool = require("../config/db");
 const projectRepository = require("../repositories/projectRepository");
-const { LEVEL, PROGRESS_MODE, ACTIVE_TIME, PROJECT_STATUS } = require("../constants");
+const { LEVEL, PROGRESS_MODE, ACTIVE_TIME, PROJECT_STATUS, USER_ROLE } = require("../constants");
 
 // 상태 코드와 메시지를 담은 에러 만들기
 const createError = (status, message) => {
@@ -115,6 +115,11 @@ const publish = async (actor, input) => {
         throw createError(401, "로그인이 필요합니다.");
     }
 
+     // 관리자 계정은 모집 글 작성 불가
+    if (actor.role === USER_ROLE.ADMIN) {
+        throw createError(403, "관리자 계정은 모집 글을 작성할 수 없습니다.");
+    }
+    
     const project = validateProjectInput(input);
     project.authorId = actor.id;
 

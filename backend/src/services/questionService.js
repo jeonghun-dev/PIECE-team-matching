@@ -1,12 +1,23 @@
 ﻿const questionRepository = require("../repositories/questionRepository");
 const pool = require("../config/db");
 
+const {USER_ROLE} = require("../constants");
+
 const { getPagination, toPageResponse } = require("../utils/pagination");
 
 function badRequest(message) {
   const error = new Error(message);
   error.status = 400;
   throw error;
+}
+
+// 관리자 계정은 질문 작성 불가
+function rejectAdmin(actor) {
+  if (actor.role === USER_ROLE.ADMIN) {
+    const error = new Error("관리자 계정은 질문을 작성할 수 없습니다.");
+    error.status = 403;
+    throw error;
+  }
 }
 
 // 질문 등록에 필요한 제목과 본문을 확인하는 함수이다.
@@ -59,6 +70,8 @@ async function create(actor, input) {
     throw error;
   }
 
+  rejectAdmin(actor);
+
   const questionInput = validateQuestionInput(input);
 
   const questionId = await questionRepository.save({
@@ -80,6 +93,8 @@ async function createForProject(actor, projectId, input) {
     throw error;
   }
 
+  rejectAdmin(actor);
+  
   if (
       typeof projectId !== "string" ||
       !/^[1-9]\d*$/.test(projectId) ||
