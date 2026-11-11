@@ -18,11 +18,12 @@ import {
   ACTIVE_TIME,
   ACTIVE_TIME_OPTIONS,
   CERTIFICATE,
-  CERTIFICATE_OPTIONS as BASE_CERTIFICATE_OPTIONS,
+  CERTIFICATE_OPTIONS,
   COLLABORATION_MODE,
   COLLABORATION_OPTIONS,
   LEVEL,
 } from '../../constants';
+import { findLabel, toArray } from '../../utils/format';
 import './ProfileTab.css';
 
 const CERTIFICATE_META = {
@@ -33,12 +34,6 @@ const CERTIFICATE_META = {
   [CERTIFICATE.PROGRAMMING]: { score: 0.5, pointText: '+0.5점' },
   [CERTIFICATE.ADSP]: { score: 0.5, pointText: '+0.5점' },
 };
-
-const CERTIFICATE_OPTIONS = BASE_CERTIFICATE_OPTIONS.map((item) => ({
-  ...item,
-  score: CERTIFICATE_META[item.code]?.score ?? 0,
-  pointText: CERTIFICATE_META[item.code]?.pointText ?? '',
-}));
 
 const URL_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/.+/;
 const MAX_INTRO_LENGTH = 200;
@@ -54,10 +49,9 @@ function formatScore(score) {
 
 // 프론트 실시간 점수 및 레벨 계산 함수 (LevelPolicy 동일 기준)
 function calculatePreviewLearning(certificates, awardCount, projectCount) {
-  const uniqueCerts = [...new Set(certificates)];
+  const uniqueCerts = [...new Set(toArray(certificates))];
   const certificateScore = uniqueCerts.reduce((sum, code) => {
-    const found = CERTIFICATE_OPTIONS.find((item) => item.code === code);
-    return sum + (found ? found.score : 0);
+    return sum + (CERTIFICATE_META[code]?.score ?? 0);
   }, 0);
 
   const validAwardCount = Math.min(
@@ -131,11 +125,12 @@ function ProfileTab() {
     setNickname(data.nickname || '');
 
     const profile = data.profile || {};
+    const loadedActiveTimes = toArray(profile.activeTimes);
     setIntro(profile.intro || '');
     setCollaborationMode(profile.collaborationMode || COLLABORATION_MODE.ONLINE);
     setActiveTimes(
-      Array.isArray(profile.activeTimes) && profile.activeTimes.length > 0
-        ? profile.activeTimes
+      loadedActiveTimes.length > 0
+        ? loadedActiveTimes
         : [ACTIVE_TIME.WEEKDAY_NIGHT]
     );
     setLookingForTeam(
@@ -144,9 +139,7 @@ function ProfileTab() {
     setPortfolioUrl(profile.portfolioUrl || '');
 
     const learning = data.learning || {};
-    const loadedCerts = Array.isArray(learning.certificates)
-      ? learning.certificates
-      : [];
+    const loadedCerts = toArray(learning.certificates);
     const loadedAwards = Math.min(
       MAX_AWARD_COUNT,
       Number(learning.awardCount ?? 0)
@@ -235,8 +228,8 @@ function ProfileTab() {
   const previewBreakdownItems = [
     ...CERTIFICATE_OPTIONS.filter((cert) => certificates.includes(cert.code)).map(
       (cert) => ({
-        label: cert.label,
-        scoreText: `+${formatScore(cert.score)}점`,
+        label: findLabel(CERTIFICATE_OPTIONS, cert.code),
+        scoreText: `+${formatScore(CERTIFICATE_META[cert.code]?.score ?? 0)}점`,
       })
     ),
     ...(awardCount > 0
@@ -578,7 +571,9 @@ function ProfileTab() {
                         />
                         <span className="cert-item__name">{cert.label}</span>
                       </span>
-                      <span className="cert-item__point">{cert.pointText}</span>
+                      <span className="cert-item__point">
+                        {CERTIFICATE_META[cert.code]?.pointText ?? ''}
+                      </span>
                     </label>
                   );
                 })}
