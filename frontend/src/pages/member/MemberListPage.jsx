@@ -5,11 +5,9 @@ import {
   MemberMark,
 } from "./MemberUI";
 import {
-  ACTIVE_TIME,
   ACTIVE_TIME_OPTIONS,
   CERTIFICATE_OPTIONS,
   COLLABORATION_OPTIONS,
-  LEVEL,
   LEVEL_OPTIONS,
 } from "../../constants";
 import { getMembers } from "../../api/members";
