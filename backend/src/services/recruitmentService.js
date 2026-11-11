@@ -6,6 +6,7 @@ const {
   REQUEST_TYPE,
   REQUEST_STATUS,
   MEMBER_ROLE,
+  USER_ROLE
 } = require("../constants");
 
 // 공통 에러 처리 미들웨어에 전달할 오류 생성
@@ -101,6 +102,11 @@ const joinTeam = async (tx, project, requestId, userId) => {
 const apply = async (actor, id) => {
   if (!actor) {
     throw createError(401, "로그인이 필요합니다.");
+  }
+
+  // 관리자 계정은 참여 요청 불가 (초대·팀원 찾기 대상에서도 제외됨)
+  if (actor.role === USER_ROLE.ADMIN) {
+    throw createError(403, "관리자는 참여 요청을 보낼 수 없습니다.");
   }
 
   const projectId = parseProjectId(id);
