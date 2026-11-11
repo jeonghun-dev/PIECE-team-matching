@@ -18,8 +18,11 @@ function AuthProvider({ children }) {
             try {
                 const resp = await getMeApi();
                 setUser(resp.data.data);
-            } catch {
-                localStorage.removeItem("token");
+            } catch (error) {
+                const status = error.response?.status;
+                if (status === 401 || status === 403) {
+                    localStorage.removeItem("token");
+                }
             } finally {
                 setLoading(false);
             }
