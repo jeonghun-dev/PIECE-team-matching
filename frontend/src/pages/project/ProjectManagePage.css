@@ -223,7 +223,15 @@
   margin-left: auto;
 }
 
-.project-manage-members li > .project-manage-level:last-child {
+/* 닉네임은 한 줄로 (길면 말줄임) - 배지·버튼 때문에 두 줄로 꺾이지 않게 */
+.project-manage-members li > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-manage-members li > .level-badge:last-child {
   margin-left: auto;
 }
 
@@ -259,7 +267,6 @@
   font-weight: var(--font-weight-bold);
 }
 
-.project-manage-level,
 .project-manage-status {
   display: inline-block;
   padding: var(--space-1) var(--space-2);
@@ -268,38 +275,6 @@
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-heading);
   white-space: nowrap;
-}
-
-.project-manage-level {
-  background-color: var(--color-level-builder);
-  color: var(--color-text-on-solid);
-}
-
-.project-manage-level--starter {
-  background-color: var(--color-level-starter);
-}
-
-.project-manage-level--achiever {
-  background-color: var(--color-level-achiever);
-}
-
-/* 연한 배지 (지원자 표) */
-.project-manage-level--soft {
-  background-color: var(--color-primary-soft);
-  color: var(--color-level-builder);
-}
-
-.project-manage-level--soft.project-manage-level--starter {
-  background-color: var(--color-success-soft);
-  color: var(--color-level-starter);
-}
-
-.project-manage-level--soft.project-manage-level--achiever {
-  background-color: var(--color-danger-soft);
-  color: var(--color-level-achiever);
-}
-
-.project-manage-status {
   background-color: var(--color-success-soft);
   color: var(--color-success);
 }
