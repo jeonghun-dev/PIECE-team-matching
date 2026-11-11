@@ -178,7 +178,7 @@ export default function MemberList() {
           </label>
 
           <button className="member-page__button member-page__button--primary member-list__search-button" type="submit">
-            <span aria-hidden="true"></span> 검색
+            검색
           </button>
         </form>
 
