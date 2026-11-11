@@ -23,6 +23,7 @@ import {
   COLLABORATION_OPTIONS,
   LEVEL,
 } from '../../constants';
+import { toArray } from '../../utils/format';
 import './ProfileTab.css';
 
 const CERTIFICATE_META = {
@@ -54,7 +55,7 @@ function formatScore(score) {
 
 // 프론트 실시간 점수 및 레벨 계산 함수 (LevelPolicy 동일 기준)
 function calculatePreviewLearning(certificates, awardCount, projectCount) {
-  const uniqueCerts = [...new Set(certificates)];
+  const uniqueCerts = [...new Set(toArray(certificates))];
   const certificateScore = uniqueCerts.reduce((sum, code) => {
     const found = CERTIFICATE_OPTIONS.find((item) => item.code === code);
     return sum + (found ? found.score : 0);
@@ -131,11 +132,12 @@ function ProfileTab() {
     setNickname(data.nickname || '');
 
     const profile = data.profile || {};
+    const loadedActiveTimes = toArray(profile.activeTimes);
     setIntro(profile.intro || '');
     setCollaborationMode(profile.collaborationMode || COLLABORATION_MODE.ONLINE);
     setActiveTimes(
-      Array.isArray(profile.activeTimes) && profile.activeTimes.length > 0
-        ? profile.activeTimes
+      loadedActiveTimes.length > 0
+        ? loadedActiveTimes
         : [ACTIVE_TIME.WEEKDAY_NIGHT]
     );
     setLookingForTeam(
@@ -144,9 +146,7 @@ function ProfileTab() {
     setPortfolioUrl(profile.portfolioUrl || '');
 
     const learning = data.learning || {};
-    const loadedCerts = Array.isArray(learning.certificates)
-      ? learning.certificates
-      : [];
+    const loadedCerts = toArray(learning.certificates);
     const loadedAwards = Math.min(
       MAX_AWARD_COUNT,
       Number(learning.awardCount ?? 0)
