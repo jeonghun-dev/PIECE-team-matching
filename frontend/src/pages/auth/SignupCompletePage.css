@@ -1,0 +1,252 @@
+.signup-complete-page {
+  flex: 1;
+  min-height: calc(100svh - var(--header-min-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-7) var(--space-5);
+  background-color: var(--color-page);
+  box-sizing: border-box;
+}
+
+.signup-complete-card {
+  width: 100%;
+  max-width: 520px;
+  padding: var(--space-6) var(--space-5);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.signup-complete-card__check-icon {
+  font-size: var(--font-size-page-title);
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  line-height: 1;
+}
+
+.signup-complete-card__title {
+  margin: 0;
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-title);
+  color: var(--color-text);
+}
+
+.signup-complete-card__subtitle {
+  margin: var(--space-2) 0 var(--space-5);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--color-text-muted);
+}
+
+/* 산정 결과 박스 */
+.signup-complete-card__result-box {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto var(--space-5);
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.signup-complete-card__result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.signup-complete-card__result-title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.signup-complete-card__level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 9999px;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-solid);
+  background-color: var(--color-level-builder);
+}
+
+.signup-complete-card__level-badge--starter {
+  background-color: var(--color-level-starter);
+}
+
+.signup-complete-card__level-badge--builder {
+  background-color: var(--color-level-builder);
+}
+
+.signup-complete-card__level-badge--achiever {
+  background-color: var(--color-level-achiever);
+}
+
+/* 점수 표시 */
+.signup-complete-card__score-container {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.signup-complete-card__score-value {
+  font-size: 32px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.signup-complete-card__score-unit {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}
+
+/* 레벨 게이지 바 */
+.signup-complete-card__gauge {
+  position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.signup-complete-card__gauge-track {
+  display: flex;
+  height: 10px;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.signup-complete-card__gauge-segment {
+  height: 100%;
+}
+
+.signup-complete-card__gauge-segment--starter {
+  width: 25%;
+  background-color: var(--color-level-starter-soft);
+}
+
+.signup-complete-card__gauge-segment--builder {
+  width: 50%;
+  background-color: var(--color-level-builder-soft);
+}
+
+.signup-complete-card__gauge-segment--achiever {
+  width: 25%;
+  background-color: var(--color-level-achiever-soft);
+}
+
+.signup-complete-card__gauge-marker {
+  position: absolute;
+  top: -4px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 18px;
+  background-color: var(--color-text);
+  border-radius: 2px;
+}
+
+/* 구간 이름 */
+.signup-complete-card__gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.signup-complete-card__divider {
+  border: none;
+  border-top: var(--border-width) solid var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+/* 산정 내역 리스트 */
+.signup-complete-card__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.signup-complete-card__history-item,
+.signup-complete-card__history-empty {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-body);
+}
+
+.signup-complete-card__history-label {
+  color: var(--color-text);
+}
+
+.signup-complete-card__history-score {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.signup-complete-card__history-empty {
+  color: var(--color-text-muted);
+}
+
+/* 하단 버튼 영역 */
+.signup-complete-card__actions {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.signup-complete-card__btn {
+  flex: 1;
+  min-height: var(--control-height-lg);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.signup-complete-card__btn--secondary {
+  border: var(--border-width) solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+.signup-complete-card__btn--secondary:hover {
+  background-color: var(--color-page);
+  border-color: var(--color-input-border);
+}
+
+.signup-complete-card__btn--primary {
+  border: none;
+  background-color: var(--color-primary);
+  color: var(--color-text-on-solid);
+}
+
+.signup-complete-card__btn--primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* 하단 푸터 */
+.signup-complete-footer {
+  text-align: center;
+  margin-top: var(--space-5);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}

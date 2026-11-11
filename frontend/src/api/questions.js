@@ -42,3 +42,19 @@ export async function reportQuestion(id, input) {
     });
     return response.data.data;
 }
+
+// 내가 이 질문을 이미 신고했는지 조회한다.
+export async function getQuestionReportStatus(id) {
+    const response = await client.get("/reports/mine", {
+        params: {
+            targetType: "QUESTION",
+            targetIds: String(id)
+        }
+    });
+
+    const reportedIds = response.data.data.reportedIds;
+
+    return reportedIds.some(
+        (reportedId) => String(reportedId) === String(id)
+    );
+}

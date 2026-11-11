@@ -293,6 +293,9 @@ const listReports = async (admin, query = {}) => {
       targetAuthorStatus: row.targetAuthorStatus,
       answerQuestionId:
         row.answerQuestionId == null ? null : Number(row.answerQuestionId),
+      // 모집 글에 달린 질문·답변이면 그 모집 글 번호 (원문 보기 이동용)
+      targetProjectId:
+        row.targetProjectId == null ? null : Number(row.targetProjectId),
       targetDeleted: Number(row.targetDeleted) === 1,
       reportCount: Number(row.reportCount),
       pendingCount,

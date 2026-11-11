@@ -4,20 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getMyTeams, getMyProjects, getMyQuestions, getMyAnswers } from "../../api/mypage";
 import { deleteProject } from "../../api/projects";
-import { PROJECT_STATUS, PROJECT_STATUS_LABEL, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS } from "../../constants";
+import { useAuth } from "../../hooks/useAuth";
+import { PROJECT_STATUS, PROJECT_STATUS_LABEL, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS, USER_ROLE } from "../../constants";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import { findLabel, formatDDay } from "../../utils/format";
 
 // 최근 질문·답변은 5개만
 const RECENT_SIZE = 5;
 
-// 코드 → 한글 (공통 상수의 { code, label } 목록에서 찾기)
-const findLabel = (options, code) => {
-    const option = options.find((item) => item.code === code);
-    if (option) {
-        return option.label;
-    }
-    return code;
-};
 
 // 팀 카드 아래 줄: "팀원 2 / 4명 · 온라인 · 평일 저녁"
 const getTeamMeta = (team) => {
@@ -26,15 +20,12 @@ const getTeamMeta = (team) => {
     return `팀원 ${team.memberCount} / ${team.capacity}명 · ${progress} · ${times}`;
 };
 
-// 마감 칸: 모집완료면 "마감", 아니면 D-Day (서버 계산 값, NFR-049)
+// 마감 칸: 모집완료면 "마감", 아니면 D-Day
 const getDeadlineText = (project) => {
-    if (project.status === PROJECT_STATUS.CLOSED || project.dDay < 0) {
+    if (project.status === PROJECT_STATUS.CLOSED) {
         return "마감";
     }
-    if (project.dDay === 0) {
-        return "D-Day";
-    }
-    return `D-${project.dDay}`;
+    return formatDDay(project.dDay);
 };
 
 // 대기 칸: 모집완료면 "-"
@@ -56,6 +47,8 @@ const getQuestionLink = (projectId, questionId) => {
 };
 
 function ActivityTab() {
+    const { user } = useAuth();
+    const isAdmin = user?.role === USER_ROLE.ADMIN;
     const location = useLocation();
     const teamsRef = useRef(null);
     const projectsRef = useRef(null);
@@ -228,7 +221,9 @@ function ActivityTab() {
             <section className="activity-card activity-card--table" ref={projectsRef} aria-labelledby="my-projects-title">
                 <div className="activity-card__header">
                     <h2 id="my-projects-title" className="activity-card__title">내 모집 글 관리</h2>
-                    <Link to="/projects/new" className="activity__button activity__button--primary">+ 모집 글 작성</Link>
+                    {!isAdmin && (
+                        <Link to="/projects/new" className="activity__button activity__button--primary">+ 모집 글 작성</Link>
+                    )}
                 </div>
 
                 {actionError && <p className="activity__error" role="alert">{actionError}</p>}

@@ -6,6 +6,7 @@ import {
   deleteAnswer,
   acceptAnswer,
   reportAnswer,
+  getMyReportedAnswerIds,
 } from "../../api/answersApi";
 import { useAuth } from "../../hooks/useAuth";
 import AnswerList from "./AnswerList";
@@ -20,6 +21,7 @@ export default function AnswerSection({
   const { user, loading: authLoading } = useAuth();
 
   const [answers, setAnswers] = useState([]);
+  const [reportedAnswerIds, setReportedAnswerIds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [isMutating, setIsMutating] = useState(false);
@@ -46,10 +48,24 @@ export default function AnswerSection({
       setAnswers([]);
 
       try {
-        const data = await getAnswers(questionId);
+        const response = await getAnswers(questionId);
+        const data = response.data.data;
+        let reportedIds = [];
+
+        // 내가 이미 신고한 답변 (새로고침해도 "신고됨" 유지)
+        if (data.length > 0) {
+          try {
+            reportedIds = await getMyReportedAnswerIds(
+              data.map((answer) => answer.id),
+            );
+          } catch {
+            // 신고 여부는 보조 정보라 실패해도 답변 목록은 보여줌
+          }
+        }
 
         if (isCurrentRequest()) {
           setAnswers(data);
+          setReportedAnswerIds(reportedIds);
         }
       } catch (error) {
         if (isCurrentRequest()) {
@@ -103,10 +119,10 @@ export default function AnswerSection({
       }
 
       try {
-        const data = await getAnswers(questionId);
+        const response = await getAnswers(questionId);
 
         if (isCurrentRequest()) {
-          setAnswers(data);
+          setAnswers(response.data.data);
         }
       } catch {
         if (isCurrentRequest()) {
@@ -286,6 +302,7 @@ export default function AnswerSection({
         onDeleteAnswer={handleDeleteAnswer}
         onAcceptAnswer={handleAcceptAnswer}
         onReportAnswer={handleReportAnswer}
+        reportedAnswerIds={reportedAnswerIds}
       />
       <AnswerForm onSubmit={handleCreateAnswer} isSubmitting={isMutating} />
     </div>

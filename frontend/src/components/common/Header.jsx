@@ -191,9 +191,11 @@ function Header() {
                     {/* 로그인 상태 */}
                     {!loading && isLoggedIn && (
                         <>
-                            <Link to="/projects/new" className="header__button header__button--primary">
-                                모집 글 작성
-                            </Link>
+                            {!isAdmin && (
+                                <Link to="/projects/new" className="header__button header__button--primary">
+                                    모집 글 작성
+                                </Link>
+                            )}
 
                             <div className="header__notification" ref={notificationRef}>
                                 <button

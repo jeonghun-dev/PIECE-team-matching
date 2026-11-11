@@ -6,6 +6,8 @@ import {
   CERTIFICATE_OPTIONS,
   LEVEL,
 } from '../../constants';
+import { findLabel, toArray } from '../../utils/format';
+import './SignupCompletePage.css';
 
 const CERTIFICATE_SCORES = {
   [CERTIFICATE.ENGINEER]: 2,
@@ -15,13 +17,6 @@ const CERTIFICATE_SCORES = {
   [CERTIFICATE.PROGRAMMING]: 0.5,
   [CERTIFICATE.ADSP]: 0.5,
 };
-
-const CERTIFICATE_INFO = Object.fromEntries(
-  CERTIFICATE_OPTIONS.map((item) => [
-    item.code,
-    { label: item.label, score: CERTIFICATE_SCORES[item.code] ?? 0 },
-  ])
-);
 
 const MAX_BAR_SCORE = 10;
 
@@ -61,9 +56,7 @@ function SignupCompletePage() {
   );
 
   // 산정 내역 리스트 구성
-  const certificates = Array.isArray(learning.certificates)
-    ? learning.certificates
-    : [];
+  const certificates = toArray(learning.certificates);
   const awardCount = Number(learning.awardCount ?? 0);
   const projectCount = Number(learning.projectCount ?? 0);
   const awardScore = Number(learning.awardScore ?? awardCount * 3);
@@ -73,10 +66,10 @@ function SignupCompletePage() {
 
   const historyItems = [
     ...certificates
-      .filter((code) => CERTIFICATE_INFO[code])
+      .filter((code) => CERTIFICATE_SCORES[code] != null)
       .map((code) => ({
-        label: CERTIFICATE_INFO[code].label,
-        scoreText: `+${formatScore(CERTIFICATE_INFO[code].score)}점`,
+        label: findLabel(CERTIFICATE_OPTIONS, code),
+        scoreText: `+${formatScore(CERTIFICATE_SCORES[code])}점`,
       })),
     ...(awardCount > 0
       ? [
@@ -96,130 +89,78 @@ function SignupCompletePage() {
       : []),
   ];
 
+  const levelBadgeClass =
+    level === LEVEL.STARTER
+      ? 'signup-complete-card__level-badge--starter'
+      : level === LEVEL.ACHIEVER
+        ? 'signup-complete-card__level-badge--achiever'
+        : 'signup-complete-card__level-badge--builder';
+
   return (
-    <div style={{ maxWidth: '520px', margin: '40px auto', padding: '0 24px' }}>
+    <main className="signup-complete-page">
       {/* 메인 카드 */}
-      <div
-        style={{
-          border: '1px solid #e5e9f2',
-          borderRadius: '16px',
-          padding: '32px 24px',
-          textAlign: 'center',
-        }}
-      >
+      <div className="signup-complete-card">
         {/* 상단 체크 표시 및 제목 */}
-        <div style={{ fontSize: '28px', marginBottom: '12px' }}>✓</div>
-        <h2>가입이 완료되었어요</h2>
-        <p style={{ marginTop: '8px', marginBottom: '24px' }}>
+        <div className="signup-complete-card__check-icon">✓</div>
+        <h2 className="signup-complete-card__title">가입이 완료되었어요</h2>
+        <p className="signup-complete-card__subtitle">
           입력한 학습 이력으로 산정된 {nickname} 님의 레벨이에요
         </p>
 
         {/* 산정 결과 박스 */}
-        <div
-          style={{
-            border: '1px solid #e5e9f2',
-            borderRadius: '12px',
-            padding: '20px',
-            textAlign: 'left',
-            marginBottom: '24px',
-          }}
-        >
+        <div className="signup-complete-card__result-box">
           {/* 상단: 산정 결과 & 레벨 배지 */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px',
-            }}
-          >
-            <strong>산정 결과</strong>
-            <span
-              style={{
-                backgroundColor: '#4054FF',
-                color: '#FFFFFF',
-                padding: '4px 12px',
-                borderRadius: '9999px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-              }}
-            >
+          <div className="signup-complete-card__result-header">
+            <strong className="signup-complete-card__result-title">산정 결과</strong>
+            <span className={`signup-complete-card__level-badge ${levelBadgeClass}`}>
               {level}
             </span>
           </div>
 
           {/* 총점 표시 */}
-          <div style={{ marginBottom: '16px' }}>
-            <strong style={{ fontSize: '32px' }}>{formatScore(totalScore)}</strong>{' '}
-            <span>점</span>
+          <div className="signup-complete-card__score-container">
+            <strong className="signup-complete-card__score-value">{formatScore(totalScore)}</strong>{' '}
+            <span className="signup-complete-card__score-unit">점</span>
           </div>
 
           {/* 레벨 게이지 바 (최대 10점 기준) */}
-          <div style={{ position: 'relative', marginBottom: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                height: '10px',
-                borderRadius: '9999px',
-                overflow: 'hidden',
-              }}
-            >
+          <div className="signup-complete-card__gauge">
+            <div className="signup-complete-card__gauge-track">
               {/* STARTER (0 ~ 2.5점: 25%) */}
-              <div style={{ width: '25%', backgroundColor: '#b7ebd8' }} />
+              <div className="signup-complete-card__gauge-segment signup-complete-card__gauge-segment--starter" />
               {/* BUILDER (2.5 ~ 7.5점: 50%) */}
-              <div style={{ width: '50%', backgroundColor: '#c5d0ff' }} />
+              <div className="signup-complete-card__gauge-segment signup-complete-card__gauge-segment--builder" />
               {/* ACHIEVER (7.5 ~ 10점: 25%) */}
-              <div style={{ width: '25%', backgroundColor: '#ffd0c2' }} />
+              <div className="signup-complete-card__gauge-segment signup-complete-card__gauge-segment--achiever" />
             </div>
 
             {/* 현재 점수 위치 핀 */}
             <div
-              style={{
-                position: 'absolute',
-                top: '-4px',
-                left: `${markerPercent}%`,
-                transform: 'translateX(-50%)',
-                width: '4px',
-                height: '18px',
-                backgroundColor: '#20243E',
-                borderRadius: '2px',
-              }}
+              className="signup-complete-card__gauge-marker"
+              style={{ left: `${markerPercent}%` }}
             />
           </div>
 
           {/* 구간 이름 */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '12px',
-              marginBottom: '16px',
-            }}
-          >
+          <div className="signup-complete-card__gauge-labels">
             <span>{LEVEL.STARTER}</span>
             <span>{LEVEL.BUILDER}</span>
             <span>{LEVEL.ACHIEVER}</span>
           </div>
 
-          <hr style={{ border: 'none', borderTop: '1px solid #e5e9f2', margin: '16px 0' }} />
+          <hr className="signup-complete-card__divider" />
 
           {/* 입력한 학습 이력별 점수 목록 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="signup-complete-card__history-list">
             {historyItems.length > 0 ? (
               historyItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <span>{item.label}</span>
-                  <strong>{item.scoreText}</strong>
+                <div key={idx} className="signup-complete-card__history-item">
+                  <span className="signup-complete-card__history-label">{item.label}</span>
+                  <strong className="signup-complete-card__history-score">{item.scoreText}</strong>
                 </div>
               ))
             ) : (
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="signup-complete-card__history-empty">
                 <span>입력한 학습 이력 없음</span>
                 <strong>+0점</strong>
               </div>
@@ -228,36 +169,19 @@ function SignupCompletePage() {
         </div>
 
         {/* 하단 버튼 영역 */}
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="signup-complete-card__actions">
           <button
             type="button"
+            className="signup-complete-card__btn signup-complete-card__btn--secondary"
             onClick={() => navigate('/mypage')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #e5e9f2',
-              backgroundColor: '#FFFFFF',
-              color: '#030303aa',
-              cursor: 'pointer',
-            }}
           >
             마이페이지에서 확인
           </button>
 
           <button
             type="button"
-            onClick={() => navigate('/')}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#4054FF',
-              color: '#FFFFFF',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-            }}
+            className="signup-complete-card__btn signup-complete-card__btn--primary"
+            onClick={() => navigate('/login')}
           >
             PIECE 시작하기
           </button>
@@ -265,10 +189,10 @@ function SignupCompletePage() {
       </div>
 
       {/* 하단 푸터 */}
-      <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '12px' }}>
+      <p className="signup-complete-footer">
         PIECE · 6팀 DevMates
       </p>
-    </div>
+    </main>
   );
 }
 

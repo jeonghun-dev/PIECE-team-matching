@@ -3,11 +3,13 @@ import { createProjectQuestion, getProjectQuestions } from "../../api/projectDet
 import { deleteQuestion, updateQuestion } from "../../api/questions";
 import AnswerSection from "../../components/answer/AnswerSection";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
-import { LEVEL } from "../../constants";
+import { LEVEL, USER_ROLE } from "../../constants";
 import "./ProjectQuestionSection.css";
+
 
 // 모집 글 질문은 별도 목록 API를 사용하고, 답변은 기존 공통 컴포넌트에 맡긴다.
 export default function ProjectQuestionSection({ projectId, user }) {
+  const isAdmin = user?.role === USER_ROLE.ADMIN;
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,7 +72,7 @@ export default function ProjectQuestionSection({ projectId, user }) {
       if (active.current)
         setSaveError(
           requestError.response?.data?.message ||
-            "질문을 등록하지 못했습니다. 입력 내용을 확인하고 다시 시도해 주세요."
+          "질문을 등록하지 못했습니다. 입력 내용을 확인하고 다시 시도해 주세요."
         );
     } finally {
       lock.current = false;
@@ -84,8 +86,8 @@ export default function ProjectQuestionSection({ projectId, user }) {
       updated.deleted
         ? prev.filter((question) => question.id !== updated.id)
         : prev.map((question) =>
-            question.id === updated.id ? { ...question, ...updated } : question
-          )
+          question.id === updated.id ? { ...question, ...updated } : question
+        )
     );
   }
 
@@ -95,40 +97,43 @@ export default function ProjectQuestionSection({ projectId, user }) {
         질문 · 답변{" "}
         {!loading && !error && <span className="project-detail-count">{questions.length}</span>}
       </h2>
-      <form className="project-question-form" onSubmit={handleSubmit}>
-        <label className="project-detail-visually-hidden" htmlFor={`project-question-${projectId}`}>
-          프로젝트 질문 내용
-        </label>
-        <textarea
-          id={`project-question-${projectId}`}
-          placeholder="프로젝트에 대해 궁금한 점을 질문해 보세요"
-          maxLength={2000}
-          value={content}
-          disabled={saving}
-          aria-invalid={Boolean(saveError)}
-          aria-describedby={saveError ? `project-question-error-${projectId}` : undefined}
-          onChange={(event) => {
-            setContent(event.target.value);
-            setSaveError("");
-          }}
-        />
-        <button
-          className="project-question-button project-question-button--primary"
-          type="submit"
-          disabled={saving}
-        >
-          {saving ? "등록 중…" : "질문 등록"}
-        </button>
-        {saveError && (
-          <p
-            className="project-detail-error"
-            id={`project-question-error-${projectId}`}
-            role="alert"
+      {!isAdmin && (
+
+        <form className="project-question-form" onSubmit={handleSubmit}>
+          <label className="project-detail-visually-hidden" htmlFor={`project-question-${projectId}`}>
+            프로젝트 질문 내용
+          </label>
+          <textarea
+            id={`project-question-${projectId}`}
+            placeholder="프로젝트에 대해 궁금한 점을 질문해 보세요"
+            maxLength={2000}
+            value={content}
+            disabled={saving}
+            aria-invalid={Boolean(saveError)}
+            aria-describedby={saveError ? `project-question-error-${projectId}` : undefined}
+            onChange={(event) => {
+              setContent(event.target.value);
+              setSaveError("");
+            }}
+          />
+          <button
+            className="project-question-button project-question-button--primary"
+            type="submit"
+            disabled={saving}
           >
-            {saveError}
-          </p>
-        )}
-      </form>
+            {saving ? "등록 중…" : "질문 등록"}
+          </button>
+          {saveError && (
+            <p
+              className="project-detail-error"
+              id={`project-question-error-${projectId}`}
+              role="alert"
+            >
+              {saveError}
+            </p>
+          )}
+        </form>
+      )}
       {loading ? (
         <p role="status">질문을 불러오는 중입니다.</p>
       ) : error ? (

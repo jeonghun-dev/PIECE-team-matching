@@ -1,11 +1,14 @@
 // 참여 초대 요청, 팀 합류 업무 규칙
 const pool = require("../config/db");
 const recruitmentRepository = require("../repositories/recruitmentRepository");
+// 모집 글의 대기 요청 일괄 취소는 projectRepository 함수를 함께 사용 (중복 제거)
+const projectRepository = require("../repositories/projectRepository");
 const {
   PROJECT_STATUS,
   REQUEST_TYPE,
   REQUEST_STATUS,
   MEMBER_ROLE,
+  USER_ROLE
 } = require("../constants");
 
 // 공통 에러 처리 미들웨어에 전달할 오류 생성
@@ -92,7 +95,7 @@ const joinTeam = async (tx, project, requestId, userId) => {
       throw createError(409, "모집 상태가 변경되었습니다.");
     }
 
-    await recruitmentRepository.cancelPendingRequests(tx, project.id);
+    await projectRepository.cancelPendingRequests(tx, project.id);
   }
 };
 
@@ -101,6 +104,11 @@ const joinTeam = async (tx, project, requestId, userId) => {
 const apply = async (actor, id) => {
   if (!actor) {
     throw createError(401, "로그인이 필요합니다.");
+  }
+
+  // 관리자 계정은 참여 요청 불가 (초대·팀원 찾기 대상에서도 제외됨)
+  if (actor.role === USER_ROLE.ADMIN) {
+    throw createError(403, "관리자는 참여 요청을 보낼 수 없습니다.");
   }
 
   const projectId = parseProjectId(id);

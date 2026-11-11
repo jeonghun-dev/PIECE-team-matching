@@ -1,27 +1,11 @@
 const answerService = require("../services/answerService");
+const { sendSuccess } = require("../utils/response");
 
+// 컨트롤러는 요청 값을 꺼내 서비스에 넘기고 응답만 보냄 (데이터 변환은 서비스)
 async function list(req, resp, next) {
   try {
-    const answers = await answerService.list(req.user, req.params.id);
-
-    const data = answers.map((answer) => ({
-      id: answer.id,
-      questionId: answer.question_id,
-      authorId: answer.author_id,
-      content: answer.content,
-      createdAt: answer.created_at,
-      updatedAt: answer.updated_at,
-      authorNickname: answer.author_nickname,
-      authorLevel: answer.author_level,
-      authorScore: Number(answer.author_score),
-      isAccepted: Number(answer.is_accepted) === 1,
-    }));
-
-    return resp.status(200).json({
-      success: true,
-      data,
-      message: null,
-    });
+    const data = await answerService.list(req.user, req.params.id);
+    return sendSuccess(resp, data);
   } catch (error) {
     next(error);
   }
@@ -33,11 +17,7 @@ async function create(req, resp, next) {
       questionId: req.params.id,
       content: req.body?.content,
     });
-    return resp.status(201).json({
-      success: true,
-      data,
-      message: null,
-    });
+    return sendSuccess(resp, data, null, 201);
   } catch (error) {
     next(error);
   }
@@ -48,12 +28,7 @@ async function edit(req, resp, next) {
     const data = await answerService.edit(req.user, req.params.id, {
       content: req.body?.content,
     });
-
-    return resp.status(200).json({
-      success: true,
-      data,
-      message: null,
-    });
+    return sendSuccess(resp, data);
   } catch (error) {
     next(error);
   }
@@ -62,7 +37,6 @@ async function edit(req, resp, next) {
 async function remove(req, resp, next) {
   try {
     await answerService.remove(req.user, req.params.id);
-
     return resp.status(204).end();
   } catch (error) {
     next(error);
@@ -72,12 +46,7 @@ async function remove(req, resp, next) {
 async function accept(req, resp, next) {
   try {
     const data = await answerService.accept(req.user, req.params.id);
-
-    return resp.status(200).json({
-      success: true,
-      data,
-      message: null,
-    });
+    return sendSuccess(resp, data);
   } catch (error) {
     next(error);
   }

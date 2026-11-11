@@ -5,15 +5,15 @@ async function findByQuestionId(questionId) {
     `
         SELECT
             a.id,
-            a.question_id,
-            a.author_id,
+            a.question_id AS questionId,
+            a.author_id AS authorId,
             a.content,
-            a.created_at,
-            a.updated_at,
-            u.nickname AS author_nickname,
-            u.level AS author_level,
-            u.total_score AS author_score,
-            a.is_accepted
+            a.created_at AS createdAt,
+            a.updated_at AS updatedAt,
+            u.nickname AS authorNickname,
+            u.level AS authorLevel,
+            u.total_score AS authorScore,
+            a.is_accepted AS isAccepted
         FROM answers a
         JOIN users u ON u.id = a.author_id
         JOIN questions q on q.id = a.question_id

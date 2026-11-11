@@ -1,0 +1,82 @@
+/* 공통 에러 화면 */
+.error-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7) var(--space-5);
+    background-color: var(--color-page);
+}
+
+.error-card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    padding: var(--space-7) var(--space-6);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    text-align: center;
+}
+
+/* 404 숫자와 문구 */
+.error-card__code {
+    margin: 0;
+    color: var(--color-primary);
+    font-size: calc(var(--font-size-page-title) * 2);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-title);
+}
+
+.error-card__title {
+    margin: var(--space-2) 0 var(--space-3);
+    font-size: var(--font-size-section-title);
+}
+
+.error-card__description {
+    margin: 0 0 var(--space-6);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-body);
+}
+
+/* 버튼 */
+.error-card__actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.error-card__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: var(--control-height-md);
+    padding: 0 var(--button-padding-x-md);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.error-card__button:hover {
+    background-color: var(--color-page);
+}
+
+.error-card__button--primary {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-text-on-solid);
+}
+
+.error-card__button--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.error-card__button:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}

@@ -3,34 +3,19 @@
 const{getPagination, toPageResponse} = require("../utils/pagination");
 const pool = require("../config/db");
 const projectRepository = require("../repositories/projectRepository");
-const { LEVEL, PROGRESS_MODE, ACTIVE_TIME, PROJECT_STATUS } = require("../constants");
+const { LEVEL, PROGRESS_MODE, ACTIVE_TIME, PROJECT_STATUS, USER_ROLE } = require("../constants");
+const { createError } = require("../utils/createError");
+const { parseId } = require("../utils/parseId");
 
-// 상태 코드와 메시지를 담은 에러 만들기
-const createError = (status, message) => {
-    const error = new Error(message);
-    error.status = status;
-    return error;
-};
 
 // 오늘 날짜 / 한국 시간 기준
 const getToday = () => {
     return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
-
-};
-
-// URL의 모집 글 번호 검사 (1 이상의 정수)
-const parseProjectId = (id) => {
-    const projectId = Number(id);
-    if (!Number.isSafeInteger(projectId) || projectId < 1) {
-        throw createError(400, "모집 글 번호가 올바르지 않습니다.");
-    }
-    return projectId;
 };
 
 // 모집 글 입력값 검사
 const validateProjectInput = (input) => {
-    const { title, content, meetingMethod, targetLevel, capacity, progressMode, activeTimes, deadline } = input;
+    const { title, content, meetingMethod, targetLevel, capacity, progressMode, activeTimes, deadline } = input || {};
 
     // 프로젝트 명 필수, 최대 100자
     if (!title || title.trim() === "") {
@@ -115,6 +100,11 @@ const publish = async (actor, input) => {
         throw createError(401, "로그인이 필요합니다.");
     }
 
+     // 관리자 계정은 모집 글 작성 불가
+    if (actor.role === USER_ROLE.ADMIN) {
+        throw createError(403, "관리자 계정은 모집 글을 작성할 수 없습니다.");
+    }
+    
     const project = validateProjectInput(input);
     project.authorId = actor.id;
 
@@ -142,7 +132,7 @@ const edit = async (actor, id, input) => {
     }
 
     // DB 없이 할 수 있는 검사는 트랜잭션 전에
-    const projectId = parseProjectId(id);
+    const projectId = parseId(id, "모집 글 번호가 올바르지 않습니다.");
     const project = validateProjectInput(input);
 
     const tx = await pool.getConnection();
@@ -197,7 +187,7 @@ const remove = async (actor, id) => {
         throw createError(401, "로그인이 필요합니다.");
     }
 
-    const projectId = parseProjectId(id);
+    const projectId = parseId(id,"모집 글 번호가 올바르지 않습니다.");
 
     const tx = await pool.getConnection();
     try {
@@ -293,7 +283,7 @@ const list = async (query) => {
 
 // 모집 글 상세와 현재 사용자의 지원·소속 상태를 조회한다.
 const detail = async (actor, id) => {
-    const projectId = parseProjectId(id);
+    const projectId = parseId(id, "모집 글 번호가 올바르지 않습니다.");
 
     const affectedRows =
         await projectRepository.increaseViewCount(projectId);

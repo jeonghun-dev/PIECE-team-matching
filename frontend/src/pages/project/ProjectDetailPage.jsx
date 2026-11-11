@@ -12,7 +12,8 @@ import {
   LEVEL,
   PROGRESS_MODE_OPTIONS,
   PROJECT_STATUS,
-  PROJECT_STATUS_LABEL
+  PROJECT_STATUS_LABEL,
+  USER_ROLE
 } from "../../constants";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import "./ProjectDetailPage.css";
@@ -40,8 +41,11 @@ function ProjectDetailContent({ id, user }) {
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [canRetry, setCanRetry] = useState(false);
   const [extraError, setExtraError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const [membersRetrying, setMembersRetrying] = useState(false);
+  const membersRetryLock = useRef(false);
   const [action, setAction] = useState("");
   const [actionError, setActionError] = useState("");
   const [actionSuccess, setActionSuccess] = useState("");
@@ -85,7 +89,7 @@ function ProjectDetailContent({ id, user }) {
       if (active.current)
         setActionError(
           requestError.response?.data?.message ||
-            "참여 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
+          "참여 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요."
         );
     } finally {
       actionLock.current = false;
@@ -107,11 +111,38 @@ function ProjectDetailContent({ id, user }) {
       if (active.current)
         setActionError(
           requestError.response?.data?.message ||
-            "모집 글을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요."
+          "모집 글을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요."
         );
     } finally {
       actionLock.current = false;
       if (active.current) setAction("");
+    }
+  }
+
+  // 모집 글 조회수가 증가하지 않도록 팀원 목록만 재조회
+  async function handleRetryMembers() {
+    if (membersRetryLock.current) return;
+
+    membersRetryLock.current = true;
+    setMembersRetrying(true);
+
+    try {
+      const response = await getProjectMembers(id);
+
+      if (!active.current) return;
+
+      setMembers(response.data.data);
+      setExtraError("");
+    } catch {
+      if (active.current) {
+        setExtraError("팀원 정보를 불러오지 못했습니다. 다시 시도해 주세요.");
+      }
+    } finally {
+      membersRetryLock.current = false;
+
+      if (active.current) {
+        setMembersRetrying(false);
+      }
     }
   }
 
@@ -135,12 +166,24 @@ function ProjectDetailContent({ id, user }) {
           setExtraError("팀원 정보를 불러오지 못했습니다. 다시 시도해 주세요.");
         }
       } catch (requestError) {
-        if (!ignore)
-          setError(
-            requestError.response?.status === 404
-              ? "모집 글을 찾을 수 없거나 삭제되었습니다."
-              : "모집 글을 불러오지 못했습니다. 다시 시도해 주세요."
-          );
+        if (!ignore) {
+          const status = requestError.response?.status;
+          const retryable = !status || status >= 500 || status === 429;
+
+          setCanRetry(retryable);
+
+          if (status === 400) {
+            setError("모집 글 주소가 올바르지 않습니다. 목록에서 다시 선택해 주세요.");
+          } else if (status === 403) {
+            setError("모집 글을 조회할 권한이 없습니다. 목록으로 돌아가 주세요.");
+          } else if (status === 404) {
+            setError("모집 글을 찾을 수 없거나 삭제되었습니다. 목록에서 다른 글을 선택해 주세요.");
+          } else if (retryable) {
+            setError("모집 글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          } else {
+            setError("모집 글을 불러올 수 없습니다. 목록으로 돌아가 다시 확인해 주세요.");
+          }
+        }
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -162,9 +205,14 @@ function ProjectDetailContent({ id, user }) {
       <div className="project-detail-page">
         <div className="project-detail-panel">
           <p role="alert">{error || "모집 글 정보가 없습니다."}</p>
-          <button type="button" onClick={() => setRetryCount((prev) => prev + 1)}>
-            다시 시도
-          </button>{" "}
+          {canRetry && (
+              <button
+                  type="button"
+                  onClick={() => setRetryCount((prev) => prev + 1)}
+              >
+                다시 시도
+              </button>
+          )}
           <Link to="/projects">모집 게시판으로</Link>
         </div>
       </div>
@@ -172,6 +220,8 @@ function ProjectDetailContent({ id, user }) {
 
   const closed = project.status === PROJECT_STATUS.CLOSED;
   const isOwner = user?.id != null && String(user.id) === String(project.authorId);
+  const isAdmin = user?.role === USER_ROLE.ADMIN;
+
   const applyStatus = project.isMember
     ? "MEMBER"
     : closed
@@ -188,25 +238,25 @@ function ProjectDetailContent({ id, user }) {
   const createdTime = formatRelativeTime(project.createdAt);
   const createdDate = createdTime
     ? new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      })
-        .formatToParts(new Date(createdTime.dateTime))
-        .filter((part) => ["year", "month", "day"].includes(part.type))
-        .map((part) => part.value)
-        .join(".")
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    })
+      .formatToParts(new Date(createdTime.dateTime))
+      .filter((part) => ["year", "month", "day"].includes(part.type))
+      .map((part) => part.value)
+      .join(".")
     : "";
   const deadline = project.deadline ? new Date(project.deadline) : null;
   const deadlineText =
     deadline && !Number.isNaN(deadline.getTime())
       ? new Intl.DateTimeFormat("ko-KR", {
-          timeZone: "Asia/Seoul",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit"
-        }).format(deadline)
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(deadline)
       : "미정";
   const dDay =
     project.dDay == null
@@ -227,8 +277,12 @@ function ProjectDetailContent({ id, user }) {
       {extraError && (
         <div className="project-detail-panel">
           <p role="alert">{extraError}</p>
-          <button type="button" onClick={() => setRetryCount((prev) => prev + 1)}>
-            다시 시도
+          <button
+              type="button"
+              onClick={handleRetryMembers}
+              disabled={membersRetrying}
+          >
+            {membersRetrying ? "불러오는 중…" : "다시 시도"}
           </button>
         </div>
       )}
@@ -326,7 +380,8 @@ function ProjectDetailContent({ id, user }) {
                     {member.nickname?.slice(0, 1)}
                   </span>
                   <span>
-                    {member.nickname} <small>{member.role === "LEADER" ? "모집자" : "팀원"}</small>
+                    <Link to={`/members/${member.userId}`}>{member.nickname}</Link>{" "}
+                    <small>{member.role === "LEADER" ? "모집자" : "팀원"}</small>
                   </span>
                   <LevelBadge level={member.level} />
                 </li>
@@ -338,7 +393,7 @@ function ProjectDetailContent({ id, user }) {
               </p>
             )}
             <p className="project-detail-muted">대기 중인 참여 요청 {project.pendingCount}명</p>
-            {!isOwner && (
+            {!isOwner && !isAdmin && (
               <>
                 <fieldset
                   className="project-detail-apply"
@@ -349,10 +404,11 @@ function ProjectDetailContent({ id, user }) {
                   <ProjectApplyButton status={applyStatus} onApply={handleApply} />
                 </fieldset>
                 {action === "apply" && <p role="status">참여 요청을 보내는 중입니다.</p>}
-                <p className="project-detail-note">
-                  여러 프로젝트에 참여 요청을 보낼 수 있습니다. 요청 상태는 요청함에서 확인해
-                  주세요.
-                </p>
+                {actionSuccess && (
+                  <p className="project-detail-note" role="status">
+                    {actionSuccess}
+                  </p>
+                )}
               </>
             )}
           </section>
@@ -376,11 +432,6 @@ function ProjectDetailContent({ id, user }) {
                 {action === "delete" ? "삭제 중…" : "모집 글 삭제"}
               </button>
             </section>
-          )}
-          {actionSuccess && (
-            <p className="project-detail-note" role="status">
-              {actionSuccess}
-            </p>
           )}
           {actionError && (
             <div className="project-detail-panel">

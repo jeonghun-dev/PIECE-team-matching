@@ -14,6 +14,7 @@ export default function AnswerList({
   onDeleteAnswer,
   onAcceptAnswer,
   onReportAnswer,
+  reportedAnswerIds: loadedReportedIds = [],
 }) {
   const [editingAnswerId, setEditingAnswerId] = useState(null);
   const [editContent, setEditContent] = useState("");
@@ -24,6 +25,8 @@ export default function AnswerList({
   // 신고 폼을 연 답변 번호, 이번 화면에서 신고를 마친 답변 번호 목록
   const [reportingAnswerId, setReportingAnswerId] = useState(null);
   const [reportedAnswerIds, setReportedAnswerIds] = useState([]);
+  // 제출했는데 이미 신고돼 있던 답변 (409) - 접수 안내 없이 "신고됨"만 표시
+  const [alreadyReportedIds, setAlreadyReportedIds] = useState([]);
   const isBusy = isSaving || isDeleting || isAccepting || isMutating;
 
   // 답변 수정 시작
@@ -133,8 +136,17 @@ export default function AnswerList({
       return;
     }
 
-    await onReportAnswer(answerId, input);
-    setReportedAnswerIds((ids) => [...ids, answerId]);
+    try {
+      await onReportAnswer(answerId, input);
+      setReportedAnswerIds((ids) => [...ids, answerId]);
+    } catch (error) {
+      // 이미 신고한 답변(409)이면 오류 대신 신고됨으로 표시
+      if (error.response?.status !== 409) {
+        throw error;
+      }
+      setAlreadyReportedIds((ids) => [...ids, answerId]);
+    }
+
     setReportingAnswerId(null);
   }
   return (
@@ -167,7 +179,10 @@ export default function AnswerList({
               !answer.isAccepted;
             const createdTime = formatRelativeTime(answer.createdAt);
             const canReport = currentUserId != null && !isAuthor;
-            const isReported = reportedAnswerIds.includes(answer.id);
+            const isReported =
+              reportedAnswerIds.includes(answer.id) ||
+              alreadyReportedIds.includes(answer.id) ||
+              loadedReportedIds.includes(Number(answer.id));
 
             return (
               <article
@@ -205,7 +220,8 @@ export default function AnswerList({
                   {canReport && (
                     <span className="answer-card__report">
                       <ReportButton
-                        disabled={isReported || reportingAnswerId === answer.id}
+                        reported={isReported}
+                        disabled={reportingAnswerId === answer.id}
                         onClick={() => setReportingAnswerId(answer.id)}
                       />
                     </span>
@@ -303,7 +319,8 @@ export default function AnswerList({
                   </div>
                 )}
 
-                {isReported && (
+                {/* 이번 화면에서 방금 신고한 답변에만 접수 안내 (예전에 신고한 답변은 버튼만 "신고됨") */}
+                {reportedAnswerIds.includes(answer.id) && (
                   <p className="answer-card__report-success" role="status">
                     신고가 접수되었습니다.
                   </p>

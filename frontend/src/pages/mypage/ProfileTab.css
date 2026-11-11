@@ -327,12 +327,13 @@
 /* 3) 학습 점수 · 레벨 내부 2단 레이아웃 */
 .learning-layout {
   display: grid;
-  grid-template-columns: 1fr 260px;
+  grid-template-columns: minmax(0, 1fr) 260px;
   gap: var(--space-5, 24px);
   align-items: start;
 }
 
 .learning-controls {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-5, 24px);
@@ -457,6 +458,9 @@
 
 /* 오른쪽 실시간 산정 결과 박스 */
 .preview-box {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--space-5, 24px);
   background-color: var(--color-page, #f5f6fa);
   border: var(--border-width, 1px) solid var(--color-border, #e5e9f2);
@@ -517,17 +521,17 @@
 
 .preview-gauge__seg--starter {
   width: 25%;
-  background-color: var(--color-success-soft, #e5f6ef);
+  background-color: var(--color-level-starter-soft);
 }
 
 .preview-gauge__seg--builder {
   width: 50%;
-  background-color: var(--color-primary-soft, #eaedff);
+  background-color: var(--color-level-builder-soft);
 }
 
 .preview-gauge__seg--achiever {
   width: 25%;
-  background-color: var(--color-danger-soft, #fff0f0);
+  background-color: var(--color-level-achiever-soft);
 }
 
 .preview-gauge__pin {
@@ -580,9 +584,15 @@
 }
 
 /* 화면이 좁아졌을 때 깨지지 않도록 반응형 처리 */
+/* 마이페이지 사이드바(약 300px) 폭을 고려하여 1080px 이하에서 preview-box가 아래로 자연스럽게 배치 */
+@media (max-width: 1080px) {
+  .learning-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-form__row,
-  .learning-layout,
   .cert-grid,
   .counter-row {
     grid-template-columns: 1fr;

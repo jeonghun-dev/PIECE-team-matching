@@ -2,14 +2,8 @@
 // 로그인한 본인 정보만 조회하므로 actor.id로만 조회한다.
 const myPageRepository = require("../repositories/myPageRepository");
 const { getPagination, toPageResponse } = require("../utils/pagination");
-
-// 상태 코드와 메시지를 담은 에러 만들기
-const createError = (status, message) => {
-    const error = new Error(message);
-    error.status = status;
-    return error;
-};
-
+const { createError } = require("../utils/createError");
+ 
 // 'A,B' 문자열을 배열로 (SET 컬럼, GROUP_CONCAT 결과)
 const toArray = (value) => {
     if (!value) {

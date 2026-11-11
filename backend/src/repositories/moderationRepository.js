@@ -160,6 +160,8 @@ const REPORT_TARGET_FROM = `
     ON r.target_type = 'QUESTION' AND q.id = r.target_id
   LEFT JOIN answers a
     ON r.target_type = 'ANSWER' AND a.id = r.target_id
+  LEFT JOIN questions aq
+    ON aq.id = a.question_id
   LEFT JOIN users author
     ON author.id = COALESCE(p.author_id, q.author_id, a.author_id)`;
 
@@ -242,6 +244,7 @@ const findReports = async (filters, limit, offset) => {
             MAX(author.nickname) AS targetAuthorNickname,
             MAX(author.status) AS targetAuthorStatus,
             MAX(a.question_id) AS answerQuestionId,
+            MAX(COALESCE(q.project_id, aq.project_id)) AS targetProjectId,
             MAX(COALESCE(p.deleted_at, q.deleted_at, a.deleted_at) IS NOT NULL)
                 AS targetDeleted
         ${REPORT_TARGET_FROM}
@@ -480,6 +483,7 @@ const findAnswers = async (filters, limit, offset) => {
     `SELECT
             a.id,
             a.question_id AS questionId,
+            q.project_id AS projectId,
             q.title AS questionTitle,
             LEFT(a.content, 100) AS contentPreview,
             a.is_accepted AS isAccepted,
@@ -522,6 +526,7 @@ const findQnaAll = async (filters, limit, offset) => {
           'QUESTION' AS type,
           q.id,
           q.id AS questionId,
+          q.project_id AS projectId,
           q.title AS title,
           q.author_id AS authorId,
           u.nickname AS authorNickname,
@@ -548,6 +553,7 @@ const findQnaAll = async (filters, limit, offset) => {
           'ANSWER' AS type,
           a.id,
           a.question_id AS questionId,
+          q.project_id AS projectId,
           LEFT(a.content, 100) AS title,
           a.author_id AS authorId,
           u.nickname AS authorNickname,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProjects } from "../../api/projects";
 import { useAuth } from "../../hooks/useAuth";
-import { ACTIVE_TIME_OPTIONS, LEVEL, LEVEL_OPTIONS, PROGRESS_MODE_OPTIONS, PROJECT_STATUS, PROJECT_STATUS_LABEL } from "../../constants";
+import { ACTIVE_TIME_OPTIONS, LEVEL, LEVEL_OPTIONS, PROGRESS_MODE_OPTIONS, PROJECT_STATUS, PROJECT_STATUS_LABEL, USER_ROLE } from "../../constants";
 import "./ProjectListPage.css";
 
 const PAGE_SIZE = 6;
@@ -29,10 +29,11 @@ export default function ProjectListPage() {
     return <div className="project-list-page"><p role="status">로그인 정보를 확인하고 있습니다.</p></div>;
   }
   const defaultLevel = Object.values(LEVEL).includes(user?.level) ? user.level : "";
-  return <ProjectListContent key={user?.id ?? "guest"} defaultLevel={defaultLevel} />;
+  const isAdmin = user?.role === USER_ROLE.ADMIN;
+  return <ProjectListContent key={user?.id ?? "guest"} defaultLevel={defaultLevel} isAdmin={isAdmin} />;
 }
 
-function ProjectListContent({ defaultLevel }) {
+function ProjectListContent({ defaultLevel, isAdmin }) {
   const [projects, setProjects] = useState([]);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -103,9 +104,6 @@ function ProjectListContent({ defaultLevel }) {
             </label>
           ))}
         </div>
-        <p className="project-list-filter-help">
-          {defaultLevel ? `내 레벨(${defaultLevel})이 기본으로 켜져 있어요` : "비로그인 상태에서는 전체 레벨을 보여드려요"}
-        </p>
       </aside>
 
       <section className="project-list-content" aria-label="모집 게시판">
@@ -114,7 +112,7 @@ function ProjectListContent({ defaultLevel }) {
           <h1>프로젝트 모집 게시판</h1>
           <p>내 레벨에 맞는 프로젝트를 찾아 참여 요청을 보내세요.</p>
         </div>
-        <Link className="project-list-write" to="/projects/new">+ 모집 글 작성</Link>
+        {!isAdmin && <Link className="project-list-write" to="/projects/new">+ 모집 글 작성</Link>}
       </div>
 
       <form className="project-list-search" onSubmit={(event) => {
