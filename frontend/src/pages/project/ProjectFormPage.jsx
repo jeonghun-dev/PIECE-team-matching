@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { createProject, getProject, updateProject } from "../../api/projects";
 import { useAuth } from "../../hooks/useAuth";
 import { LEVEL_OPTIONS, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS, PROJECT_STATUS } from "../../constants";
+import { toArray } from "../../utils/format";
 import "./ProjectFormPage.css";
 
 // 모집 정원 범위 
@@ -53,16 +54,7 @@ const toDateInput = (value) => {
     return `${year}-${month}-${day}`;
 };
 
-// 서버 활동 시간 값을 배열로 변환
-const toTimeArray = (value) => {
-    if (Array.isArray(value)) {
-        return value;
-    }
-    if (!value) {
-        return [];
-    }
-    return value.split(",");
-};
+
 
 // 입력값 검사
 const validate = (project, minCapacity = MIN_CAPACITY) => {
@@ -169,7 +161,7 @@ function ProjectForm() {
                     targetLevel: data.targetLevel,
                     capacity: data.capacity,
                     progressMode: data.progressMode,
-                    activeTimes: toTimeArray(data.activeTimes),
+                    activeTimes: toArray(data.activeTimes),
                     deadline: toDateInput(data.deadline),
                 });
                 setAuthorId(data.authorId);
