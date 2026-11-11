@@ -380,7 +380,8 @@ function ProjectDetailContent({ id, user }) {
                     {member.nickname?.slice(0, 1)}
                   </span>
                   <span>
-                    {member.nickname} <small>{member.role === "LEADER" ? "모집자" : "팀원"}</small>
+                    <Link to={`/members/${member.userId}`}>{member.nickname}</Link>{" "}
+                    <small>{member.role === "LEADER" ? "모집자" : "팀원"}</small>
                   </span>
                   <LevelBadge level={member.level} />
                 </li>
