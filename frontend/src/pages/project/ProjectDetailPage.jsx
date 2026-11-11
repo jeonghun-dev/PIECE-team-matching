@@ -40,6 +40,7 @@ function ProjectDetailContent({ id, user }) {
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [canRetry, setCanRetry] = useState(false);
   const [extraError, setExtraError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
   const [action, setAction] = useState("");
@@ -135,12 +136,24 @@ function ProjectDetailContent({ id, user }) {
           setExtraError("팀원 정보를 불러오지 못했습니다. 다시 시도해 주세요.");
         }
       } catch (requestError) {
-        if (!ignore)
-          setError(
-            requestError.response?.status === 404
-              ? "모집 글을 찾을 수 없거나 삭제되었습니다."
-              : "모집 글을 불러오지 못했습니다. 다시 시도해 주세요."
-          );
+        if (!ignore) {
+          const status = requestError.response?.status;
+          const retryable = !status || status >= 500 || status === 429;
+
+          setCanRetry(retryable);
+
+          if (status === 400) {
+            setError("모집 글 주소가 올바르지 않습니다. 목록에서 다시 선택해 주세요.");
+          } else if (status === 403) {
+            setError("모집 글을 조회할 권한이 없습니다. 목록으로 돌아가 주세요.");
+          } else if (status === 404) {
+            setError("모집 글을 찾을 수 없거나 삭제되었습니다. 목록에서 다른 글을 선택해 주세요.");
+          } else if (retryable) {
+            setError("모집 글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          } else {
+            setError("모집 글을 불러올 수 없습니다. 목록으로 돌아가 다시 확인해 주세요.");
+          }
+        }
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -162,9 +175,14 @@ function ProjectDetailContent({ id, user }) {
       <div className="project-detail-page">
         <div className="project-detail-panel">
           <p role="alert">{error || "모집 글 정보가 없습니다."}</p>
-          <button type="button" onClick={() => setRetryCount((prev) => prev + 1)}>
-            다시 시도
-          </button>{" "}
+          {canRetry && (
+              <button
+                  type="button"
+                  onClick={() => setRetryCount((prev) => prev + 1)}
+              >
+                다시 시도
+              </button>
+          )}
           <Link to="/projects">모집 게시판으로</Link>
         </div>
       </div>

@@ -80,9 +80,8 @@ export default function InboxPage() {
 
   useEffect(() => {
     let active = true;
-    const params = { tab, page, size: PAGE_SIZE };
+    const params = { tab, page, size: PAGE_SIZE, status: REQUEST_STATUS.PENDING };
     if (type) params.type = type;
-    if (tab === "received") params.status = REQUEST_STATUS.PENDING;
 
     getRequests(params)
       .then((response) => {
@@ -165,29 +164,16 @@ export default function InboxPage() {
       else if (action === "reject") await rejectRequest(item.id);
       else await cancelRequest(item.id);
 
-      const nextStatus = {
-        accept: REQUEST_STATUS.ACCEPTED,
-        reject: REQUEST_STATUS.REJECTED,
-        cancel: REQUEST_STATUS.CANCELED,
-      }[action];
       setRequestData((current) => {
         if (current.key !== requestKey) return current;
-        if (tab === "received") {
-          return {
-            ...current,
-            items: current.items.filter((row) => String(row.id) !== requestId),
-            totalCount: Math.max(0, current.totalCount - 1),
-          };
-        }
         return {
           ...current,
-          items: current.items.map((row) =>
-            String(row.id) === requestId ? { ...row, status: nextStatus } : row,
-          ),
+          items: current.items.filter((row) => String(row.id) !== requestId),
+          totalCount: Math.max(0, current.totalCount - 1),
         };
       });
 
-      if (tab === "received" && items.length === 1 && page > 1) {
+      if (items.length === 1 && page > 1) {
         updateQuery(tab, type, page - 1);
       }
 
@@ -405,7 +391,7 @@ export default function InboxPage() {
         )}
 
         <p className="request-inbox__helper">
-          거절한 요청은 목록에서 사라지지만, 같은 상대가 이후 다시 요청할 수 있어요. 수락하면 해당 프로젝트 팀 인원에 추가됩니다.
+          처리가 끝난 요청은 요청함에서 사라집니다. 수락한 요청은 해당 프로젝트 팀원으로 등록됩니다.
         </p>
       </div>
     </main>

@@ -122,6 +122,7 @@ function SignupCompletePage() {
             padding: '20px',
             textAlign: 'left',
             marginBottom: '24px',
+            width: '400px',
           }}
         >
           {/* 상단: 산정 결과 & 레벨 배지 */}

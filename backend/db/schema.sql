@@ -146,6 +146,7 @@ CREATE TABLE project_requests (
     message VARCHAR(500) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     processed_at DATETIME NULL,
+    notification_read_at DATETIME NULL,
 
     PRIMARY KEY (id),
 
@@ -166,6 +167,7 @@ CREATE TABLE project_requests (
 
     INDEX idx_requests_received (receiver_id, status),
     INDEX idx_requests_sent (sender_id, status),
+    INDEX idx_requests_notification_read (receiver_id, status, notification_read_at),
     INDEX idx_requests_project (project_id, status)
 ) ENGINE=InnoDB;
 
