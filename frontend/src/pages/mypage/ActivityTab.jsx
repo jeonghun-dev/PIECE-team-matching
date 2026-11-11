@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getMyTeams, getMyProjects, getMyQuestions, getMyAnswers } from "../../api/mypage";
 import { deleteProject } from "../../api/projects";
-import { PROJECT_STATUS, PROJECT_STATUS_LABEL, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS } from "../../constants";
+import { useAuth } from "../../hooks/useAuth";
+import { PROJECT_STATUS, PROJECT_STATUS_LABEL, PROGRESS_MODE_OPTIONS, ACTIVE_TIME_OPTIONS, USER_ROLE } from "../../constants";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 // 최근 질문·답변은 5개만
@@ -56,6 +57,8 @@ const getQuestionLink = (projectId, questionId) => {
 };
 
 function ActivityTab() {
+    const { user } = useAuth();
+    const isAdmin = user?.role === USER_ROLE.ADMIN;
     const location = useLocation();
     const teamsRef = useRef(null);
     const projectsRef = useRef(null);
@@ -228,7 +231,9 @@ function ActivityTab() {
             <section className="activity-card activity-card--table" ref={projectsRef} aria-labelledby="my-projects-title">
                 <div className="activity-card__header">
                     <h2 id="my-projects-title" className="activity-card__title">내 모집 글 관리</h2>
-                    <Link to="/projects/new" className="activity__button activity__button--primary">+ 모집 글 작성</Link>
+                    {!isAdmin && (
+                        <Link to="/projects/new" className="activity__button activity__button--primary">+ 모집 글 작성</Link>
+                    )}
                 </div>
 
                 {actionError && <p className="activity__error" role="alert">{actionError}</p>}
