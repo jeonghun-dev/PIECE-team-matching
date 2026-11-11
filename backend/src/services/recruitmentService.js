@@ -11,34 +11,15 @@ const {
   USER_ROLE
 } = require("../constants");
 
-// 공통 에러 처리 미들웨어에 전달할 오류 생성
-const createError = (status, message) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
+const { createError } = require("../utils/createError");
+const { parseId } = require("../utils/parseId");
 
 // URL로 받은 모집 글 번호 검사
-const parseProjectId = (id) => {
-  const projectId = Number(id);
-
-  if (!Number.isSafeInteger(projectId) || projectId < 1) {
-    throw createError(400, "모집 글 번호가 올바르지 않습니다.");
-  }
-
-  return projectId;
-};
+const parseProjectId = (id) =>
+  parseId(id, "모집 글 번호가 올바르지 않습니다.");
 
 // URL로 받은 참여 초대 요청 번호 검사
-const parseRequestId = (id) => {
-  const requestId = Number(id);
-
-  if (!Number.isSafeInteger(requestId) || requestId < 1) {
-    throw createError(400, "요청 번호가 올바르지 않습니다.");
-  }
-
-  return requestId;
-};
+const parseRequestId = (id) => parseId(id, "요청 번호가 올바르지 않습니다.");
 
 // 한국 날짜를 YYYY-MM-DD 문자열로 반환
 const getToday = () => {
@@ -188,11 +169,8 @@ const apply = async (actor, id) => {
 const invite = async (actor, id, input = {}) => {
   if (!actor) throw createError(401, "로그인이 필요합니다.");
   const projectId = parseProjectId(id);
-  const userId = Number(input.userId);
+  const userId = parseId(input.userId, "초대할 회원 번호가 올바르지 않습니다.");
   const message = input.message == null ? null : String(input.message).trim();
-  if (!Number.isSafeInteger(userId) || userId < 1) {
-    throw createError(400, "초대할 회원 번호가 올바르지 않습니다.");
-  }
   if (message && message.length > 500) {
     throw createError(400, "초대 메시지는 500자 이하로 입력해 주세요.");
   }
@@ -518,11 +496,7 @@ const removeMember = async (actor, id, targetUserId) => {
   }
 
   const projectId = parseProjectId(id);
-  const userId = Number(targetUserId);
-
-  if (!Number.isSafeInteger(userId) || userId < 1) {
-    throw createError(400, "회원 번호가 올바르지 않습니다.");
-  }
+  const userId = parseId(targetUserId, "회원 번호가 올바르지 않습니다.");
 
   const tx = await pool.getConnection();
 
