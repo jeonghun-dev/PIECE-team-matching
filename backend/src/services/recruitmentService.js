@@ -1,6 +1,8 @@
 // 참여 초대 요청, 팀 합류 업무 규칙
 const pool = require("../config/db");
 const recruitmentRepository = require("../repositories/recruitmentRepository");
+// 모집 글의 대기 요청 일괄 취소는 projectRepository 함수를 함께 사용 (중복 제거)
+const projectRepository = require("../repositories/projectRepository");
 const {
   PROJECT_STATUS,
   REQUEST_TYPE,
@@ -93,7 +95,7 @@ const joinTeam = async (tx, project, requestId, userId) => {
       throw createError(409, "모집 상태가 변경되었습니다.");
     }
 
-    await recruitmentRepository.cancelPendingRequests(tx, project.id);
+    await projectRepository.cancelPendingRequests(tx, project.id);
   }
 };
 

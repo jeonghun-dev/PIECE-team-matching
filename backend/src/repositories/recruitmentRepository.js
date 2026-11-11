@@ -239,22 +239,6 @@ const closeProject = async (tx, projectId) => {
   return result.affectedRows;
 };
 
-// 모집 종료 시 남은 대기 요청을 모두 취소
-// 참여(APPLY)와 초대(INVITE) 모두 대상
-// 프로젝트 행을 먼저 잠근 뒤 같은 tx로 호출
-const cancelPendingRequests = async (tx, projectId) => {
-  const [result] = await tx.query(
-    `UPDATE project_requests
-     SET status = ?,
-         processed_at = CURRENT_TIMESTAMP
-     WHERE project_id = ?
-       AND status = ?`,
-    [REQUEST_STATUS.CANCELED, projectId, REQUEST_STATUS.PENDING],
-  );
-
-  return result.affectedRows;
-};
-
 // 현재 소속된 팀원 조회
 const findMembers = async (projectId) => {
   const [rows] = await pool.query(
@@ -325,7 +309,6 @@ module.exports = {
   updateStatus,
   addMember,
   closeProject,
-  cancelPendingRequests,
   findMembers,
   findOwnedOpenProjects,
   removeMember,
