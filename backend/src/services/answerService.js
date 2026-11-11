@@ -21,7 +21,14 @@ async function list(actor, questionId) {
     throw createError(404, "질문을 찾을 수 없습니다.");
   }
 
-  return answerRepository.findByQuestionId(id);
+  const answers = await answerRepository.findByQuestionId(id);
+
+  // DB 값을 화면에서 쓰는 형태로 변환 (점수: 숫자, 채택 여부: true/false)
+  return answers.map((answer) => ({
+    ...answer,
+    authorScore: Number(answer.authorScore),
+    isAccepted: Number(answer.isAccepted) === 1,
+  }));
 }
 
 async function create(actor, input) {
