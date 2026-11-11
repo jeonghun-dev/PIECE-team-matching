@@ -248,7 +248,7 @@ function SignupCompletePage() {
 
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/login')}
             style={{
               flex: 1,
               padding: '12px',
