@@ -45,11 +45,14 @@ export default function QuestionListPage() {
 
       try {
         // totalCount는 페이지 크기와 무관한 전체 개수이다.
-        const [data, solvedData, unsolvedData] = await Promise.all([
+        const [response, solvedResponse, unsolvedResponse] = await Promise.all([
           getQuestions({ page, size: 10, sort, keyword, status }),
           getQuestions({ page: 1, size: 1, keyword, status: "solved" }),
           getQuestions({ page: 1, size: 1, keyword, status: "unsolved" })
         ]);
+        const data = response.data.data;
+        const solvedData = solvedResponse.data.data;
+        const unsolvedData = unsolvedResponse.data.data;
 
         if (!ignore) {
           setQuestions(data.items);

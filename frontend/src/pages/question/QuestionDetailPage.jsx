@@ -92,7 +92,8 @@ function QuestionDetailContent({ id }) {
       setError("");
 
       try {
-        const data = await getQuestion(id);
+        const response = await getQuestion(id);
+        const data = response.data.data;
 
         if (!ignore) {
           setQuestion(data);
