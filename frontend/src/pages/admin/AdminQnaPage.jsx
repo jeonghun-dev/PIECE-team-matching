@@ -40,6 +40,8 @@ const toRow = (item, tab) => {
     type,
     id: item.id,
     questionId: isQuestion ? item.id : item.questionId,
+    // 모집 글에 달린 질문이면 모집 글 번호, 질문 게시판 글이면 null
+    projectId: item.projectId ?? null,
     content: isQuestion ? item.title : (item.contentPreview ?? item.title),
     questionTitle: item.questionTitle ?? "",
     authorNickname: item.authorNickname,
@@ -62,8 +64,18 @@ const loadQna = async ({ tab, keyword, page }) => {
   return { ...data, items: data.items.map((item) => toRow(item, tab)) };
 };
 
-// 상태 배지: 질문은 해결 여부, 답변은 채택 여부
+// 보기 이동: 모집 글 질문은 질문 게시판에 없어서 모집 글 상세로
+const viewPath = (row) =>
+  row.projectId
+    ? `/projects/${row.projectId}`
+    : `/questions/${row.questionId}`;
+
+// 상태 배지: 질문은 해결 여부, 답변은 채택 여부 (모집 글 질문은 해결 상태를 쓰지 않음)
 function QnaStatus({ row }) {
+  if (row.type === "QUESTION" && row.projectId) {
+    return <span className="admin-table__muted">-</span>;
+  }
+
   if (row.type === "QUESTION") {
     return row.isSolved ? (
       <span className="admin-badge admin-badge--success">해결</span>
@@ -186,6 +198,9 @@ function AdminQnaPage() {
                         질문: {row.questionTitle}
                       </span>
                     )}
+                    {row.type === "QUESTION" && row.projectId && (
+                      <span className="admin-table__sub">모집 글 질문</span>
+                    )}
                   </td>
                   <td className="admin-table__muted">{row.authorNickname}</td>
                   <td className="admin-table__muted">
@@ -205,7 +220,7 @@ function AdminQnaPage() {
                   </td>
                   <td className="admin-table__actions">
                     <Link
-                      to={`/questions/${row.questionId}`}
+                      to={viewPath(row)}
                       className="admin-button"
                     >
                       보기
