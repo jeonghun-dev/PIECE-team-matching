@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyOpenProjects } from "../../api/requests";
+import LevelBadge from "../../components/common/LevelBadge";
 
 function MemberMark({ name, large = false }) {
   return (
@@ -100,7 +101,7 @@ function InviteModal({ member, onClose, onInvite }) {
                   {project.memberCount} / {project.capacity}명 · 마감 {String(project.deadline).slice(0, 10)}
                 </small>
               </span>
-              <span className="member-level">{project.targetLevel}</span>
+              <LevelBadge level={project.targetLevel} className="member-invite__project-level" />
             </label>
             ))}
         </div>

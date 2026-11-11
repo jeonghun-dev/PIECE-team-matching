@@ -13,6 +13,7 @@ import {
 import { getMembers } from "../../api/members";
 import { inviteToProject } from "../../api/requests";
 import { findLabel, toArray } from "../../utils/format";
+import LevelBadge from "../../components/common/LevelBadge";
 import "./MemberPages.css";
 
 function MemberCard({ member }) {
@@ -29,9 +30,7 @@ function MemberCard({ member }) {
           <MemberMark name={member.nickname} />
           <div className="member-card__identity">
             <strong>{member.nickname}</strong>
-            <span className="member-level">
-              {member.level} · {member.totalScore}점
-            </span>
+            <LevelBadge level={member.level} score={member.totalScore} />
           </div>
             {member.lookingForTeam && <span className="member-card__looking-badge">팀 구하는 중</span>}
         </div>
