@@ -92,8 +92,10 @@ const countPendingReceived = (userId) =>
 
 const findNotifications = (userId, options) => findByDirection(userId, "received", {
   ...options,
+  // 요청 알림은 처리 가능한 대기 요청만 표시한다.
+  // 취소/수락/거절된 요청은 더 이상 상대방이 처리할 알림이 아니다.
+  status: REQUEST_STATUS.PENDING,
   unreadOnly: true,
-  includeCanceled: true,
 });
 
 const countUnreadNotifications = async (userId) => {
@@ -102,9 +104,10 @@ const countUnreadNotifications = async (userId) => {
      FROM project_requests r
      JOIN projects p ON p.id = r.project_id
      WHERE r.receiver_id = ?
+       AND r.status = ?
        AND r.notification_read_at IS NULL
        AND p.deleted_at IS NULL`,
-    [userId],
+    [userId, REQUEST_STATUS.PENDING],
   );
   return Number(rows[0].total);
 };
