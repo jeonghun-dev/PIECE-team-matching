@@ -12,7 +12,8 @@ import {
   LEVEL,
   PROGRESS_MODE_OPTIONS,
   PROJECT_STATUS,
-  PROJECT_STATUS_LABEL
+  PROJECT_STATUS_LABEL,
+  USER_ROLE
 } from "../../constants";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import "./ProjectDetailPage.css";
@@ -172,6 +173,8 @@ function ProjectDetailContent({ id, user }) {
 
   const closed = project.status === PROJECT_STATUS.CLOSED;
   const isOwner = user?.id != null && String(user.id) === String(project.authorId);
+  const isAdmin = user?.role === USER_ROLE.ADMIN;
+
   const applyStatus = project.isMember
     ? "MEMBER"
     : closed
@@ -338,7 +341,7 @@ function ProjectDetailContent({ id, user }) {
               </p>
             )}
             <p className="project-detail-muted">대기 중인 참여 요청 {project.pendingCount}명</p>
-            {!isOwner && (
+            {!isOwner && !isAdmin && (
               <>
                 <fieldset
                   className="project-detail-apply"
