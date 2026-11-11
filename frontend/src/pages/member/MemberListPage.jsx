@@ -8,7 +8,6 @@ import {
   ACTIVE_TIME,
   ACTIVE_TIME_OPTIONS,
   CERTIFICATE_OPTIONS,
-  COLLABORATION_MODE,
   COLLABORATION_OPTIONS,
   LEVEL,
   LEVEL_OPTIONS,
@@ -75,14 +74,14 @@ function MemberCard({ member }) {
 }
 
 export default function MemberList() {
-  const [levels, setLevels] = useState([LEVEL.BUILDER]);
-  const [collaborationMode, setCollaborationMode] = useState(COLLABORATION_MODE.ONLINE);
-  const [activeTime, setActiveTime] = useState(ACTIVE_TIME.WEEKDAY_NIGHT);
+  const [levels, setLevels] = useState([]);
+  const [collaborationMode, setCollaborationMode] = useState("");
+  const [activeTime, setActiveTime] = useState("");
   const [sortOrder, setSortOrder] = useState("recent");
   const [appliedFilters, setAppliedFilters] = useState({
-    levels: [LEVEL.BUILDER],
-    collaborationMode: COLLABORATION_MODE.ONLINE,
-    activeTime: ACTIVE_TIME.WEEKDAY_NIGHT,
+    levels: [],
+    collaborationMode: "",
+    activeTime: "",
   });
   const [members, setMembers] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -181,7 +180,7 @@ export default function MemberList() {
           </label>
 
           <button className="member-page__button member-page__button--primary member-list__search-button" type="submit">
-            <span aria-hidden="true">⌕</span> 검색
+            <span aria-hidden="true"></span> 검색
           </button>
         </form>
 
