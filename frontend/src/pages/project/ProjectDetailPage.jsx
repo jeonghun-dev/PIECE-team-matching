@@ -44,6 +44,8 @@ function ProjectDetailContent({ id, user }) {
   const [canRetry, setCanRetry] = useState(false);
   const [extraError, setExtraError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const [membersRetrying, setMembersRetrying] = useState(false);
+  const membersRetryLock = useRef(false);
   const [action, setAction] = useState("");
   const [actionError, setActionError] = useState("");
   const [actionSuccess, setActionSuccess] = useState("");
@@ -114,6 +116,33 @@ function ProjectDetailContent({ id, user }) {
     } finally {
       actionLock.current = false;
       if (active.current) setAction("");
+    }
+  }
+
+  // 모집 글 조회수가 증가하지 않도록 팀원 목록만 재조회
+  async function handleRetryMembers() {
+    if (membersRetryLock.current) return;
+
+    membersRetryLock.current = true;
+    setMembersRetrying(true);
+
+    try {
+      const response = await getProjectMembers(id);
+
+      if (!active.current) return;
+
+      setMembers(response.data.data);
+      setExtraError("");
+    } catch {
+      if (active.current) {
+        setExtraError("팀원 정보를 불러오지 못했습니다. 다시 시도해 주세요.");
+      }
+    } finally {
+      membersRetryLock.current = false;
+
+      if (active.current) {
+        setMembersRetrying(false);
+      }
     }
   }
 
@@ -248,8 +277,12 @@ function ProjectDetailContent({ id, user }) {
       {extraError && (
         <div className="project-detail-panel">
           <p role="alert">{extraError}</p>
-          <button type="button" onClick={() => setRetryCount((prev) => prev + 1)}>
-            다시 시도
+          <button
+              type="button"
+              onClick={handleRetryMembers}
+              disabled={membersRetrying}
+          >
+            {membersRetrying ? "불러오는 중…" : "다시 시도"}
           </button>
         </div>
       )}
