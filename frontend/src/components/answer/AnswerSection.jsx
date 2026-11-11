@@ -48,7 +48,8 @@ export default function AnswerSection({
       setAnswers([]);
 
       try {
-        const data = await getAnswers(questionId);
+        const response = await getAnswers(questionId);
+        const data = response.data.data;
         let reportedIds = [];
 
         // 내가 이미 신고한 답변 (새로고침해도 "신고됨" 유지)
@@ -118,10 +119,10 @@ export default function AnswerSection({
       }
 
       try {
-        const data = await getAnswers(questionId);
+        const response = await getAnswers(questionId);
 
         if (isCurrentRequest()) {
-          setAnswers(data);
+          setAnswers(response.data.data);
         }
       } catch {
         if (isCurrentRequest()) {
