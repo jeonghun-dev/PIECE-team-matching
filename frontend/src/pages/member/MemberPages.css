@@ -242,20 +242,6 @@
   white-space: nowrap;
 }
 
-.member-level {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  min-height: 17px;
-  padding: 1px 7px;
-  border-radius: var(--radius-badge);
-  background: var(--color-primary);
-  color: var(--color-text-on-solid);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
-  white-space: nowrap;
-}
-
 .member-card__looking-badge {
   margin-left: auto;
   padding: 3px 6px;
@@ -642,7 +628,7 @@
   font-size: var(--font-size-caption);
 }
 
-.member-invite__project > .member-level {
+.member-invite__project > .member-invite__project-level {
   margin-left: auto;
 }
 
