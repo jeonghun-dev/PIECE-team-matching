@@ -137,5 +137,5 @@ BEJV27-1st-6TEAM/
 - 지각/결석 시 공유 방법: 멋사 팀 채팅 및 오픈채팅방에 공유 
 
 ## 화면 캡처
-
+![이미지샘플](https://github.com/user-attachments/assets/001bb382-f506-4107-ab08-0bd872f0ec03)
 (최종 발표 전 추가)
