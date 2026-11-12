@@ -379,8 +379,8 @@ function ProjectDetailContent({ id, user }) {
                   <span className="project-detail-avatar" aria-hidden="true">
                     {member.nickname?.slice(0, 1)}
                   </span>
-                  <span>
-                    <Link to={`/members/${member.userId}`}>{member.nickname}</Link>{" "}
+                  <span className="project-detail-member-name">
+                    <Link to={`/members/${member.userId}`} title={member.nickname}>{member.nickname}</Link>
                     <small>{member.role === "LEADER" ? "모집자" : "팀원"}</small>
                   </span>
                   <LevelBadge level={member.level} />

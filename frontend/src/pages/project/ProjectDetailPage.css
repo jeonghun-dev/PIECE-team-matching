@@ -23,8 +23,11 @@
 .project-detail-body p:last-child { margin-bottom: 0; }
 .project-detail-count { color: var(--color-primary); }
 .project-detail-members { display: grid; gap: var(--space-3); margin: var(--space-4) 0; padding: 0; list-style: none; }
-.project-detail-members li { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
-.project-detail-members li > .project-detail-level { margin-left: auto; }
+.project-detail-members li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.project-detail-members li > .project-detail-level { flex: 0 0 auto; margin-left: auto; }
+.project-detail-member-name { display: flex; flex: 1 1 auto; align-items: baseline; gap: var(--space-1); min-width: 0; }
+.project-detail-member-name a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-detail-member-name small { flex: 0 0 auto; }
 .project-detail-page progress { display: block; width: 100%; height: var(--space-2); margin: var(--space-4) 0; border: 0; border-radius: var(--radius-badge); overflow: hidden; appearance: none; accent-color: var(--color-primary); }
 .project-detail-page progress::-webkit-progress-bar { background: var(--color-disabled-bg); }
 .project-detail-page progress::-webkit-progress-value { background: var(--color-primary); }
