@@ -39,7 +39,8 @@ function QuestionEditor({ id, userId }) {
       setLoading(true);
       setLoadError("");
       try {
-        const data = await getQuestion(id);
+        const response = await getQuestion(id);
+        const data = response.data.data;
         if (ignore) return;
         if (!userId || String(data.authorId) !== String(userId)) {
           setLoadError("질문 작성자만 수정할 수 있습니다.");
@@ -78,9 +79,10 @@ function QuestionEditor({ id, userId }) {
     setError("");
     try {
       const input = { title: title.trim(), content: content.trim() };
-      const data = isEditing
+      const response = isEditing
         ? await updateQuestion(id, input)
         : await createQuestion(input);
+      const data = response.data.data;
       if (activeRef.current) navigate(`/questions/${data.id}`, { replace: true });
     } catch (requestError) {
       if (activeRef.current) setError(requestError.response?.data?.message || "질문을 저장하지 못했습니다. 입력 내용은 유지되어 있으니 다시 시도해 주세요.");
