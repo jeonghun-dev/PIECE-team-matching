@@ -138,4 +138,5 @@ BEJV27-1st-6TEAM/
 
 ## 화면 캡처
 ![이미지샘플](https://github.com/user-attachments/assets/001bb382-f506-4107-ab08-0bd872f0ec03)
+![메인](https://github.com/likelion-backendschool-10th/BEJV27-1st-6TEAM/issues/101#issue-6344706232)
 (최종 발표 전 추가)
