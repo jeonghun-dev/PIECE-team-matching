@@ -235,6 +235,10 @@
   margin-left: auto;
 }
 
+.project-manage-members__remove + .level-badge {
+  margin-left: 0;
+}
+
 .project-manage-tag {
   padding: 0 var(--space-2);
   border-radius: var(--radius-badge);

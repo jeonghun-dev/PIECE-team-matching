@@ -429,17 +429,17 @@ function ProjectManageContent({ id }) {
                   {member.role === "LEADER" && (
                     <span className="project-manage-tag">모집자</span>
                   )}
-                  <LevelBadge level={member.level} />
                   {member.role !== "LEADER" && (
                     <button
-                      type="button"
-                      className="project-manage-button project-manage-button--danger project-manage-members__remove"
-                      disabled={actionKey !== null || !isOpen}
-                      onClick={() => handleRemove(member)}
+                    type="button"
+                    className="project-manage-button project-manage-button--danger project-manage-members__remove"
+                    disabled={actionKey !== null || !isOpen}
+                    onClick={() => handleRemove(member)}
                     >
                       팀에서 제외
                     </button>
                   )}
+                  <LevelBadge level={member.level} />
                 </li>
               ))}
             </ul>
