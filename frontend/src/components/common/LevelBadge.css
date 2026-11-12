@@ -3,6 +3,7 @@
 /* 기본 배지 (진한 배경) */
 .level-badge {
   display: inline-block;
+  width: fit-content;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-badge);
   background-color: var(--color-level-builder);
