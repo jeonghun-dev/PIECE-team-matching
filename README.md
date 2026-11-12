@@ -48,21 +48,25 @@
 
 ## 실행 방법
 
-```bash
-# 1. 저장소 클론
+
+### 1. 저장소 클론
+```
 git clone https://github.com/likelion-backendschool-10th/BEJV27-1st-6TEAM.git
 cd BEJV27-1st-6TEAM
-
-# 2. DB 생성 (MySQL 기준)
+```
+### 2. DB 생성 (MySQL 기준)
 MySQL Workbench에서 아래 순서대로 실행합니다. (File → Open SQL Script → 실행)
+
 | 순서 | 파일 | 설명 |
 | --- | --- | --- |
 | 1 | backend/db/schema.sql | piece_db 데이터베이스와 테이블 7개 생성 |
 | 2 | backend/db/newSeed.sql | 테스트 데이터 입력 (기존 데이터를 비우고 다시 넣음) |
 
 터미널(MySQL CLI)로 실행할 경우:
+```
 mysql -u root -p < backend/db/schema.sql
 mysql -u root -p < backend/db/newSeed.sql
+```
 
 테스트 계정 (공통 비밀번호 test1234!)
 | 이메일 | 권한 |
@@ -71,16 +75,17 @@ mysql -u root -p < backend/db/newSeed.sql
 | member@example.com | 일반 회원 (팀원) |
 | applicant@example.com | 일반 회원 (지원자) |
 | admin@example.com | 관리자 |
-schema.sql은 테이블이 이미 있으면 오류가 납니다. 처음부터 다시 만들려면 DROP DATABASE piece_db; 후 실행하세요.
-2026-11-10 이전에 DB를 만든 경우에만 backend/db/migrations/20261110_add_request_notification_read_at.sql을 추가로 실행합니다.
 
-# 3. 백엔드
+### 3. 백엔드
+```
 cd backend
 cp .env.example .env   # .env에 DB 비밀번호, JWT_SECRET 채우기
 npm install
 npm run dev
+```
 
-# 4. 프론트엔드 (새 터미널)
+### 4. 프론트엔드 (새 터미널)
+```
 cd frontend
 cp .env.example .env
 npm install
