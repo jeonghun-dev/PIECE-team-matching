@@ -1,0 +1,194 @@
+.answer-list {
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+.answer-list__title {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text);
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+}
+
+.answer-list__title span {
+  color: var(--color-primary);
+}
+
+.answer-list__empty {
+  margin: 0;
+  padding: var(--space-5) 0;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.answer-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.answer-card {
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface);
+}
+
+.answer-card--accepted {
+  border-color: var(--color-success-border);
+  background-color: var(--color-success-soft);
+}
+
+.answer-card__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.answer-card__author {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+}
+
+.answer-card__level,
+.answer-card__accepted {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-badge);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+}
+
+.answer-card__level {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.answer-card__accepted {
+  background-color: var(--color-success);
+  color: var(--color-text-on-solid);
+}
+
+.answer-card__content {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 답변 수정, 삭제 버튼 영역 */
+.answer-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* 수정, 삭제 버튼 공통 스타일 */
+.answer-card__edit,
+.answer-card__delete,
+.answer-card__accept {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--button-padding-x-sm);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+/* 수정 버튼 */
+.answer-card__edit {
+  color: var(--color-primary);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-primary);
+}
+
+/* 삭제 버튼 */
+.answer-card__delete {
+  color: var(--color-danger);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-danger);
+}
+
+/* 키보드 포커스 표시 */
+.answer-card__edit:focus-visible,
+.answer-card__delete:focus-visible,
+.answer-card__accept:focus-visible,
+.answer-card__textarea:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* 답변 수정 입력창 */
+.answer-card__textarea {
+  display: block;
+  width: 100%;
+  min-height: var(--textarea-min-height);
+  padding: var(--input-padding-y) var(--input-padding-x);
+  box-sizing: border-box;
+  resize: vertical;
+
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-input-border);
+  border-radius: var(--radius-control);
+}
+
+.answer-card__accept {
+  color: var(--color-text-on-solid);
+  background-color: var(--color-primary);
+  border: var(--border-width) solid var(--color-primary);
+}
+
+.answer-card__accept:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* 처리 중인 버튼 */
+.answer-card__edit:disabled,
+.answer-card__delete:disabled,
+.answer-card__accept:disabled {
+  color: var(--color-disabled-text);
+  background-color: var(--color-disabled-bg);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+/* 작성 시간: 작성자 정보 옆 */
+.answer-card__time {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+/* 신고 버튼: 헤더 오른쪽 끝 */
+.answer-card__report {
+  margin-left: auto;
+}
+
+.answer-card__report-form {
+  margin-top: var(--space-4);
+}
+
+.answer-card__report-success {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
+}

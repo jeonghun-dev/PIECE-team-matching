@@ -1,0 +1,46 @@
+/* 공통 파일은 main.jsx에서 한번 불러오고, 각 팀원은 자기 컴포넌트 CSS에서 사용하기 */
+
+:root {
+  /* 주요 동작 */
+  --color-primary: #4054ff;
+  --color-primary-hover: #3042d8;
+  --color-primary-soft: #eaedff;
+
+  /* 학습 레벨 */
+  --color-level-starter: #2f9e8a;
+  --color-level-starter-soft: #b7ebd8;
+  --color-level-builder: var(--color-primary);
+  --color-level-builder-soft: #c5d0ff;
+  --color-level-achiever: #d9482b;
+  --color-level-achiever-soft: #ffd0c2;
+
+  /* 미해결 상태 */
+  --color-unsolved-soft: #fff8db;
+  --color-unsolved: #946200;
+
+  /* 배경 */
+  --color-page: #f5f6fa;
+  --color-surface: #ffffff;
+
+  /* 글자 */
+  --color-text: #20243e;
+  --color-text-muted: #737d98;
+  --color-text-on-solid: #ffffff;
+
+  /* 테두리 */
+  --color-border: #e5e9f2;
+  --color-input-border: #8b95ab;
+
+  /* 채택/해결/성공 */
+  --color-success: #087f5b;
+  --color-success-soft: #e5f6ef;
+  --color-success-border: #32bd91;
+
+  /* 삭제/오류/신고 */
+  --color-danger: #c53030;
+  --color-danger-soft: #fff0f0;
+
+  /* 비활성 */
+  --color-disabled-bg: #eef0f5;
+  --color-disabled-text: #737d98;
+}

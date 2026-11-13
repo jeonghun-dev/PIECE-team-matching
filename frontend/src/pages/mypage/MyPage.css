@@ -1,0 +1,546 @@
+/* 마이페이지 레이아웃 + 활동 화면 */
+ 
+/* ===== 페이지 ===== */
+.mypage {
+    min-height: 100svh;
+    padding: var(--space-7) var(--space-5);
+    background-color: var(--color-page);
+    box-sizing: border-box;
+}
+ 
+/* 왼쪽 300px + 오른쪽 나머지 */
+.mypage__layout {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+}
+ 
+.mypage__content {
+    min-width: 0;
+}
+ 
+/* ===== 왼쪽: 내 정보 + 메뉴 ===== */
+.mypage-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-6);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    text-align: center;
+}
+ 
+.mypage-side__avatar {
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    margin-bottom: var(--space-4);
+    border-radius: var(--radius-circle);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, var(--color-surface)), color-mix(in srgb, var(--color-danger) 22%, var(--color-surface)));
+    font-size: calc(var(--font-size-page-title) + var(--space-2));
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+ 
+.mypage-side__name {
+    margin: 0;
+    font-size: var(--font-size-section-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+ 
+.mypage-side__email {
+    margin: var(--space-1) 0 var(--space-3);
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+ 
+/* 레벨 배지: BUILDER · 6점 */
+.mypage-side__level {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-badge);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-on-solid);
+    background-color: var(--color-level-builder);
+}
+ 
+.mypage-side__level--starter {
+    background-color: var(--color-level-starter);
+}
+ 
+.mypage-side__level--achiever {
+    background-color: var(--color-level-achiever);
+}
+ 
+.mypage-side__intro {
+    margin: var(--space-3) 0 0;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    color: var(--color-text);
+    word-break: keep-all;
+}
+ 
+/* 메뉴 */
+.mypage-side__menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: var(--border-width) solid var(--color-border);
+}
+ 
+.mypage-side__link {
+    display: flex;
+    align-items: center;
+    min-height: var(--control-height-md);
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-control);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    text-align: left;
+    text-decoration: none;
+    transition: background-color var(--transition-fast);
+}
+ 
+.mypage-side__link:hover {
+    background-color: var(--color-page);
+}
+ 
+.mypage-side__link--active {
+    background-color: var(--color-primary-soft);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+ 
+.mypage-side__link--active:hover {
+    background-color: var(--color-primary-soft);
+}
+ 
+.mypage-side__logout {
+    width: 100%;
+    min-height: var(--control-height-sm);
+    margin-top: var(--space-5);
+    border: none;
+    border-radius: var(--radius-control);
+    background-color: var(--color-page);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    cursor: pointer;
+}
+ 
+.mypage-side__logout:hover {
+    background-color: var(--color-disabled-bg);
+}
+ 
+/* 키보드 포커스 */
+.mypage-side__link:focus-visible,
+.mypage-side__logout:focus-visible,
+.activity__button:focus-visible,
+.activity a:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+}
+ 
+/* ===== 오른쪽: 활동 화면 ===== */
+.activity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+ 
+/* 구역 카드 */
+.activity-card {
+    padding: var(--space-5);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    scroll-margin-top: var(--space-5);
+}
+ 
+.activity-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+ 
+.activity-card__title {
+    margin: 0;
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+ 
+.activity-card__hint {
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+ 
+.activity-card__empty {
+    margin: 0;
+    padding: var(--space-5) 0;
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+ 
+/* 불러오는 중 / 실패 */
+.activity__notice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-7) var(--space-5);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+ 
+.activity__notice p {
+    margin: 0;
+}
+ 
+.activity__notice--error {
+    border-color: var(--color-danger);
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+ 
+.activity__error {
+    margin: 0 0 var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-control);
+    background-color: var(--color-danger-soft);
+    font-size: var(--font-size-body);
+    color: var(--color-danger);
+}
+ 
+/* 배지: 레벨 / 모집 상태 / 역할 */
+.activity__level,
+.activity__status,
+.activity__role {
+    display: inline-block;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-badge);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    white-space: nowrap;
+}
+ 
+.activity__level {
+    color: var(--color-text-on-solid);
+    background-color: var(--color-level-builder);
+}
+ 
+.activity__level--starter {
+    background-color: var(--color-level-starter);
+}
+ 
+.activity__level--achiever {
+    background-color: var(--color-level-achiever);
+}
+ 
+/* 모집완료(기본): 회색 / 모집중: 초록 */
+.activity__status {
+    background-color: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
+}
+ 
+.activity__status--open {
+    background-color: var(--color-success-soft);
+    color: var(--color-success);
+}
+ 
+.activity__role {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+ 
+/* 버튼: 기본은 흰 배경 + 테두리 */
+.activity__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--control-height-sm);
+    padding: 0 var(--button-padding-x-sm);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+ 
+.activity__button:hover {
+    background-color: var(--color-page);
+}
+ 
+.activity__button--primary {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-text-on-solid);
+}
+ 
+.activity__button--primary:hover {
+    background-color: var(--color-primary-hover);
+}
+ 
+.activity__button--danger {
+    border-color: var(--color-danger-soft);
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+ 
+.activity__button--danger:hover {
+    background-color: var(--color-danger-soft);
+    border-color: var(--color-danger);
+}
+ 
+.activity__button:disabled {
+    border-color: var(--color-disabled-bg);
+    background-color: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
+    cursor: not-allowed;
+}
+ 
+/* 화면에는 숨기고 스크린리더만 읽음 */
+.activity__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+ 
+/* ===== 참여 중인 팀 카드 ===== */
+.team-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-card);
+}
+ 
+.team-item + .team-item {
+    margin-top: var(--space-3);
+}
+ 
+.team-item__body {
+    min-width: 0;
+}
+ 
+.team-item__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+ 
+.team-item__title {
+    margin: var(--space-2) 0 var(--space-1);
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+}
+ 
+.team-item__meta {
+    margin: 0;
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+}
+ 
+.team-item__side {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
+}
+ 
+/* 팀원 아바타 (겹쳐서) */
+.team-item__avatars {
+    display: flex;
+}
+ 
+.team-item__avatar {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--color-surface);
+    border-radius: var(--radius-circle);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, var(--color-surface)), color-mix(in srgb, var(--color-danger) 22%, var(--color-surface)));
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+ 
+.team-item__avatar + .team-item__avatar {
+    margin-left: calc(var(--space-2) * -1);
+}
+ 
+/* ===== 내 모집 글 관리 표 ===== */
+.activity-card--table {
+    padding-bottom: var(--space-2);
+}
+ 
+.project-table {
+    width: calc(100% + var(--space-5) * 2);
+    margin: 0 calc(var(--space-5) * -1);
+    border-collapse: collapse;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+ 
+.project-table th {
+    padding: var(--input-padding-y) var(--space-2);
+    background-color: var(--color-page);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-align: left;
+    white-space: nowrap;
+}
+ 
+.project-table td {
+    padding: var(--space-4) var(--space-2);
+    border-top: var(--border-width) solid var(--color-border);
+    vertical-align: middle;
+}
+ 
+.project-table th:first-child,
+.project-table td:first-child {
+    padding-left: var(--space-5);
+}
+ 
+.project-table th:last-child,
+.project-table td:last-child {
+    padding-right: var(--space-5);
+}
+ 
+.project-table__title {
+    width: 30%;
+    font-weight: var(--font-weight-bold);
+}
+ 
+.project-table__title a {
+    color: var(--color-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+ 
+.project-table__title a:hover {
+    color: var(--color-primary);
+}
+ 
+.project-table__pending {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-danger);
+}
+ 
+.project-table__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+}
+ 
+/* ===== 최근 작성한 질문 / 답변 ===== */
+.activity__recent {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+}
+ 
+.recent-list {
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+}
+ 
+.recent-list__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: var(--border-width) solid var(--color-border);
+}
+ 
+.recent-list__title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+ 
+.recent-list__title:hover {
+    color: var(--color-primary);
+}
+ 
+.recent-list__badge {
+    flex-shrink: 0;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-badge);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+}
+ 
+.recent-list__badge--solved {
+    background-color: var(--color-success-soft);
+    color: var(--color-success);
+}
+ 
+.recent-list__badge--unsolved {
+    background-color: var(--color-unsolved-soft);
+    color: var(--color-unsolved);
+}
+ 
+.recent-list__badge--accepted {
+    background-color: var(--color-success);
+    color: var(--color-text-on-solid);
+}
+ 
+.recent-list__time {
+    flex-shrink: 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-text-muted);
+}
+ 
+/* ===== 창을 줄였을 때 ===== */
+@media (max-width: 960px) {
+    .mypage__layout,
+    .activity__recent {
+        grid-template-columns: 1fr;
+    }
+ 
+    .team-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+ 
+    .activity-card--table {
+        overflow-x: auto;
+    }
+}

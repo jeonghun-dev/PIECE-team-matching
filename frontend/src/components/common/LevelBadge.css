@@ -1,0 +1,39 @@
+/* 학습 레벨 배지 공통 스타일 */
+
+/* 기본 배지 (진한 배경) */
+.level-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-badge);
+  background-color: var(--color-level-builder);
+  color: var(--color-text-on-solid);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  white-space: nowrap;
+}
+
+.level-badge--starter {
+  background-color: var(--color-level-starter);
+}
+
+.level-badge--achiever {
+  background-color: var(--color-level-achiever);
+}
+
+/* 연한 배지 (지원자 표) */
+.level-badge--soft {
+  background-color: var(--color-primary-soft);
+  color: var(--color-level-builder);
+}
+
+.level-badge--soft.level-badge--starter {
+  background-color: var(--color-success-soft);
+  color: var(--color-level-starter);
+}
+
+.level-badge--soft.level-badge--achiever {
+  background-color: var(--color-danger-soft);
+  color: var(--color-level-achiever);
+}
